@@ -1,0 +1,50 @@
+Datum,Tag,Strecke,Distanz_km,Dauer_min,kcal,kcal_min,Watt_Avg,Watt_Max,Max_HF,Hoehenmeter,Temperatur_C,Kadenz_rpm,Woche
+11.7,Sa,Donauinsel,11.64,22,236,10.7,187,256,116,,,,7
+11.7,Sa,11.18km,11.18,22,220,10.0,174,233,114,,,,7
+12.7,So,14.21km,14.21,26,293,11.3,197,315,128,,,,7
+13.7,Mo,17.29km,17.29,34,325,9.6,167,265,120,,29,76,8
+13.7,Mo,11.64km,11.64,23,222,9.7,169,230,116,,29,79,8
+14.7,Di,Cern,17.17,39,370,9.6,166,333,128,144,29,76,8
+14.7,Di,NYC Central Park,9.85,19,198,10.3,180,237,110,,30,81,8
+15.7,Mi,Rohrspitz–Dornbirn,16.05,31,337,10.9,189,263,119,,29,80,8
+15.7,Mi,Greifensee,14.61,30,289,9.7,170,309,113,84,29,75,8
+16.7,Do,Widnau–Widnau,17.29,33,342,10.4,181,297,116,,28,80,8
+16.7,Do,Wien Donauinsel,11.64,21,247,11.5,201,277,116,,29,84,8
+18.7,Sa,St.Margarethen–Bregenz–Lochau,15.40,29,318,11.1,193,271,116,,27,81,8
+18.7,Sa,Wien Donauinsel Nord 10k+,11.64,21,251,11.9,206,292,119,,26,83,8
+19.7,So,Kaserstrand–Rohrspitz (Bodensee),20.80,40,416,10.5,183,272,111,,27,76,8
+20.7,Mo,Kaiserstrand–Rohrspitz (Bodensee),20.80,40,415,10.5,182,292,112,,25,76,9
+21.7,Di,Kaiserstrand–Rohrspitz (Bodensee),20.80,38,445,11.7,204,282,116,,27,80,9
+21.7,Di,Casal Palocco–Pontile Ostia,10.96,19,244,12.8,222,311,122,,27,82,9
+22.7,Mi,Kaiserstrand–Rohrspitz (Bodensee),20.80,38,449,11.9,206,505,116,,27,77,9
+22.7,Mi,Greifensee,14.61,30,288,9.7,169,290,110,84,,70,9
+23.7,Do,Kaiserstrand–Rohrspitz (Bodensee),20.80,38,442,11.6,202,282,118,,27,78,9
+24.7,Fr,Lichtenstein Castle–Killer,32.96,73,649,8.9,155,277,106,285,26,69,9
+25.7,Sa,Cologne Lunchbreak,26.07,51,532,10.3,180,263,110,102,26,74,9
+26.7,So,Lechradweg Grießau–Weißenbach (Tirol),28.35,53,497,9.5,165,276,107,91,26,71,9
+28.7,Di,Wien Donauinsel Nord 10k+,11.64,21,254,12.1,210,282,116,,27,81,10
+29.7,Mi,Widnau–Widnau,17.30,32,360,11.3,196,258,116,,29,78,10
+29.7,Mi,Cologne Lunchbreak,11.47,27,252,9.2,161,239,104,78,29,70,10
+30.7,Do,St.Margarethen–Bregenz–Lochau,15.40,29,318,11.1,193,253,110,,32,78,10
+30.7,Do,Casal Palocco–Pontile Ostia,10.97,21,218,10.6,185,263,116,,31,76,10
+31.7,Fr,Ferney-Voltaire–Divonne-les-Bains,15.08,34,352,10.3,180,296,111,134,30,73,10
+1.8,Sa,Bavarian Tour Dachau–Ismaning,20.58,39,416,10.7,186,271,110,44,28,76,10
+1.8,Sa,Greifensee,14.60,30,289,9.7,169,256,110,84,30,74,10
+2.8,So,Wien Donauinsel Nord 10k+,11.64,22,236,10.7,186,263,108,,29,76,10
+2.8,So,Lechradweg Grießau–Weißenbach (Tirol),14.49,26,245,9.3,161,248,108,24,30,70,10
+3.8,Mo,St.Margarethen–Bregenz–Lochau,15.40,28,323,11.3,198,272,114,33,30,77,11
+3.8,Mo,Bora Bora Matira–Vaitape,14.21,26,294,11.2,195,298,115,17,,78,11
+3.8,Mo,Évian–Grenze Schweiz,10.24,20,224,11.2,196,338,120,33,30,76,11
+4.8,Di,Widnau–Widnau,17.29,32,361,11.3,197,303,116,30,30,77,11
+5.8,Mi,Bavarian Tour Dachau–Ismaning,20.58,39,424,11.0,192,312,113,44,31,76,11
+6.8,Do,Wien New Danube Riverbed,20.95,40,414,10.2,178,338,110,46,30,76,11
+7.8,Fr,Kaiserstrand–Rohrspitz (Bodensee),20.80,38,436,11.3,197,287,120,50,,78,11
+9.8,So,Widnau–Widnau,17.29,32,367,11.6,203,432,122,30,30,79,11
+9.8,So,Pfänder–Bregenz downhill,10.96,12,126,10.1,176,257,110,6,28,71,11
+10.8,Mo,Ferney-Voltaire–Divonne-les-Bains,15.08,34,350,10.2,178,248,108,134,31,73,12
+11.8,Di,Kaiserstrand–Rohrspitz (Bodensee),20.80,41,398,9.7,169,282,122,50,30,72,12
+13.8,Do,St.Margarethen–Bregenz–Lochau,15.40,28,323,11.3,197,277,119,33,29,79,12
+13.8,Do,Bora Bora Matira–Vaitape,14.21,27,287,10.8,188,275,120,17,29,77,12
+14.8,Fr,Radl Ring München Dachau–Ismaning,20.58,38,427,11.2,195,312,118,44,31,76,12
+15.8,Sa,Cologne Lunchbreak,26.07,53,518,9.8,171,272,114,102,30,71,12
+16.8,So,St.Margarethen–Bregenz–Lochau,15.40,28,321,11.2,196,263,114,33,30,78,12

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W/kg Verteilung – Männer 60 Jahre</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#0f0f0f;color:#e8e6e0;
+  min-height:100vh;padding:28px 22px;
+  max-width:720px;margin:0 auto;
+}
+.eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#555;margin-bottom:8px;}
+h1{font-size:24px;font-weight:300;letter-spacing:-0.02em;margin-bottom:4px;}
+h1 strong{font-weight:600;color:#a78bfa;}
+.meta{font-size:13px;color:#555;margin-bottom:28px;line-height:1.6;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:28px;}
+.kpi{background:#1a1a1a;border:0.5px solid #2a2a2a;border-radius:10px;padding:13px 15px;}
+.kpi-lbl{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.kpi-val{font-size:20px;font-weight:500;}
+.kpi.you{border-color:#a78bfa55;background:#1a1528;}
+.kpi.you .kpi-val{color:#a78bfa;}
+.kpi.you .kpi-lbl{color:#7c5cbf;}
+
+.chart-card{background:#141414;border:0.5px solid #222;border-radius:14px;padding:20px 20px 14px;margin-bottom:14px;}
+.chart-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+.chart-wrap{position:relative;width:100%;}
+
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;}
+.li{display:flex;align-items:center;gap:7px;font-size:12px;color:#666;}
+.sq{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:14px;}
+.cat{background:#141414;border:0.5px solid #222;border-radius:8px;padding:10px 13px;}
+.cat-lbl{font-size:11px;color:#555;margin-bottom:4px;}
+.cat-val{font-size:13px;font-weight:500;color:#e8e6e0;}
+.cat-pct{font-size:12px;color:#444;margin-top:1px;}
+.cat.you-cat{border-color:#a78bfa55;background:#1a1528;}
+.cat.you-cat .cat-lbl{color:#7c5cbf;}
+.cat.you-cat .cat-val{color:#a78bfa;}
+
+.note{font-size:12px;color:#3a3a3a;border-top:0.5px solid #1e1e1e;padding-top:14px;margin-top:4px;line-height:1.65;}
+.note a{color:#555;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">Referenzwerte · Männer 60–65 Jahre · Fahrradergometer</div>
+<h1>Du bei <strong>2.73 W/kg</strong></h1>
+<p class="meta">
+  Maximale Leistung im Stufentest · Normwerte nach DGK / Löllgen-Tabelle<br>
+  Basis: 60–64-jährige Männer, Ø Körpergewicht 80 kg · Quelle: medizinio.de / DGK 2025
+</p>
+
+<div class="kpi-row">
+  <div class="kpi you">
+    <div class="kpi-lbl">Dein Wert</div>
+    <div class="kpi-val">2.73 W/kg</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Ø Normbereich</div>
+    <div class="kpi-val">1.7–2.3 W/kg</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Dein Perzentil</div>
+    <div class="kpi-val">~85.</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Kategorie</div>
+    <div class="kpi-val">Sehr gut</div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">W/kg Verteilung · Männer 60–65 Jahre (n ≈ 1000, simuliert aus DGK-Normwerten)</div>
+  <div class="chart-wrap" style="height:260px">
+    <canvas id="hist" role="img" aria-label="Histogramm W/kg Verteilung für 60-65-jährige Männer. Helmut bei 2.73 W/kg im oberen Bereich.">
+      Verteilung von 0.8 bis 3.2 W/kg, Gipfel bei 1.8-2.0, Helmut bei 2.73.
+    </canvas>
+  </div>
+  <div class="legend">
+    <div class="li"><div class="sq" style="background:#2a2a6a"></div>Unterdurchschnittlich (&lt;1.5 W/kg)</div>
+    <div class="li"><div class="sq" style="background:#1D6B5E"></div>Normal (1.5–2.3 W/kg)</div>
+    <div class="li"><div class="sq" style="background:#5B3A8A"></div>Gut (2.3–2.6 W/kg)</div>
+    <div class="li"><div class="sq" style="background:#a78bfa"></div>Sehr gut (&gt;2.6 W/kg)</div>
+    <div class="li"><div class="sq" style="background:#f87171;border-radius:50%"></div>Du (2.73 W/kg)</div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Kategorien im Vergleich</div>
+  <div class="cat-grid">
+    <div class="cat">
+      <div class="cat-lbl">Unterdurchschnittlich</div>
+      <div class="cat-val">&lt; 1.5 W/kg</div>
+      <div class="cat-pct">~20% der Männer</div>
+    </div>
+    <div class="cat">
+      <div class="cat-lbl">Durchschnittlich</div>
+      <div class="cat-val">1.5–1.9 W/kg</div>
+      <div class="cat-pct">~35% der Männer</div>
+    </div>
+    <div class="cat">
+      <div class="cat-lbl">Überdurchschnittlich</div>
+      <div class="cat-val">1.9–2.3 W/kg</div>
+      <div class="cat-pct">~25% der Männer</div>
+    </div>
+    <div class="cat">
+      <div class="cat-lbl">Gut</div>
+      <div class="cat-val">2.3–2.6 W/kg</div>
+      <div class="cat-pct">~12% der Männer</div>
+    </div>
+    <div class="cat you-cat">
+      <div class="cat-lbl">⭐ Du bist hier</div>
+      <div class="cat-val">2.73 W/kg</div>
+      <div class="cat-pct">~85. Perzentil</div>
+    </div>
+    <div class="cat">
+      <div class="cat-lbl">Exzellent</div>
+      <div class="cat-val">&gt; 2.8 W/kg</div>
+      <div class="cat-pct">~5% der Männer</div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  Normwerte basieren auf DGK-Sollwerttabellen (Löllgen) für 60–64-jährige Männer: 135–180W bei Ø 80kg = 1.69–2.25 W/kg. 
+  Verteilung simuliert aus Populationsdaten (Gauß-Kurve, μ=1.9, σ=0.38). 
+  Bisoprolol dämpft HF-Anstieg — tatsächliche kardiale Belastung bei 300W war höher als Puls 120 suggeriert. 
+  Kein ärztlicher Rat. Quellen: medizinio.de, DGK 2025.
+</div>
+
+<script>
+const gc='rgba(255,255,255,0.05)';
+const tc='rgba(255,255,255,0.35)';
+
+// Simulate distribution: mean=1.9, sd=0.38, bins 0.6..3.4 step 0.2
+const bins=[];
+for(let v=0.6;v<=3.4;v=Math.round((v+0.2)*10)/10) bins.push(Math.round(v*10)/10);
+
+// Normal distribution
+function normal(x,mu,sd){return Math.exp(-0.5*((x-mu)/sd)**2)/(sd*Math.sqrt(2*Math.PI));}
+const mu=1.9,sd=0.38;
+const counts=bins.map(b=>Math.round(normal(b,mu,sd)*1000*0.2*100)/100);
+
+// Color each bar
+const colors=bins.map(b=>{
+  if(b<1.5) return 'rgba(42,42,106,0.85)';
+  if(b<2.3) return 'rgba(29,107,94,0.85)';
+  if(b<2.6) return 'rgba(91,58,138,0.85)';
+  return 'rgba(167,139,250,0.85)';
+});
+
+const labels=bins.map(b=>b.toFixed(1));
+const youIdx=bins.findIndex(b=>Math.abs(b-2.7)<0.15);
+
+new Chart(document.getElementById('hist'),{
+  type:'bar',
+  data:{
+    labels,
+    datasets:[
+      {
+        label:'Anzahl Männer',
+        data:counts,
+        backgroundColor:colors,
+        borderColor:colors.map(c=>c.replace('0.85','1')),
+        borderWidth:0.5,
+        borderRadius:3,
+      },
+      {
+        // Du marker as vertical line via scatter
+        label:'Du (2.73)',
+        data:labels.map((_,i)=>i===youIdx?counts[youIdx]+2:null),
+        type:'scatter',
+        pointStyle:'triangle',
+        pointRadius:10,
+        pointBackgroundColor:'#f87171',
+        pointBorderColor:'#f87171',
+        showLine:false,
+      }
+    ]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        callbacks:{
+          title:ctx=>`${ctx[0].label} W/kg`,
+          label:ctx=>ctx.datasetIndex===0?`~${Math.round(ctx.parsed.y*10)} von 1000 Männern`:'← Du bist hier'
+        }
+      },
+      annotation:{},
+    },
+    scales:{
+      x:{
+        grid:{color:gc},
+        ticks:{color:tc,font:{size:11}},
+        title:{display:true,text:'W/kg (maximale Leistung)',color:tc,font:{size:11}}
+      },
+      y:{
+        grid:{color:gc},
+        ticks:{color:tc,font:{size:11}},
+        title:{display:true,text:'relative Häufigkeit',color:tc,font:{size:11}}
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

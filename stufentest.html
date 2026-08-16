@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKG Stufentest</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0f0f0f;
+    color:#e8e6e0;
+    min-height:100vh;
+    padding:32px 24px;
+    max-width:780px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+    color:#666;margin-bottom:10px;
+  }
+  h1{
+    font-size:28px;font-weight:300;letter-spacing:-0.02em;
+    color:#e8e6e0;margin-bottom:4px;line-height:1.2;
+  }
+  h1 strong{font-weight:600;color:#a78bfa;}
+  .meta{font-size:13px;color:#555;margin-bottom:32px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:32px;}
+  .kpi{
+    background:#1a1a1a;border:0.5px solid #2a2a2a;
+    border-radius:10px;padding:14px 16px;
+  }
+  .kpi-lbl{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+  .kpi-val{font-size:22px;font-weight:500;color:#e8e6e0;}
+  .kpi-val span{font-size:13px;font-weight:400;color:#666;margin-left:3px;}
+  .kpi.highlight{border-color:#a78bfa44;background:#1a1528;}
+  .kpi.highlight .kpi-val{color:#a78bfa;}
+
+  .chart-card{
+    background:#141414;border:0.5px solid #222;
+    border-radius:14px;padding:20px 20px 16px;margin-bottom:16px;
+  }
+  .chart-title{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+  .chart-wrap{position:relative;width:100%;}
+
+  .stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px;}
+  .stage{
+    background:#141414;border:0.5px solid #222;
+    border-radius:8px;padding:10px 12px;text-align:center;
+  }
+  .stage-w{font-size:16px;font-weight:500;color:#e8e6e0;}
+  .stage-bpm{font-size:12px;color:#a78bfa;margin-top:2px;}
+  .stage-t{font-size:11px;color:#444;margin-top:1px;}
+  .stage.peak{border-color:#a78bfa88;background:#1a1528;}
+
+  .note{
+    font-size:12px;color:#444;
+    border-top:0.5px solid #1e1e1e;
+    padding-top:16px;margin-top:8px;line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="eyebrow">EKG Stufentest · 1. Juli 2026</div>
+<h1>Maximale Leistung <strong>300 W</strong></h1>
+<p class="meta">65 Jahre · 110 kg · Bisoprolol · Christopeit AX 4000 · Start 50W, +25W alle 2 Min.</p>
+
+<div class="kpi-row">
+  <div class="kpi highlight">
+    <div class="kpi-lbl">Maximale Leistung</div>
+    <div class="kpi-val">300<span>W</span></div>
+  </div>
+  <div class="kpi highlight">
+    <div class="kpi-lbl">W/kg</div>
+    <div class="kpi-val">2.73<span>W/kg</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Max. Puls</div>
+    <div class="kpi-val">120<span>bpm</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Start-Puls</div>
+    <div class="kpi-val">80<span>bpm bei 50W</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Testdauer</div>
+    <div class="kpi-val">22<span>min</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Stufen</div>
+    <div class="kpi-val">11</div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Leistung &amp; Herzfrequenz pro Stufe</div>
+  <div class="chart-wrap" style="height:280px">
+    <canvas id="main" role="img" aria-label="EKG Stufentest: Watt und Herzfrequenz über 11 Stufen von 50W bis 300W">Watt steigt linear von 50 auf 300, Puls von 80 auf 120 bpm.</canvas>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Herzfrequenz-Effizienz (bpm pro Watt)</div>
+  <div class="chart-wrap" style="height:180px">
+    <canvas id="eff" role="img" aria-label="Effizienz: bpm pro Watt nimmt mit steigender Last ab">Effizienz sinkt von 1.6 auf 0.4 bpm/W.</canvas>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">Alle Stufen</div>
+  <div class="stages">
+    <div class="stage"><div class="stage-w">50W</div><div class="stage-bpm">80 bpm</div><div class="stage-t">0–2 min</div></div>
+    <div class="stage"><div class="stage-w">75W</div><div class="stage-bpm">85 bpm</div><div class="stage-t">2–4 min</div></div>
+    <div class="stage"><div class="stage-w">100W</div><div class="stage-bpm">90 bpm</div><div class="stage-t">4–6 min</div></div>
+    <div class="stage"><div class="stage-w">125W</div><div class="stage-bpm">95 bpm</div><div class="stage-t">6–8 min</div></div>
+    <div class="stage"><div class="stage-w">150W</div><div class="stage-bpm">100 bpm</div><div class="stage-t">8–10 min</div></div>
+    <div class="stage"><div class="stage-w">175W</div><div class="stage-bpm">105 bpm</div><div class="stage-t">10–12 min</div></div>
+    <div class="stage"><div class="stage-w">200W</div><div class="stage-bpm">110 bpm</div><div class="stage-t">12–14 min</div></div>
+    <div class="stage"><div class="stage-w">225W</div><div class="stage-bpm">113 bpm</div><div class="stage-t">14–16 min</div></div>
+    <div class="stage"><div class="stage-w">250W</div><div class="stage-bpm">116 bpm</div><div class="stage-t">16–18 min</div></div>
+    <div class="stage"><div class="stage-w">275W</div><div class="stage-bpm">118 bpm</div><div class="stage-t">18–20 min</div></div>
+    <div class="stage peak"><div class="stage-w">300W</div><div class="stage-bpm">120 bpm</div><div class="stage-t">20–22 min</div></div>
+  </div>
+</div>
+
+<div class="note">
+  Puls-Interpolation linear zwischen 80 bpm (50W) und 120 bpm (300W). Bisoprolol dämpft den Herzfrequenzanstieg — reale Belastung höher als bpm suggeriert. W/kg = 300W ÷ 110kg = 2.73 W/kg. Kein ärztlicher Rat.
+</div>
+
+<script>
+const watts = [50,75,100,125,150,175,200,225,250,275,300];
+const bpms  = [80,85,90,95,100,105,110,113,116,118,120];
+const effs  = watts.map((w,i) => +(bpms[i]/w).toFixed(3));
+
+const gc='rgba(255,255,255,0.06)';
+const tc='rgba(255,255,255,0.35)';
+
+// Main chart
+new Chart(document.getElementById('main'),{
+  type:'line',
+  data:{
+    labels:watts.map(w=>w+'W'),
+    datasets:[
+      {
+        label:'Watt',data:watts,
+        borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.08)',
+        borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#a78bfa',
+        fill:true,tension:0.2,yAxisID:'y'
+      },
+      {
+        label:'Puls (bpm)',data:bpms,
+        borderColor:'#f87171',backgroundColor:'rgba(248,113,113,0.06)',
+        borderWidth:2,pointRadius:5,pointBackgroundColor:'#f87171',
+        fill:true,tension:0.3,yAxisID:'y1'
+      }
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{
+        display:true,
+        labels:{color:'rgba(255,255,255,0.5)',font:{size:12},boxWidth:12,padding:20}
+      },
+      tooltip:{callbacks:{
+        label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+(ctx.datasetIndex===1?' bpm':' W')
+      }}
+    },
+    scales:{
+      x:{grid:{color:gc},ticks:{color:tc,font:{size:11}}},
+      y:{
+        position:'left',min:0,max:350,
+        title:{display:true,text:'Watt',color:tc,font:{size:11}},
+        grid:{color:gc},ticks:{color:'#a78bfa',font:{size:11}}
+      },
+      y1:{
+        position:'right',min:60,max:140,
+        title:{display:true,text:'bpm',color:tc,font:{size:11}},
+        grid:{drawOnChartArea:false},ticks:{color:'#f87171',font:{size:11}}
+      }
+    }
+  }
+});
+
+// Efficiency chart
+new Chart(document.getElementById('eff'),{
+  type:'bar',
+  data:{
+    labels:watts.map(w=>w+'W'),
+    datasets:[{
+      label:'bpm/W',data:effs,
+      backgroundColor:watts.map((_,i)=>`rgba(167,139,250,${0.3+i*0.06})`),
+      borderColor:'rgba(167,139,250,0.6)',borderWidth:1,borderRadius:4
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+' bpm/W'}}},
+    scales:{
+      x:{grid:{color:gc},ticks:{color:tc,font:{size:11}}},
+      y:{min:0,max:2,grid:{color:gc},ticks:{color:tc,font:{size:11}},
+         title:{display:true,text:'bpm pro Watt',color:tc,font:{size:11}}}
+    }
+  }
+});
+</script>
+</body>
+</html>

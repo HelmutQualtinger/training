@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)file:///Users/haraldbeker/Downloads/training_dashboard_19.html -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Dashboard W1–W11</title>
+<script src="./training_files/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeecea;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.06);
+  --C1:#185FA5;--C2:#1D9E75;--C3:#BA7517;--C4:#533AB7;
+  --C5:#A32D2D;--C6:#6B21A8;--C7:#0F766E;
+  --radius:10px;--radius-lg:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--surface:#242421;--surface2:#2e2e2b;
+  --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
+  --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.06);
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px;max-width:960px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{font-size:21px;font-weight:500;margin-bottom:3px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:24px}
+.metric{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.metric-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.metric-val{font-size:20px;font-weight:500}
+.metric-val span{font-size:12px;font-weight:400;color:var(--text3);margin-left:2px}
+.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:6px 16px;border-radius:20px;border:0.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--text2)}
+.tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.sec{display:none}
+.sec.on{display:block}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 14px;margin-bottom:14px}
+.section-lbl{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
+.dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;width:100%}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 6px;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+th.r,td.r{text-align:right}
+td{padding:7px 6px;border-bottom:0.5px solid var(--border2);color:var(--text)}
+tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
+.wk{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;padding:10px 6px 3px;color:var(--text3)}
+.rec-row td{background:rgba(186,117,23,0.07)}
+.note{background:var(--surface2);border-left:3px solid #A32D2D;border-radius:0 var(--radius) var(--radius) 0;padding:11px 14px;font-size:13px;color:var(--text2);margin-bottom:20px}
+.note strong{color:var(--text)}
+.phases{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.phase{background:var(--surface);border:0.5px solid var(--border);border-left:3px solid var(--C1);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start}
+.phase.done{border-left-color:var(--C2)}
+.phase.next{border-left-color:var(--C3)}
+.phase-title{font-size:13px;font-weight:500}
+.phase-sub{font-size:12px;color:var(--text2);margin-top:1px}
+.ps{font-size:11px;font-weight:500;padding:2px 8px;border-radius:5px;display:inline-block;margin-top:5px}
+.ps-done{background:#E1F5EE;color:#085041}
+.ps-next{background:#FAEEDA;color:#633806}
+.ps-later{background:var(--surface2);color:var(--text3)}
+.phase-detail{font-size:13px;color:var(--text2)}
+.footer{font-size:12px;color:var(--text3);margin-top:24px;padding-top:16px;border-top:0.5px solid var(--border)}
+</style>
+</head>
+<body>
+
+<h1>Ergometer Trainingsauswertung</h1>
+<p class="sub">25. Mai – 7. August 2026 · Woche 1–11 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
+
+<div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
+
+<div class="metrics">
+  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">99</div></div>
+  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">30716<span>kcal</span></div></div>
+  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3071<span>min</span></div></div>
+  <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">10.0</div></div>
+  <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~176<span>W</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">16.8<span>💪</span></div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="show(&#39;daily&#39;,this)">Täglich</button>
+  <button class="tab active" onclick="show(&#39;weekly&#39;,this)">Wöchentlich</button>
+  <button class="tab" onclick="show(&#39;table&#39;,this)">Tabelle</button>
+  <button class="tab" onclick="show(&#39;plan&#39;,this)">Plan 200W</button>
+</div>
+
+<!-- TÄGLICH -->
+<div id="daily" class="sec">
+  <div class="card" style="margin-bottom:12px">
+    <div class="section-lbl">Ø Watt pro Tag</div>
+    <div class="legend">
+      <div class="li"><div class="dot" style="background:var(--C1)"></div>W1</div>
+      <div class="li"><div class="dot" style="background:var(--C2)"></div>W2</div>
+      <div class="li"><div class="dot" style="background:var(--C3)"></div>W3</div>
+      <div class="li"><div class="dot" style="background:var(--C4)"></div>W4</div>
+      <div class="li"><div class="dot" style="background:var(--C5)"></div>W5</div>
+      <div class="li"><div class="dot" style="background:var(--C6)"></div>W6</div>
+      <div class="li"><div class="dot" style="background:var(--C7)"></div>W7</div>
+      <div class="li"><div class="dot" style="background:#DB2777"></div>W8</div>
+      <div class="li"><div class="dot" style="background:#0891B2"></div>W9</div>
+      <div class="li"><div class="dot" style="background:#65A30D"></div>W10</div>
+      <div class="li"><div class="dot" style="background:#EA580C"></div>W11</div>
+      <div class="li"><div class="dot" style="background:#7C3AED"></div>W12</div>
+      <div class="li"><div class="dot" style="background:rgba(136,135,128,0.2)"></div>Ruhetag</div>
+    </div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Ø Watt pro Trainingstag.</canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="section-lbl">Kalorien pro Tag</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cKcal" role="img" aria-label="kcal pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">kcal-Summe pro Trainingstag.</canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="section-lbl">Trainingszeit pro Tag</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Trainingsminuten pro Tag.</canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="section-lbl">Max-Puls pro Tag</div>
+    <div class="legend"><div class="li"><div class="dot" style="background:#A32D2D;opacity:.6"></div>Limit 130</div></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Maximale Herzfrequenz pro Tag.</canvas></div>
+  </div>
+</div>
+
+<!-- WÖCHENTLICH -->
+<div id="weekly" class="sec on">
+  <div class="card">
+    <div class="section-lbl">Kalorien &amp; Minuten pro Woche</div>
+    <div class="legend" id="wkLegend"><div class="li"><div class="dot" style="background:#185FA5"></div>W1 · 1575 kcal · 176 min</div><div class="li"><div class="dot" style="background:#1D9E75"></div>W2 · 2555 kcal · 289 min</div><div class="li"><div class="dot" style="background:#BA7517"></div>W3 · 2110 kcal · 229 min</div><div class="li"><div class="dot" style="background:#533AB7"></div>W4 · 2140 kcal · 234 min</div><div class="li"><div class="dot" style="background:#A32D2D"></div>W5 · 1173 kcal · 119 min</div><div class="li"><div class="dot" style="background:#6B21A8"></div>W6 · 2106 kcal · 210 min</div><div class="li"><div class="dot" style="background:#0F766E"></div>W7 · 3248 kcal · 317 min</div><div class="li"><div class="dot" style="background:#DB2777"></div>W8 · 3315 kcal · 320 min</div><div class="li"><div class="dot" style="background:#0891B2"></div>W9 · 3961 kcal · 380 min</div><div class="li"><div class="dot" style="background:#65A30D"></div>W10 · 2940 kcal · 281 min</div><div class="li"><div class="dot" style="background:#EA580C"></div>W11 · 2969 kcal · 267 min</div><div class="li"><div class="dot" style="background:#7C3AED"></div>W12 · 2303 kcal · 221 min</div></div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cWeekKcal" role="img" aria-label="Kalorien und Minuten pro Woche" height="480" style="display: block; box-sizing: border-box; height: 240px; width: 883px;" width="1766">Wochenübersicht.</canvas></div>
+  </div>
+  <div class="card">
+    <div class="section-lbl">Ø Watt pro Woche (Hover: + kcal/min)</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;" width="1766">Ø Watt pro Woche.</canvas></div>
+  </div>
+  <div class="card">
+    <div class="section-lbl">Kumulative Kalorien</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cKum" role="img" aria-label="Kumulative Kalorien" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;" width="1766">Kumulative Kalorien über alle Tage.</canvas></div>
+  </div>
+</div>
+
+<!-- TABELLE -->
+<div id="table" class="sec">
+  <div class="card">
+    <div class="section-lbl">Alle Trainingseinheiten · 🟡 ≥10 kcal/min</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Tag</th><th>Datum</th>
+          <th class="r">Dauer</th><th class="r">kcal</th>
+          <th class="r">kcal/min</th><th class="r">Watt</th>
+          <th class="r">Max HF</th><th class="r">RR Ruhe</th><th class="r">RR n. Training</th><th class="r">RR Abend</th><th class="r">kum.</th><th>Notiz</th>
+        </tr></thead>
+        <tbody id="tb"><tr><td colspan="13" class="wk" style="color:#185FA5">Woche 1 · 25.5–31.5</td></tr><tr>
+    <td style="color:var(--text3)">1</td><td>Mo</td><td>25.5</td>
+    <td class="r">36 min</td>
+    <td class="r" style="font-weight:500">330</td>
+    <td class="r" style="">9.2</td>
+    <td class="r">~160W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">330</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">2</td><td>Mi</td><td>27.5</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">270</td>
+    <td class="r" style="">9</td>
+    <td class="r">~157W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">600</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">3</td><td>Do</td><td>28.5</td>
+    <td class="r">50 min</td>
+    <td class="r" style="font-weight:500">400</td>
+    <td class="r" style="">8</td>
+    <td class="r">~140W</td>
+    <td class="r">117 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">1.000</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">4</td><td>Fr</td><td>29.5</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">270</td>
+    <td class="r" style="">9</td>
+    <td class="r">~157W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">1.270</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">5</td><td>Sa</td><td>30.5</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">305</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.2 🟡</td>
+    <td class="r">~178W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">1.575</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr><td colspan="13" class="wk" style="color:#1D9E75">Woche 2 · 1.6–7.6</td></tr><tr>
+    <td style="color:var(--text3)">6</td><td>Mo</td><td>1.6</td>
+    <td class="r">53 min</td>
+    <td class="r" style="font-weight:500">500</td>
+    <td class="r" style="">9.4</td>
+    <td class="r">~164W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">2.075</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">7</td><td>Di</td><td>2.6</td>
+    <td class="r">42 min</td>
+    <td class="r" style="font-weight:500">350</td>
+    <td class="r" style="">8.3</td>
+    <td class="r">~145W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">2.425</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">8</td><td>Do</td><td>4.6</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">350</td>
+    <td class="r" style="">8.8</td>
+    <td class="r">~153W</td>
+    <td class="r">117 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">2.775</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">9</td><td>Fr</td><td>5.6</td>
+    <td class="r">42 min</td>
+    <td class="r" style="font-weight:500">355</td>
+    <td class="r" style="">8.5</td>
+    <td class="r">~148W</td>
+    <td class="r">123 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">3.130</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">9b</td><td>Fr</td><td>5.6</td>
+    <td class="r">8 min</td>
+    <td class="r" style="font-weight:500">50</td>
+    <td class="r" style="">6.2</td>
+    <td class="r">~108W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">3.180</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">10</td><td>Sa</td><td>6.6</td>
+    <td class="r">32 min</td>
+    <td class="r" style="font-weight:500">300</td>
+    <td class="r" style="">9.4</td>
+    <td class="r">~164W</td>
+    <td class="r">117 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">3.480</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">10b</td><td>Sa</td><td>6.6</td>
+    <td class="r">12 min</td>
+    <td class="r" style="font-weight:500">100</td>
+    <td class="r" style="">8.3</td>
+    <td class="r">~145W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">3.580</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">11</td><td>So</td><td>7.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">280</td>
+    <td class="r" style="">9.3</td>
+    <td class="r">~162W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">3.860</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">11b</td><td>So</td><td>7.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">270</td>
+    <td class="r" style="">9</td>
+    <td class="r">~157W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">4.130</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr><td colspan="13" class="wk" style="color:#BA7517">Woche 3 · 8.6–14.6</td></tr><tr>
+    <td style="color:var(--text3)">12</td><td>Di</td><td>9.6</td>
+    <td class="r">46 min</td>
+    <td class="r" style="font-weight:500">350</td>
+    <td class="r" style="">7.6</td>
+    <td class="r">~133W</td>
+    <td class="r">107 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">4.480</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">13</td><td>Mi</td><td>10.6</td>
+    <td class="r">31 min</td>
+    <td class="r" style="font-weight:500">300</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">~169W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">4.780</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">13b</td><td>Mi</td><td>10.6</td>
+    <td class="r">10 min</td>
+    <td class="r" style="font-weight:500">110</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11 🟡</td>
+    <td class="r">~192W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">4.890</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">14</td><td>Do</td><td>11.6</td>
+    <td class="r">31 min</td>
+    <td class="r" style="font-weight:500">300</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">~169W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">5.190</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">14b</td><td>Do</td><td>11.6</td>
+    <td class="r">10 min</td>
+    <td class="r" style="font-weight:500">110</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11 🟡</td>
+    <td class="r">~192W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">5.300</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">15</td><td>Fr</td><td>12.6</td>
+    <td class="r">41 min</td>
+    <td class="r" style="font-weight:500">350</td>
+    <td class="r" style="">8.5</td>
+    <td class="r">~148W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">5.650</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">15b</td><td>Fr</td><td>12.6</td>
+    <td class="r">7 min</td>
+    <td class="r" style="font-weight:500">50</td>
+    <td class="r" style="">7.1</td>
+    <td class="r">~124W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">5.700</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">16</td><td>So</td><td>14.6</td>
+    <td class="r">33 min</td>
+    <td class="r" style="font-weight:500">320</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">~169W</td>
+    <td class="r">117 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">6.020</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">16b</td><td>So</td><td>14.6</td>
+    <td class="r">20 min</td>
+    <td class="r" style="font-weight:500">220</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11 🟡</td>
+    <td class="r">~192W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">6.240</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr><td colspan="13" class="wk" style="color:#533AB7">Woche 4 · 15.6–21.6</td></tr><tr>
+    <td style="color:var(--text3)">17</td><td>Di</td><td>16.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">260</td>
+    <td class="r" style="">8.7</td>
+    <td class="r">~152W</td>
+    <td class="r">113 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">6.500</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">17b</td><td>Di</td><td>16.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">260</td>
+    <td class="r" style="">8.7</td>
+    <td class="r">~152W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">6.760</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">18</td><td>Mi</td><td>17.6</td>
+    <td class="r">20 min</td>
+    <td class="r" style="font-weight:500">208</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.4 🟡</td>
+    <td class="r">~181W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">6.968</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">18b</td><td>Mi</td><td>17.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">312</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.4 🟡</td>
+    <td class="r">~181W</td>
+    <td class="r">114 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">7.280</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">19</td><td>Do</td><td>18.6</td>
+    <td class="r">46 min</td>
+    <td class="r" style="font-weight:500">400</td>
+    <td class="r" style="">8.7</td>
+    <td class="r">~152W</td>
+    <td class="r">107 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">7.680</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">20</td><td>Fr</td><td>19.6</td>
+    <td class="r">20 min</td>
+    <td class="r" style="font-weight:500">174</td>
+    <td class="r" style="">8.7</td>
+    <td class="r">~152W</td>
+    <td class="r">104 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">7.854</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">20b</td><td>Fr</td><td>19.6</td>
+    <td class="r">26 min</td>
+    <td class="r" style="font-weight:500">226</td>
+    <td class="r" style="">8.7</td>
+    <td class="r">~152W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">8.080</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">21</td><td>Sa</td><td>20.6</td>
+    <td class="r">32 min</td>
+    <td class="r" style="font-weight:500">300</td>
+    <td class="r" style="">9.4</td>
+    <td class="r">~164W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">8.380</td>
+    <td style="font-size:11px;color:var(--text3)">Erholung 🌿</td></tr><tr><td colspan="13" class="wk" style="color:#A32D2D">Woche 5 · 22.6–28.6</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">22</td><td>Mo</td><td>22.6</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">308</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">~180W</td>
+    <td class="r">111 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/65/87</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">8.688</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">23</td><td>Di</td><td>23.6</td>
+    <td class="r">44 min</td>
+    <td class="r" style="font-weight:500">400</td>
+    <td class="r" style="">9.1</td>
+    <td class="r">~159W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">110/70/84</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">9.088</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">24</td><td>Mi</td><td>24.6</td>
+    <td class="r">45 min</td>
+    <td class="r" style="font-weight:500">465</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">~180W</td>
+    <td class="r">108 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">9.553</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr><td colspan="13" class="wk" style="color:#6B21A8">Woche 6 · 29.6–5.7</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">25</td><td>Mi</td><td>1.7</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">342</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.4 🟡</td>
+    <td class="r">~199W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">135/88/77</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">110/75/93</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">9.895</td>
+    <td style="font-size:11px;color:var(--text3)">Pyramide 9-12-9</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">ST</td><td>Mi</td><td>1.7</td>
+    <td class="r">22 min</td>
+    <td class="r" style="font-weight:500">220</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10 🟡</td>
+    <td class="r">~174W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">10.115</td>
+    <td style="font-size:11px;color:var(--text3)">🏆 Stufentest 50→300W</td></tr><tr>
+    <td style="color:var(--text3)">26</td><td>Do</td><td>2.7</td>
+    <td class="r">45 min</td>
+    <td class="r" style="font-weight:500">422</td>
+    <td class="r" style="">9.4</td>
+    <td class="r">~164W</td>
+    <td class="r">111 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">100/68/72</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">10.537</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">27</td><td>Do</td><td>2.7</td>
+    <td class="r">18 min</td>
+    <td class="r" style="font-weight:500">154</td>
+    <td class="r" style="">8.6</td>
+    <td class="r">~150W</td>
+    <td class="r">106 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">105/76/83</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">10.691</td>
+    <td style="font-size:11px;color:var(--text3)">Stufentest 50→250W</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">28</td><td>Fr</td><td>3.7</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">412</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">~180W</td>
+    <td class="r">117 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">102/70/87</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">11.103</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">29</td><td>Fr</td><td>3.7</td>
+    <td class="r">10 min</td>
+    <td class="r" style="font-weight:500">130</td>
+    <td class="r" style="color:#BA7517;font-weight:500">13 🟡</td>
+    <td class="r">~227W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">11.233</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr>
+    <td style="color:var(--text3)">30</td><td>Sa</td><td>4.7</td>
+    <td class="r">45 min</td>
+    <td class="r" style="font-weight:500">426</td>
+    <td class="r" style="">9.5</td>
+    <td class="r">~166W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">125/75/75</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">110/74/89</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">11.659</td>
+    <td style="font-size:11px;color:var(--text3)">Pyramide · 27°C</td></tr><tr><td colspan="13" class="wk" style="color:#0F766E">Woche 7 · 6.7–12.7</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">31</td><td>Di</td><td>7.7</td>
+    <td class="r">36 min</td>
+    <td class="r" style="font-weight:500">412</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.4 🟡</td>
+    <td class="r">~199W</td>
+    <td class="r">112 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">130/80/71</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/71/88</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">12.071</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">32</td><td>Di</td><td>7.7</td>
+    <td class="r">11 min</td>
+    <td class="r" style="font-weight:500">110</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10 🟡</td>
+    <td class="r">~174W</td>
+    <td class="r">106 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">125/75/72</td>
+    <td class="r" style="color:var(--text3)">12.181</td>
+    <td style="font-size:11px;color:var(--text3)">23:45</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">33</td><td>Mi</td><td>8.7</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">400</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10 🟡</td>
+    <td class="r">~174W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">125/85/80</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">113/73/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">12.581</td>
+    <td style="font-size:11px;color:var(--text3)">Stufen 8-9-10-9 · 80rpm</td></tr><tr>
+    <td style="color:var(--text3)">34</td><td>Mi</td><td>8.7</td>
+    <td class="r">22 min</td>
+    <td class="r" style="font-weight:500">210</td>
+    <td class="r" style="">9.5</td>
+    <td class="r">~166W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">120/75/72</td>
+    <td class="r" style="color:var(--text3)">12.791</td>
+    <td style="font-size:11px;color:var(--text3)">22:00</td></tr><tr>
+    <td style="color:var(--text3)">35</td><td>Do</td><td>9.7</td>
+    <td class="r">45 min</td>
+    <td class="r" style="font-weight:500">430</td>
+    <td class="r" style="">9.6</td>
+    <td class="r">~167W</td>
+    <td class="r">125 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">126/77/71</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">128/80/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">13.221</td>
+    <td style="font-size:11px;color:var(--text3)">Stufen 8-...-8 · ⚠️ Bisoprolol+Candesartan vergessen</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">36</td><td>Do</td><td>9.7</td>
+    <td class="r">15 min</td>
+    <td class="r" style="font-weight:500">175</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.7 🟡</td>
+    <td class="r">~204W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">13.396</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">37</td><td>Fr</td><td>10.7</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">410</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.2 🟡</td>
+    <td class="r">~178W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">135/85/73</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">120/80/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">13.806</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">38</td><td>Fr</td><td>10.7</td>
+    <td class="r">20 min</td>
+    <td class="r" style="font-weight:500">205</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.2 🟡</td>
+    <td class="r">~178W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">14.011</td>
+    <td style="font-size:11px;color:var(--text3)">18:20 · 28.6°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">39</td><td>Sa</td><td>11.7</td>
+    <td class="r">22 min</td>
+    <td class="r" style="font-weight:500">236</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.7 🟡</td>
+    <td class="r">~187W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">130/85/75</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">125/84/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">14.247</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap Donauinsel · 11.64km · Max 256W</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">40</td><td>Sa</td><td>11.7</td>
+    <td class="r">22 min</td>
+    <td class="r" style="font-weight:500">220</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10 🟡</td>
+    <td class="r">~174W</td>
+    <td class="r">114 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">14.467</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · 11.18km · Max 233W</td></tr><tr>
+    <td style="color:var(--text3)">41</td><td>Sa</td><td>11.7</td>
+    <td class="r">18 min</td>
+    <td class="r" style="font-weight:500">147</td>
+    <td class="r" style="">8.2</td>
+    <td class="r">~143W</td>
+    <td class="r">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">14.614</td>
+    <td style="font-size:11px;color:var(--text3)">Stufentest 50→250W</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">42</td><td>So</td><td>12.7</td>
+    <td class="r">26 min</td>
+    <td class="r" style="font-weight:500">293</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">~197W</td>
+    <td class="r">128 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">135/85/84</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">14.907</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · 14.21km · Max 315W 🏆</td></tr><tr><td colspan="13" class="wk" style="color:#DB2777">Woche 8 · 13.7–19.7</td></tr><tr>
+    <td style="color:var(--text3)">43</td><td>Mo</td><td>13.7</td>
+    <td class="r">34 min</td>
+    <td class="r" style="font-weight:500">325</td>
+    <td class="r" style="">9.6</td>
+    <td class="r">167W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">135/85/77</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">130/84/81</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">15.232</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · 17.29km · Ø76rpm · Max 265W · 29°C</td></tr><tr>
+    <td style="color:var(--text3)">44</td><td>Mo</td><td>13.7</td>
+    <td class="r">23 min</td>
+    <td class="r" style="font-weight:500">222</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">169W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">107/69/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">15.454</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · 11.64km · Ø79rpm · Max 230W · 29°C</td></tr><tr>
+    <td style="color:var(--text3)">45</td><td>Di</td><td>14.7</td>
+    <td class="r">39 min</td>
+    <td class="r" style="font-weight:500">370</td>
+    <td class="r" style="">9.6</td>
+    <td class="r">166W</td>
+    <td class="r">128 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">130/77/77</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">107/72/83</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">15.824</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Cern · 17.17km · Ø76rpm · Max 333W 🏆 · 144Hm · 29°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">46</td><td>Di</td><td>14.7</td>
+    <td class="r">19 min</td>
+    <td class="r" style="font-weight:500">198</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">180W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">125/78/79</td>
+    <td class="r" style="color:var(--text3)">16.022</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · NYC Central Park · 9.85km · Ø81rpm · Max 237W · 30°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">47</td><td>Mi</td><td>15.7</td>
+    <td class="r">31 min</td>
+    <td class="r" style="font-weight:500">337</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.9 🟡</td>
+    <td class="r">189W</td>
+    <td class="r">119 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">112/76/87</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">16.359</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Rohrspitz–Dornbirn · 16.05km · Ø80rpm · Max 263W · 29°C</td></tr><tr>
+    <td style="color:var(--text3)">48</td><td>Mi</td><td>15.7</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">289</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">170W</td>
+    <td class="r">113 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">114/71/87</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">130/81/71</td>
+    <td class="r" style="color:var(--text3)">16.648</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Greifensee · 14.61km · Ø75rpm · Max 309W · 84Hm · 29°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">49</td><td>Do</td><td>16.7</td>
+    <td class="r">33 min</td>
+    <td class="r" style="font-weight:500">342</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.4 🟡</td>
+    <td class="r">181W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">110/74/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">16.990</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Widnau–Widnau · 17.29km · Ø80rpm · Max 297W · 28°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">50</td><td>Do</td><td>16.7</td>
+    <td class="r">21 min</td>
+    <td class="r" style="font-weight:500">247</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.5 🟡</td>
+    <td class="r">201W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/75/85</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">17.237</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Wien Donauinsel · 11.64km · Ø84rpm · Max 277W · 29°C</td></tr><tr>
+    <td style="color:var(--text3)">–</td><td>Fr</td><td>17.7</td>
+    <td class="r">–</td>
+    <td class="r" style="font-weight:500">null</td>
+    <td class="r" style="">null</td>
+    <td class="r">–</td>
+    <td class="r">–</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">133/84/71 (12:00)</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">17.237</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">51</td><td>Sa</td><td>18.7</td>
+    <td class="r">29 min</td>
+    <td class="r" style="font-weight:500">318</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.1 🟡</td>
+    <td class="r">193W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">150/99/70 ⚠️</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">118/75/87</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">17.555</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø81rpm · Max 271W · 27°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">52</td><td>Sa</td><td>18.7</td>
+    <td class="r">21 min</td>
+    <td class="r" style="font-weight:500">251</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.9 🟡</td>
+    <td class="r">206W</td>
+    <td class="r">119 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">125/81/86</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">135/80/70</td>
+    <td class="r" style="color:var(--text3)">17.806</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø83rpm · Max 292W 🏆 · 26°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">53</td><td>So</td><td>19.7</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">416</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.5 🟡</td>
+    <td class="r">183W</td>
+    <td class="r">111 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">116/74/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">18.222</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 272W · 27°C</td></tr><tr><td colspan="13" class="wk" style="color:#0891B2">Woche 9 · 20.7–26.7</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">54</td><td>Mo</td><td>20.7</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">415</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.5 🟡</td>
+    <td class="r">182W</td>
+    <td class="r">112 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">135/85/67</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">114/71/74</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">120/76/76</td>
+    <td class="r" style="color:var(--text3)">18.637</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 292W · 25°C · Intervall 1:2 (1min Belastung/2min Erholung) erste 30min</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">55</td><td>Di</td><td>21.7</td>
+    <td class="r">38 min</td>
+    <td class="r" style="font-weight:500">445</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.7 🟡</td>
+    <td class="r">204W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">145/85/70 ⚠️</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">122/78/84</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">19.082</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø80rpm · Max 282W 🏆 · 27°C · anstrengender als Vortag (höherer Ruhe-RR)</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">56</td><td>Di</td><td>21.7</td>
+    <td class="r">19 min</td>
+    <td class="r" style="font-weight:500">244</td>
+    <td class="r" style="color:#BA7517;font-weight:500">12.8 🟡</td>
+    <td class="r">222W</td>
+    <td class="r">122 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">133/84/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">19.326</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Casal Palocco–Pontile Ostia · 10.96km · Ø82rpm · Max 311W 🏆 · 27°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">57</td><td>Mi</td><td>22.7</td>
+    <td class="r">38 min</td>
+    <td class="r" style="font-weight:500">449</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.9 🟡</td>
+    <td class="r">206W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">140/86/71</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">125/80/85</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">19.775</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø77rpm · Max 505W = Sensor-Ausreißer (ignorieren) · 27°C</td></tr><tr>
+    <td style="color:var(--text3)">58</td><td>Mi</td><td>22.7</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">288</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">169W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">137/82/69</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">20.063</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Greifensee · 14.61km · Ø70rpm · Max 290W · 84Hm · entspannte Strecke nach Anstrengung mittags</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">59</td><td>Do</td><td>23.7</td>
+    <td class="r">38 min</td>
+    <td class="r" style="font-weight:500">442</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.6 🟡</td>
+    <td class="r">202W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/75/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">20.505</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 282W · 27°C</td></tr><tr>
+    <td style="color:var(--text3)">60</td><td>Fr</td><td>24.7</td>
+    <td class="r">73 min</td>
+    <td class="r" style="font-weight:500">649</td>
+    <td class="r" style="">8.9</td>
+    <td class="r">155W</td>
+    <td class="r">106 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">147/89/74 ⚠️</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/73/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">21.154</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Lichtenstein Castle–Killer · 32.96km · Ø69rpm · Max 277W · 285Hm · Ausdauerstrecke starke Anstiege · 26°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">61</td><td>Sa</td><td>25.7</td>
+    <td class="r">51 min</td>
+    <td class="r" style="font-weight:500">532</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">180W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">125/73/81</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">143/83/76 ⚠️</td>
+    <td class="r" style="color:var(--text3)">21.686</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Cologne Lunchbreak · 26.07km · Ø74rpm · Max 263W · 102Hm · 26°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">62</td><td>So</td><td>26.7</td>
+    <td class="r">53 min</td>
+    <td class="r" style="font-weight:500">497</td>
+    <td class="r" style="">9.5</td>
+    <td class="r">165W</td>
+    <td class="r">107 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">124/78/80</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">22.183</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 28.35km · Ø71rpm · Max 276W · 91Hm · 26°C · subjektiv sehr anstrengend trotz moderater Watt</td></tr><tr><td colspan="13" class="wk" style="color:#65A30D">Woche 10 · 27.7–2.8</td></tr><tr>
+    <td style="color:var(--text3)">–</td><td>Mo</td><td>27.7</td>
+    <td class="r">–</td>
+    <td class="r" style="font-weight:500">null</td>
+    <td class="r" style="">null</td>
+    <td class="r">–</td>
+    <td class="r">–</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">142/82/72 ⚠️</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">22.183</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">63</td><td>Di</td><td>28.7</td>
+    <td class="r">21 min</td>
+    <td class="r" style="font-weight:500">254</td>
+    <td class="r" style="color:#BA7517;font-weight:500">12.1 🟡</td>
+    <td class="r">210W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">118/77/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">22.437</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø81rpm · Max 282W · 27°C · kurz&amp;knackig, Zerrung re. Oberschenkel (Ursache: Dauer, nicht Krafteinsatz) fast abgeklungen</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">64</td><td>Mi</td><td>29.7</td>
+    <td class="r">32 min</td>
+    <td class="r" style="font-weight:500">360</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">196W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">111/68/83</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">22.797</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Widnau–Widnau · 17.30km · Ø78rpm · Max 258W · 29°C</td></tr><tr>
+    <td style="color:var(--text3)">65</td><td>Mi</td><td>29.7</td>
+    <td class="r">27 min</td>
+    <td class="r" style="font-weight:500">252</td>
+    <td class="r" style="">9.2</td>
+    <td class="r">161W</td>
+    <td class="r">104 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">100/65/76</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">23.049</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Cologne Lunchbreak · 11.47km · Ø70rpm · Max 239W · 78Hm · 29°C · müde, geringere Belastung</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">66</td><td>Do</td><td>30.7</td>
+    <td class="r">29 min</td>
+    <td class="r" style="font-weight:500">318</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.1 🟡</td>
+    <td class="r">193W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">135/85/67</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">126/73/85</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">23.367</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 253W · 32°C sehr heiss/schwül · Puls trotz Hitze niedrig geblieben</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">67</td><td>Do</td><td>30.7</td>
+    <td class="r">21 min</td>
+    <td class="r" style="font-weight:500">218</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.6 🟡</td>
+    <td class="r">185W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">128/76/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">23.585</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Casal Palocco–Pontile Ostia · 10.97km · Ø76rpm · Max 263W · 31°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">68</td><td>Fr</td><td>31.7</td>
+    <td class="r">34 min</td>
+    <td class="r" style="font-weight:500">352</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.3 🟡</td>
+    <td class="r">180W</td>
+    <td class="r">111 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">136/80/68</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">121/76/78</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">23.937</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 296W · 134Hm · 30°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">69</td><td>Sa</td><td>1.8</td>
+    <td class="r">39 min</td>
+    <td class="r" style="font-weight:500">416</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.7 🟡</td>
+    <td class="r">186W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">132/76/83</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">24.353</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 271W · 44Hm · 28°C · ⚠️ gestern abend Blutdruckmedikamente vergessen</td></tr><tr>
+    <td style="color:var(--text3)">70</td><td>Sa</td><td>1.8</td>
+    <td class="r">30 min</td>
+    <td class="r" style="font-weight:500">289</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">169W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">135/78/87</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">24.642</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Greifensee · 14.60km · Ø74rpm · Max 256W · 84Hm · 30°C</td></tr><tr>
+    <td style="color:var(--text3)">71</td><td>So</td><td>2.8</td>
+    <td class="r">22 min</td>
+    <td class="r" style="font-weight:500">236</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.7 🟡</td>
+    <td class="r">186W</td>
+    <td class="r">108 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">155/90/70 ⚠️</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">137/84/78</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">24.878</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø76rpm · Max 263W · 29°C · nicht ganz fit, muskuläre Begrenzung</td></tr><tr>
+    <td style="color:var(--text3)">72</td><td>So</td><td>2.8</td>
+    <td class="r">26 min</td>
+    <td class="r" style="font-weight:500">245</td>
+    <td class="r" style="">9.3</td>
+    <td class="r">161W</td>
+    <td class="r">108 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">131/83/76</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">25.123</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 14.49km · Ø70rpm · Max 248W · 24Hm · 30°C · nur 51% Strecke</td></tr><tr><td colspan="13" class="wk" style="color:#EA580C">Woche 11 · 3.8–9.8</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">73</td><td>Mo</td><td>3.8</td>
+    <td class="r">28 min</td>
+    <td class="r" style="font-weight:500">323</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">198W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">137/87/70</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">121/71/85</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">25.446</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø77rpm · Max 272W · 33Hm · 30°C</td></tr><tr>
+    <td style="color:var(--text3)">74</td><td>Mo</td><td>3.8</td>
+    <td class="r">26 min</td>
+    <td class="r" style="font-weight:500">294</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.2 🟡</td>
+    <td class="r">195W</td>
+    <td class="r">115 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">25.740</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Bora Bora Matira–Vaitape · 14.21km · Ø78rpm · Max 298W · 17Hm</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">75</td><td>Mo</td><td>3.8</td>
+    <td class="r">20 min</td>
+    <td class="r" style="font-weight:500">224</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.2 🟡</td>
+    <td class="r">196W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">121/85/84</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">25.964</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Évian–Grenze Schweiz · 10.24km · Ø76rpm · Max 338W 🏆 · 33Hm · 30°C · HIT 90sek locker/30sek hart</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">76</td><td>Di</td><td>4.8</td>
+    <td class="r">32 min</td>
+    <td class="r" style="font-weight:500">361</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">197W</td>
+    <td class="r">116 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">118/75/89</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">26.325</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Widnau–Widnau · 17.29km · Ø77rpm · Max 303W · 30Hm · 30°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">77</td><td>Mi</td><td>5.8</td>
+    <td class="r">39 min</td>
+    <td class="r" style="font-weight:500">424</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11 🟡</td>
+    <td class="r">192W</td>
+    <td class="r">113 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">132/77/74</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">108/71/88</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">26.749</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">78</td><td>Do</td><td>6.8</td>
+    <td class="r">40 min</td>
+    <td class="r" style="font-weight:500">414</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.2 🟡</td>
+    <td class="r">178W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">115/75/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">27.163</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Wien New Danube Riverbed · 20.95km · Ø76rpm · Max 338W 🏆 · 46Hm · 30°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">79</td><td>Fr</td><td>7.8</td>
+    <td class="r">38 min</td>
+    <td class="r" style="font-weight:500">436</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">197W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">140/85/85</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">109/72/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">27.599</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 287W · 50Hm · Temp(?) sehr anstrengend aber motiviert</td></tr><tr>
+    <td style="color:var(--text3)">–</td><td>Sa</td><td>8.8</td>
+    <td class="r">–</td>
+    <td class="r" style="font-weight:500">null</td>
+    <td class="r" style="">null</td>
+    <td class="r">–</td>
+    <td class="r">–</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">144/84/73</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">27.599</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">80</td><td>So</td><td>9.8</td>
+    <td class="r">32 min</td>
+    <td class="r" style="font-weight:500">367</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.6 🟡</td>
+    <td class="r">203W</td>
+    <td class="r">122 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">128/74/94</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">27.966</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Widnau–Widnau · 17.29km · Ø79rpm · Max 432W = Sensor-Ausreißer (ignorieren) · 30Hm · 30°C</td></tr><tr>
+    <td style="color:var(--text3)">81</td><td>So</td><td>9.8</td>
+    <td class="r">12 min</td>
+    <td class="r" style="font-weight:500">126</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.1 🟡</td>
+    <td class="r">176W</td>
+    <td class="r">110 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">120/75/85</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">28.092</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Pfänder–Bregenz downhill · 10.96km · Ø71rpm · Max 257W · 6Hm · 28°C</td></tr><tr><td colspan="13" class="wk" style="color:#7C3AED">Woche 12 · ab 10.8</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">82</td><td>Mo</td><td>10.8</td>
+    <td class="r">34 min</td>
+    <td class="r" style="font-weight:500">350</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.2 🟡</td>
+    <td class="r">178W</td>
+    <td class="r">108 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">155/100/74 ⚠️ (Mittag)</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">122/74/78</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">28.442</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 248W · 134Hm · 31°C</td></tr><tr>
+    <td style="color:var(--text3)">83</td><td>Di</td><td>11.8</td>
+    <td class="r">41 min</td>
+    <td class="r" style="font-weight:500">398</td>
+    <td class="r" style="">9.7</td>
+    <td class="r">169W</td>
+    <td class="r">122 bpm</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">132/82/85</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">103/78/84</td>
+    <td class="r" style="color:#7C3AED;font-weight:500;font-size:11px">125/72/75</td>
+    <td class="r" style="color:var(--text3)">28.840</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø72rpm · Max 282W · 50Hm · 30°C · gut angefangen, nach 1. Hälfte eingebrochen, 40min trotzdem durchgehalten</td></tr><tr>
+    <td style="color:var(--text3)">–</td><td>Mi</td><td>12.8</td>
+    <td class="r">–</td>
+    <td class="r" style="font-weight:500">null</td>
+    <td class="r" style="">null</td>
+    <td class="r">–</td>
+    <td class="r">–</td>
+    <td class="r" style="color:#185FA5;font-weight:500;font-size:11px">137/82/70 (16:42)</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">28.840</td>
+    <td style="font-size:11px;color:var(--text3)"></td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">84</td><td>Do</td><td>13.8</td>
+    <td class="r">28 min</td>
+    <td class="r" style="font-weight:500">323</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.3 🟡</td>
+    <td class="r">197W</td>
+    <td class="r">119 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">138/76/90</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">29.163</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø79rpm · Max 277W · 33Hm · 29°C · ⚠️ gestern abend Blutdruckmedikamente vergessen</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">85</td><td>Do</td><td>13.8</td>
+    <td class="r">27 min</td>
+    <td class="r" style="font-weight:500">287</td>
+    <td class="r" style="color:#BA7517;font-weight:500">10.8 🟡</td>
+    <td class="r">188W</td>
+    <td class="r">120 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">134/81/92</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">29.450</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Bora Bora Matira–Vaitape · 14.21km · Ø77rpm · Max 275W · 17Hm · 29°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">86</td><td>Fr</td><td>14.8</td>
+    <td class="r">38 min</td>
+    <td class="r" style="font-weight:500">427</td>
+    <td class="r" style="color:#BA7517;font-weight:500">11.2 🟡</td>
+    <td class="r">195W</td>
+    <td class="r">118 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">118/74/91</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">29.877</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Radl Ring München Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C</td></tr><tr class="rec-row">
+    <td style="color:var(--text3)">87</td><td>Sa</td><td>15.8</td>
+    <td class="r">53 min</td>
+    <td class="r" style="font-weight:500">518</td>
+    <td class="r" style="">9.8</td>
+    <td class="r">171W</td>
+    <td class="r">114 bpm</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:#A32D2D;font-weight:500;font-size:11px">121/71/86</td>
+    <td class="r" style="color:var(--text3)">–</td>
+    <td class="r" style="color:var(--text3)">30.395</td>
+    <td style="font-size:11px;color:var(--text3)">Kinomap · Cologne Lunchbreak · 26.07km · Ø71rpm · Max 272W · 102Hm · 30°C · sehr anstrengend</td></tr></tbody>
+        <tfoot><tr>
+          <td colspan="3">Total</td>
+          <td class="r">3043 min</td><td class="r">30395</td>
+          <td class="r">9.95</td><td class="r">~174 W</td>
+          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">30395</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN -->
+<div id="plan" class="sec">
+  <div class="phases">
+    <div class="phase done">
+      <div>
+        <div class="phase-title">Phase 1 &amp; 2</div>
+        <div class="phase-sub">Wochen 1–8</div>
+        <div class="ps ps-done">✓ abgeschlossen</div>
+      </div>
+      <div class="phase-detail">Reaktivierung &amp; Aufbau · 156W → <strong>181W Ø</strong> · 64 Einheiten · 18.222 kcal · Spitzen bis 333W (Kinomap Cern)</div>
+    </div>
+    <div class="phase next">
+      <div>
+        <div class="phase-title">Phase 3</div>
+        <div class="phase-sub">Wochen 9–11</div>
+        <div class="ps ps-next">→ jetzt</div>
+      </div>
+      <div class="phase-detail"><strong>185–190W</strong> über 35–40 Min. am Stück · Borg 13–14 · <strong>starker Einstieg (&gt;200W)</strong> aktiviert Kreislauf schneller, danach absinken lassen auf Zielbereich · HF unter 120 bpm · kurze 20-Min-Einheiten als hochintensive Ergänzung (200W+)</div>
+    </div>
+    <div class="phase">
+      <div>
+        <div class="phase-title">Phase 4</div>
+        <div class="phase-sub">Wochen 12–14</div>
+        <div class="ps ps-later">geplant</div>
+      </div>
+      <div class="phase-detail"><strong>195W</strong> über 35 Min. · Wochenziel 2.500 kcal · bei Borg ≤14 weiter steigern</div>
+    </div>
+    <div class="phase">
+      <div>
+        <div class="phase-title">Phase 5 — Ziel</div>
+        <div class="phase-sub">Wochen 15–17</div>
+        <div class="ps ps-later">geplant</div>
+      </div>
+      <div class="phase-detail"><strong>200W über 30–40 Min.</strong> · Kardiologen-Check empfohlen · Gewichtsreduktion via Volumen &gt;2.000 kcal/Woche</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-lbl">Watt-Progression: Erreicht vs. Ziel</div>
+    <div class="legend">
+      <div class="li"><div class="dot" style="background:#1D9E75"></div>Erreicht (Ø/Woche)</div>
+      <div class="li"><div class="dot" style="background:#BA7517"></div>Ziel</div>
+    </div>
+    <div class="chart-wrap" style="height:220px"><canvas id="cPlan" role="img" aria-label="Watt-Progression" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0">Watt-Progression bis 200W.</canvas></div>
+  </div>
+</div>
+
+<div class="footer">
+  Geräte: Christopeit AX 4000 · Kinomap · Medikamente: Bisoprolol, Candesartan, Lercanidipine · Watt = (kcal/min × 1000 × 4.185) / 60 × 0.25 · Kein ärztlicher Rat.
+</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('active');
+}
+
+const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+const gc=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+const tc=isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.45)';
+const C1='#185FA5',C2='#1D9E75',C3='#BA7517',C4='#533AB7',C5='#A32D2D',C6='#6B21A8',C7='#0F766E';
+const wkColors={1:C1,2:C2,3:C3,4:C4,5:C5,6:C6,7:C7,8:'#DB2777',9:'#0891B2',10:'#65A30D',11:'#EA580C',12:'#7C3AED'};
+
+// RAW SESSION DATA: [date, watt, kcal, hf, week]
+const raw=[
+  ['25.5',160,330,120,1],
+  ['27.5',157,270,118,1],
+  ['28.5',140,400,117,1],
+  ['29.5',157,270,118,1],
+  ['30.5',178,305,120,1],
+  ['1.6',164,500,120,2],
+  ['2.6',145,350,115,2],
+  ['4.6',153,350,117,2],
+  ['5.6',148,355,123,2],
+  ['5.6',108,50,null,2],
+  ['6.6',164,300,117,2],
+  ['6.6',145,100,null,2],
+  ['7.6',162,280,115,2],
+  ['7.6',157,270,115,2],
+  ['9.6',133,350,107,3],
+  ['10.6',169,300,120,3],
+  ['10.6',192,110,118,3],
+  ['11.6',169,300,118,3],
+  ['11.6',192,110,null,3],
+  ['12.6',148,350,115,3],
+  ['12.6',124,50,null,3],
+  ['14.6',169,320,117,3],
+  ['14.6',192,220,null,3],
+  ['16.6',152,260,113,4],
+  ['16.6',152,260,null,4],
+  ['17.6',181,208,115,4],
+  ['17.6',181,312,114,4],
+  ['18.6',152,400,107,4],
+  ['19.6',152,174,104,4],
+  ['19.6',152,226,null,4],
+  ['20.6',164,300,110,4],
+  ['22.6',180,308,111,5],
+  ['23.6',159,400,116,5],
+  ['24.6',180,465,108,5],
+  ['1.7',199,342,120,6],
+  ['1.7',174,220,120,6],
+  ['2.7',164,422,111,6],
+  ['2.7',150,154,106,6],
+  ['3.7',180,412,117,6],
+  ['3.7',227,130,116,6],
+  ['4.7',166,426,110,6],
+  ['7.7',199,412,112,7],
+  ['7.7',174,110,106,7],
+  ['8.7',174,400,null,7],
+  ['8.7',166,210,null,7],
+  ['9.7',167,430,125,7],
+  ['9.7',204,175,120,7],
+  ['10.7',178,410,115,7],
+  ['10.7',178,205,null,7],
+  ['11.7',187,236,116,7],
+  ['11.7',174,220,114,7],
+  ['11.7',143,147,null,7],
+  ['12.7',197,293,128,7],
+
+  ['13.7',167,325,120,8],
+
+  ['13.7',169,222,116,8],
+
+  ['14.7',166,370,128,8],
+
+  ['14.7',180,198,110,8],
+
+  ['15.7',189,337,119,8],
+
+  ['15.7',170,289,113,8],
+
+  ['16.7',181,342,116,8],
+
+  ['16.7',201,247,116,8],
+
+  ['18.7',193,318,116,8],
+
+  ['18.7',206,251,119,8],
+
+  ['19.7',183,416,111,8],
+
+  ['20.7',182,415,112,9],
+
+  ['21.7',204,445,116,9],
+
+  ['21.7',222,244,122,9],
+
+  ['22.7',206,449,116,9],
+
+  ['22.7',169,288,110,9],
+
+  ['23.7',202,442,118,9],
+
+  ['24.7',155,649,106,9],
+
+  ['25.7',180,532,110,9],
+
+  ['26.7',165,497,107,9],
+
+  ['28.7',210,254,116,10],
+
+  ['29.7',196,360,116,10],
+
+  ['29.7',161,252,104,10],
+
+  ['30.7',193,318,110,10],
+
+  ['30.7',185,218,116,10],
+
+  ['31.7',180,352,111,10],
+
+  ['1.8',186,416,110,10],
+
+  ['1.8',169,289,110,10],
+
+  ['2.8',186,236,108,10],
+
+  ['2.8',161,245,108,10],
+
+  ['3.8',195,294,115,11],
+
+  ['3.8',198,323,null,11],
+
+  ['3.8',196,224,120,11],
+
+  ['4.8',197,361,116,11],
+
+  ['5.8',192,424,113,11],
+
+  ['6.8',178,414,110,11],
+
+  ['7.8',197,436,120,11],
+
+  ['9.8',203,367,122,11],
+
+  ['9.8',176,126,110,11],
+
+  ['10.8',178,350,108,12],
+
+  ['11.8',169,398,122,12],
+
+  ['13.8',197,323,119,12],
+
+  ['13.8',188,287,120,12],
+
+  ['14.8',195,427,118,12],
+
+  ['15.8',171,518,114,12],
+  ['16.8',196,321,114,12],
+];
+
+// Aggregate per day
+const dayMap={};
+raw.forEach(([d,w,k,p,wk])=>{
+  if(!dayMap[d]) dayMap[d]={watts:[],kcal:0,puls:[],wk};
+  if(w) dayMap[d].watts.push(w);
+  dayMap[d].kcal+=k;
+  if(p) dayMap[d].puls.push(p);
+});
+
+function parseDate(s){const[d,m]=s.split('.');return new Date(2026,parseInt(m)-1,parseInt(d));}
+function formatDate(dt){return `${dt.getDate()}.${dt.getMonth()+1}`;}
+function getWeek(s){
+  const d=parseDate(s);
+  if(d<parseDate('1.6'))return 1;
+  if(d<parseDate('8.6'))return 2;
+  if(d<parseDate('15.6'))return 3;
+  if(d<parseDate('22.6'))return 4;
+  if(d<parseDate('29.6'))return 5;
+  if(d<parseDate('6.7'))return 6;
+  if(d<parseDate('13.7'))return 7;
+  if(d<parseDate('20.7'))return 8;
+  if(d<parseDate('27.7'))return 9;
+  if(d<parseDate('3.8'))return 10;
+  if(d<parseDate('10.8'))return 11;
+  return 12;
+}
+
+const startDate=parseDate('25.5'),endDate=parseDate('16.8');
+const allDays=[];
+for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){allDays.push(formatDate(new Date(d)));}
+
+const N=allDays.length;
+const aggLabels=allDays;
+const aggWatt=allDays.map(d=>{if(!dayMap[d])return null;const v=dayMap[d].watts;return v.length?Math.round(v.reduce((a,b)=>a+b)/v.length):null;});
+const aggKcal=allDays.map(d=>dayMap[d]?dayMap[d].kcal:null);
+const aggPuls=allDays.map(d=>{if(!dayMap[d])return null;const v=dayMap[d].puls;return v.length?Math.max(...v):null;});
+const aggColors=allDays.map(d=>dayMap[d]?wkColors[dayMap[d].wk]:'rgba(136,135,128,0.2)');
+// minutes per day = kcal / kcal-per-min, where kcal-per-min derives from watt: kpm = watt/17.4375
+const aggMin=allDays.map(d=>{
+  if(!dayMap[d]||!dayMap[d].watts.length) return null;
+  const avgWatt=dayMap[d].watts.reduce((a,b)=>a+b)/dayMap[d].watts.length;
+  const kpm=avgWatt/17.4375;
+  return kpm>0 ? Math.round(dayMap[d].kcal/kpm) : null;
+});
+
+const bx={ticks:{color:tc,autoSkip:true,maxRotation:45,font:{size:10}},grid:{color:gc}};
+const by=(lbl,mn,mx)=>({min:mn,max:mx,title:{display:true,text:lbl,font:{size:11},color:tc},ticks:{color:tc,font:{size:11}},grid:{color:gc}});
+const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+
+new Chart(document.getElementById('cWatt'),{type:'bar',data:{labels:aggLabels,datasets:[
+  {data:aggWatt,backgroundColor:aggColors,borderRadius:3},
+  {label:'Ø 167',data:Array(N).fill(167),type:'line',borderColor:'rgba(136,135,128,0.5)',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false}
+]},options:{...baseOpts,scales:{x:bx,y:by('Ø Watt',100,230)}}});
+
+new Chart(document.getElementById('cKcal'),{type:'bar',data:{labels:aggLabels,datasets:[
+  {data:aggKcal,backgroundColor:aggColors,borderRadius:3}
+]},options:{...baseOpts,scales:{x:bx,y:by('kcal',0,700)}}});
+
+new Chart(document.getElementById('cTime'),{type:'bar',data:{labels:aggLabels,datasets:[
+  {data:aggMin,backgroundColor:aggColors,borderRadius:3}
+]},options:{...baseOpts,scales:{x:bx,y:by('Minuten',0,80)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} min`}}}}});
+
+new Chart(document.getElementById('cPuls'),{type:'bar',data:{labels:aggLabels,datasets:[
+  {data:aggPuls,backgroundColor:aggColors,borderRadius:3},
+  {label:'Limit',data:Array(N).fill(130),type:'line',borderColor:'rgba(163,45,45,0.6)',borderWidth:2,borderDash:[4,4],pointRadius:0,fill:false}
+]},options:{...baseOpts,scales:{x:bx,y:by('Max bpm',80,140)}}});
+
+// WEEKLY
+const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624];
+const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249];
+const wkWatt=[156,154,161,160,172,175,179,181,182,182,194,185];
+const wkKpm=[9.0,8.8,9.2,9.2,9.9,10.1,10.2,10.4,10.4,10.5,11.1,10.5];
+const wkLabels=['W1  25.5–31.5','W2  1.6–7.6','W3  8.6–14.6','W4  15.6–21.6','W5  22.6–28.6','W6  29.6–5.7','W7  6.7–12.7','W8  13.7–19.7','W9  20.7–26.7','W10  27.7–2.8','W11  3.8–9.8','W12  ab 10.8'];
+const wkColArr=[C1,C2,C3,C4,C5,C6,C7,'#DB2777','#0891B2','#65A30D','#EA580C','#7C3AED'];
+
+document.getElementById('wkLegend').innerHTML=wkLabels.map((l,i)=>
+  `<div class="li"><div class="dot" style="background:${wkColArr[i]}"></div>${l.split('  ')[0]} · ${wkKcal[i]} kcal · ${wkMin[i]} min</div>`).join('');
+
+new Chart(document.getElementById('cWeekKcal'),{type:'bar',data:{
+  labels:wkLabels,
+  datasets:[
+    {label:'kcal',data:wkKcal,backgroundColor:wkColArr,borderRadius:5,yAxisID:'y'},
+    {label:'min',data:wkMin,backgroundColor:wkColArr.map(c=>c+'44'),borderRadius:5,yAxisID:'y1'}
+]},options:{...baseOpts,scales:{
+  x:{ticks:{color:tc,autoSkip:false,font:{size:10}},grid:{color:gc}},
+  y:{position:'left',title:{display:true,text:'kcal',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}},
+  y1:{position:'right',title:{display:true,text:'min',font:{size:11},color:tc},ticks:{color:tc},grid:{drawOnChartArea:false}}
+}}});
+
+new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
+  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+  datasets:[{data:wkWatt,backgroundColor:wkColArr,borderRadius:5}]
+},options:{...baseOpts,
+  scales:{x:{ticks:{color:tc,autoSkip:false},grid:{color:gc}},y:{min:130,max:200,title:{display:true,text:'Ø Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const i=ctx.dataIndex;return[`Ø Watt: ${wkWatt[i]}W`,`Ø kcal/min: ${wkKpm[i]}`];}}}}
+}});
+
+// Cumulative per calendar day
+const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,19775,20063,20505,21154,21686,22183,22183,22437,22797,23049,23367,23585,23937,24353,24642,24878,25123,25417,25740,25964,26325,26749,27163,27599,27966,28092,28442,28840,29163,29450,29877,30395];
+const kumMax = Math.ceil(Math.max(...kumData) * 1.08 / 1000) * 1000; // auto-scale: +8% headroom, rounded to nearest 1000
+new Chart(document.getElementById('cKum'),{type:'line',data:{
+  labels:aggLabels,
+  datasets:[{data:kumData,borderColor:C2,backgroundColor:'rgba(29,158,117,0.08)',borderWidth:2,pointRadius:2,pointBackgroundColor:C2,fill:true,tension:0.3}]
+},options:{...baseOpts,scales:{x:bx,y:by('kcal',0,kumMax)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toLocaleString()+' kcal'}}}}});
+
+// PLAN chart
+new Chart(document.getElementById('cPlan'),{type:'line',data:{
+  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13','W14','W15','W16'],
+  datasets:[
+    {label:'Erreicht',data:[156,154,161,160,172,175,179,181,182,182,194,185,null,null,null,null],
+     borderColor:C2,backgroundColor:'rgba(29,158,117,0.10)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:C2,fill:true,tension:0.3},
+    {label:'Ziel',data:[null,null,null,null,null,null,null,181,187,190,190,195,195,195,200,200],
+     borderColor:C3,backgroundColor:'rgba(186,117,23,0.08)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:C3,fill:true,tension:0.3,borderDash:[5,3]},
+    {label:'200W',data:Array(16).fill(200),borderColor:'rgba(83,58,183,0.4)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false}
+  ]
+},options:{...baseOpts,
+  scales:{x:{ticks:{color:tc,autoSkip:false,font:{size:10}},grid:{color:gc}},y:{min:140,max:210,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  plugins:{legend:{display:false}}
+}});
+
+// TABLE
+const rows=[
+  {n:'1', w:1, tag:'Mo', dat:'25.5', dur:'36 min', k:330, kpm:9.2, watt:'~160W', hf:120, kum:330},
+  {n:'2', w:1, tag:'Mi', dat:'27.5', dur:'30 min', k:270, kpm:9.0, watt:'~157W', hf:118, kum:600},
+  {n:'3', w:1, tag:'Do', dat:'28.5', dur:'50 min', k:400, kpm:8.0, watt:'~140W', hf:117, kum:1000},
+  {n:'4', w:1, tag:'Fr', dat:'29.5', dur:'30 min', k:270, kpm:9.0, watt:'~157W', hf:118, kum:1270},
+  {n:'5', w:1, tag:'Sa', dat:'30.5', dur:'30 min', k:305, kpm:10.2, watt:'~178W', hf:120, kum:1575, rec:true},
+  {n:'6', w:2, tag:'Mo', dat:'1.6', dur:'53 min', k:500, kpm:9.4, watt:'~164W', hf:120, kum:2075},
+  {n:'7', w:2, tag:'Di', dat:'2.6', dur:'42 min', k:350, kpm:8.3, watt:'~145W', hf:115, kum:2425},
+  {n:'8', w:2, tag:'Do', dat:'4.6', dur:'40 min', k:350, kpm:8.8, watt:'~153W', hf:117, kum:2775},
+  {n:'9', w:2, tag:'Fr', dat:'5.6', dur:'42 min', k:355, kpm:8.5, watt:'~148W', hf:123, kum:3130},
+  {n:'9b', w:2, tag:'Fr', dat:'5.6', dur:'8 min', k:50, kpm:6.2, watt:'~108W', hf:null, kum:3180},
+  {n:'10', w:2, tag:'Sa', dat:'6.6', dur:'32 min', k:300, kpm:9.4, watt:'~164W', hf:117, kum:3480},
+  {n:'10b', w:2, tag:'Sa', dat:'6.6', dur:'12 min', k:100, kpm:8.3, watt:'~145W', hf:null, kum:3580},
+  {n:'11', w:2, tag:'So', dat:'7.6', dur:'30 min', k:280, kpm:9.3, watt:'~162W', hf:115, kum:3860},
+  {n:'11b', w:2, tag:'So', dat:'7.6', dur:'30 min', k:270, kpm:9.0, watt:'~157W', hf:115, kum:4130},
+  {n:'12', w:3, tag:'Di', dat:'9.6', dur:'46 min', k:350, kpm:7.6, watt:'~133W', hf:107, kum:4480},
+  {n:'13', w:3, tag:'Mi', dat:'10.6', dur:'31 min', k:300, kpm:9.7, watt:'~169W', hf:120, kum:4780},
+  {n:'13b', w:3, tag:'Mi', dat:'10.6', dur:'10 min', k:110, kpm:11.0, watt:'~192W', hf:118, kum:4890, rec:true},
+  {n:'14', w:3, tag:'Do', dat:'11.6', dur:'31 min', k:300, kpm:9.7, watt:'~169W', hf:118, kum:5190},
+  {n:'14b', w:3, tag:'Do', dat:'11.6', dur:'10 min', k:110, kpm:11.0, watt:'~192W', hf:null, kum:5300, rec:true},
+  {n:'15', w:3, tag:'Fr', dat:'12.6', dur:'41 min', k:350, kpm:8.5, watt:'~148W', hf:115, kum:5650},
+  {n:'15b', w:3, tag:'Fr', dat:'12.6', dur:'7 min', k:50, kpm:7.1, watt:'~124W', hf:null, kum:5700},
+  {n:'16', w:3, tag:'So', dat:'14.6', dur:'33 min', k:320, kpm:9.7, watt:'~169W', hf:117, kum:6020},
+  {n:'16b', w:3, tag:'So', dat:'14.6', dur:'20 min', k:220, kpm:11.0, watt:'~192W', hf:null, kum:6240, rec:true},
+  {n:'17', w:4, tag:'Di', dat:'16.6', dur:'30 min', k:260, kpm:8.7, watt:'~152W', hf:113, kum:6500},
+  {n:'17b', w:4, tag:'Di', dat:'16.6', dur:'30 min', k:260, kpm:8.7, watt:'~152W', hf:null, kum:6760},
+  {n:'18', w:4, tag:'Mi', dat:'17.6', dur:'20 min', k:208, kpm:10.4, watt:'~181W', hf:115, kum:6968, rec:true},
+  {n:'18b', w:4, tag:'Mi', dat:'17.6', dur:'30 min', k:312, kpm:10.4, watt:'~181W', hf:114, kum:7280, rec:true},
+  {n:'19', w:4, tag:'Do', dat:'18.6', dur:'46 min', k:400, kpm:8.7, watt:'~152W', hf:107, kum:7680},
+  {n:'20', w:4, tag:'Fr', dat:'19.6', dur:'20 min', k:174, kpm:8.7, watt:'~152W', hf:104, kum:7854},
+  {n:'20b', w:4, tag:'Fr', dat:'19.6', dur:'26 min', k:226, kpm:8.7, watt:'~152W', hf:null, kum:8080},
+  {n:'21', w:4, tag:'Sa', dat:'20.6', dur:'32 min', k:300, kpm:9.4, watt:'~164W', hf:110, kum:8380, note:'Erholung 🌿'},
+  {n:'22', w:5, tag:'Mo', dat:'22.6', dur:'30 min', k:308, kpm:10.3, watt:'~180W', hf:111, kum:8688, rec:true, rr:'115/65/87'},
+  {n:'23', w:5, tag:'Di', dat:'23.6', dur:'44 min', k:400, kpm:9.1, watt:'~159W', hf:116, kum:9088, rr:'110/70/84'},
+  {n:'24', w:5, tag:'Mi', dat:'24.6', dur:'45 min', k:465, kpm:10.3, watt:'~180W', hf:108, kum:9553, rec:true},
+  {n:'25', w:6, tag:'Mi', dat:'1.7', dur:'30 min', k:342, kpm:11.4, watt:'~199W', hf:120, kum:9895, rec:true, rr:'110/75/93', rr_ruhe:'135/88/77', note:'Pyramide 9-12-9'},
+  {n:'ST', w:6, tag:'Mi', dat:'1.7', dur:'22 min', k:220, kpm:10.0, watt:'~174W', hf:120, kum:10115, rec:true, note:'🏆 Stufentest 50→300W'},
+  {n:'26', w:6, tag:'Do', dat:'2.7', dur:'45 min', k:422, kpm:9.4, watt:'~164W', hf:111, kum:10537, rr:'100/68/72'},
+  {n:'27', w:6, tag:'Do', dat:'2.7', dur:'18 min', k:154, kpm:8.6, watt:'~150W', hf:106, kum:10691, rr:'105/76/83', note:'Stufentest 50→250W'},
+  {n:'28', w:6, tag:'Fr', dat:'3.7', dur:'40 min', k:412, kpm:10.3, watt:'~180W', hf:117, kum:11103, rec:true, rr:'102/70/87'},
+  {n:'29', w:6, tag:'Fr', dat:'3.7', dur:'10 min', k:130, kpm:13.0, watt:'~227W', hf:116, kum:11233, rec:true},
+  {n:'30', w:6, tag:'Sa', dat:'4.7', dur:'45 min', k:426, kpm:9.5, watt:'~166W', hf:110, kum:11659, rr_ruhe:'125/75/75', rr:'110/74/89', note:'Pyramide · 27°C'},
+  {n:'31', w:7, tag:'Di', dat:'7.7', dur:'36 min', k:412, kpm:11.4, watt:'~199W', hf:112, kum:12071, rec:true, rr_ruhe:'130/80/71', rr:'115/71/88'},
+  {n:'32', w:7, tag:'Di', dat:'7.7', dur:'11 min', k:110, kpm:10.0, watt:'~174W', hf:106, kum:12181, rec:true, rr_abend:'125/75/72', note:'23:45'},
+  {n:'33', w:7, tag:'Mi', dat:'8.7', dur:'40 min', k:400, kpm:10.0, watt:'~174W', hf:null, kum:12581, rec:true, rr_ruhe:'125/85/80', rr:'113/73/86', note:'Stufen 8-9-10-9 · 80rpm'},
+  {n:'34', w:7, tag:'Mi', dat:'8.7', dur:'22 min', k:210, kpm:9.5, watt:'~166W', hf:null, kum:12791, rr_abend:'120/75/72', note:'22:00'},
+  {n:'35', w:7, tag:'Do', dat:'9.7', dur:'45 min', k:430, kpm:9.6, watt:'~167W', hf:125, kum:13221, rr_ruhe:'126/77/71', rr:'128/80/80', note:'Stufen 8-...-8 · ⚠️ Bisoprolol+Candesartan vergessen'},
+  {n:'36', w:7, tag:'Do', dat:'9.7', dur:'15 min', k:175, kpm:11.7, watt:'~204W', hf:120, kum:13396, rec:true},
+  {n:'37', w:7, tag:'Fr', dat:'10.7', dur:'40 min', k:410, kpm:10.2, watt:'~178W', hf:115, kum:13806, rec:true, rr_ruhe:'135/85/73', rr:'120/80/80'},
+  {n:'38', w:7, tag:'Fr', dat:'10.7', dur:'20 min', k:205, kpm:10.2, watt:'~178W', hf:null, kum:14011, rec:true, note:'18:20 · 28.6°C'},
+  {n:'39', w:7, tag:'Sa', dat:'11.7', dur:'22 min', k:236, kpm:10.7, watt:'~187W', hf:116, kum:14247, rec:true, rr_ruhe:'130/85/75', rr:'125/84/80', note:'Kinomap Donauinsel · 11.64km · Max 256W'},
+  {n:'40', w:7, tag:'Sa', dat:'11.7', dur:'22 min', k:220, kpm:10.0, watt:'~174W', hf:114, kum:14467, rec:true, note:'Kinomap · 11.18km · Max 233W'},
+  {n:'41', w:7, tag:'Sa', dat:'11.7', dur:'18 min', k:147, kpm:8.2, watt:'~143W', hf:null, kum:14614, note:'Stufentest 50→250W'},
+  {n:'42', w:7, tag:'So', dat:'12.7', dur:'26 min', k:293, kpm:11.3, watt:'~197W', hf:128, kum:14907, rec:true, rr:'135/85/84', note:'Kinomap · 14.21km · Max 315W 🏆'},
+  {n:'43', w:8, tag:'Mo', dat:'13.7', dur:'34 min', k:325, kpm:9.6, watt:'167W', hf:120, kum:15232, rr:'130/84/81', rr_ruhe:'135/85/77', note:'Kinomap · 17.29km · Ø76rpm · Max 265W · 29°C'},
+  {n:'44', w:8, tag:'Mo', dat:'13.7', dur:'23 min', k:222, kpm:9.7, watt:'169W', hf:116, kum:15454, rr:'107/69/86', note:'Kinomap · 11.64km · Ø79rpm · Max 230W · 29°C'},
+  {n:'45', w:8, tag:'Di', dat:'14.7', dur:'39 min', k:370, kpm:9.6, watt:'166W', hf:128, kum:15824, rr:'107/72/83', rr_ruhe:'130/77/77', note:'Kinomap · Cern · 17.17km · Ø76rpm · Max 333W 🏆 · 144Hm · 29°C'},
+  {n:'46', w:8, tag:'Di', dat:'14.7', dur:'19 min', k:198, kpm:10.3, watt:'180W', hf:110, kum:16022, rec:true, rr_abend:'125/78/79', note:'Kinomap · NYC Central Park · 9.85km · Ø81rpm · Max 237W · 30°C'},
+  {n:'47', w:8, tag:'Mi', dat:'15.7', dur:'31 min', k:337, kpm:10.9, watt:'189W', hf:119, kum:16359, rec:true, rr:'112/76/87', note:'Kinomap · Rohrspitz–Dornbirn · 16.05km · Ø80rpm · Max 263W · 29°C'},
+  {n:'48', w:8, tag:'Mi', dat:'15.7', dur:'30 min', k:289, kpm:9.7, watt:'170W', hf:113, kum:16648, rr:'114/71/87', rr_abend:'130/81/71', note:'Kinomap · Greifensee · 14.61km · Ø75rpm · Max 309W · 84Hm · 29°C'},
+  {n:'49', w:8, tag:'Do', dat:'16.7', dur:'33 min', k:342, kpm:10.4, watt:'181W', hf:116, kum:16990, rec:true, rr:'110/74/86', note:'Kinomap · Widnau–Widnau · 17.29km · Ø80rpm · Max 297W · 28°C'},
+  {n:'50', w:8, tag:'Do', dat:'16.7', dur:'21 min', k:247, kpm:11.5, watt:'201W', hf:116, kum:17237, rec:true, rr:'115/75/85', note:'Kinomap · Wien Donauinsel · 11.64km · Ø84rpm · Max 277W · 29°C'},
+  {n:'–', w:8, tag:'Fr', dat:'17.7', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:17237, rr_ruhe:'133/84/71 (12:00)'},
+  {n:'51', w:8, tag:'Sa', dat:'18.7', dur:'29 min', k:318, kpm:11.1, watt:'193W', hf:116, kum:17555, rec:true, rr:'118/75/87', rr_ruhe:'150/99/70 ⚠️', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø81rpm · Max 271W · 27°C'},
+  {n:'52', w:8, tag:'Sa', dat:'18.7', dur:'21 min', k:251, kpm:11.9, watt:'206W', hf:119, kum:17806, rec:true, rr:'125/81/86', rr_abend:'135/80/70', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø83rpm · Max 292W 🏆 · 26°C'},
+  {n:'53', w:8, tag:'So', dat:'19.7', dur:'40 min', k:416, kpm:10.5, watt:'183W', hf:111, kum:18222, rec:true, rr:'116/74/80', note:'Kinomap · Kaserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 272W · 27°C'},
+  {n:'54', w:9, tag:'Mo', dat:'20.7', dur:'40 min', k:415, kpm:10.5, watt:'182W', hf:112, kum:18637, rec:true, rr:'114/71/74', rr_ruhe:'135/85/67', rr_abend:'120/76/76', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 292W · 25°C · Intervall 1:2 (1min Belastung/2min Erholung) erste 30min'},
+  {n:'55', w:9, tag:'Di', dat:'21.7', dur:'38 min', k:445, kpm:11.7, watt:'204W', hf:116, kum:19082, rec:true, rr:'122/78/84', rr_ruhe:'145/85/70 ⚠️', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø80rpm · Max 282W 🏆 · 27°C · anstrengender als Vortag (höherer Ruhe-RR)'},
+  {n:'56', w:9, tag:'Di', dat:'21.7', dur:'19 min', k:244, kpm:12.8, watt:'222W', hf:122, kum:19326, rec:true, rr:'133/84/80', note:'Kinomap · Casal Palocco–Pontile Ostia · 10.96km · Ø82rpm · Max 311W 🏆 · 27°C'},
+  {n:'57', w:9, tag:'Mi', dat:'22.7', dur:'38 min', k:449, kpm:11.9, watt:'206W', hf:116, kum:19775, rec:true, rr:'125/80/85', rr_ruhe:'140/86/71', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø77rpm · Max 505W = Sensor-Ausreißer (ignorieren) · 27°C'},
+  {n:'58', w:9, tag:'Mi', dat:'22.7', dur:'30 min', k:288, kpm:9.7, watt:'169W', hf:110, kum:20063, rr_ruhe:'137/82/69', note:'Kinomap · Greifensee · 14.61km · Ø70rpm · Max 290W · 84Hm · entspannte Strecke nach Anstrengung mittags'},
+  {n:'59', w:9, tag:'Do', dat:'23.7', dur:'38 min', k:442, kpm:11.6, watt:'202W', hf:118, kum:20505, rec:true, rr:'115/75/80', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 282W · 27°C'},
+  {n:'60', w:9, tag:'Fr', dat:'24.7', dur:'73 min', k:649, kpm:8.9, watt:'155W', hf:106, kum:21154, rr:'115/73/80', rr_ruhe:'147/89/74 ⚠️', note:'Kinomap · Lichtenstein Castle–Killer · 32.96km · Ø69rpm · Max 277W · 285Hm · Ausdauerstrecke starke Anstiege · 26°C'},
+  {n:'61', w:9, tag:'Sa', dat:'25.7', dur:'51 min', k:532, kpm:10.3, watt:'180W', hf:110, kum:21686, rec:true, rr:'125/73/81', rr_abend:'143/83/76 ⚠️', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø74rpm · Max 263W · 102Hm · 26°C'},
+  {n:'62', w:9, tag:'So', dat:'26.7', dur:'53 min', k:497, kpm:9.5, watt:'165W', hf:107, kum:22183, rec:true, rr:'124/78/80', note:'Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 28.35km · Ø71rpm · Max 276W · 91Hm · 26°C · subjektiv sehr anstrengend trotz moderater Watt'},
+  {n:'–', w:10, tag:'Mo', dat:'27.7', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:22183, rr_ruhe:'142/82/72 ⚠️'},
+  {n:'63', w:10, tag:'Di', dat:'28.7', dur:'21 min', k:254, kpm:12.1, watt:'210W', hf:116, kum:22437, rec:true, rr:'118/77/86', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø81rpm · Max 282W · 27°C · kurz&knackig, Zerrung re. Oberschenkel (Ursache: Dauer, nicht Krafteinsatz) fast abgeklungen'},
+  {n:'64', w:10, tag:'Mi', dat:'29.7', dur:'32 min', k:360, kpm:11.3, watt:'196W', hf:116, kum:22797, rec:true, rr:'111/68/83', note:'Kinomap · Widnau–Widnau · 17.30km · Ø78rpm · Max 258W · 29°C'},
+  {n:'65', w:10, tag:'Mi', dat:'29.7', dur:'27 min', k:252, kpm:9.2, watt:'161W', hf:104, kum:23049, rr:'100/65/76', note:'Kinomap · Cologne Lunchbreak · 11.47km · Ø70rpm · Max 239W · 78Hm · 29°C · müde, geringere Belastung'},
+  {n:'66', w:10, tag:'Do', dat:'30.7', dur:'29 min', k:318, kpm:11.1, watt:'193W', hf:110, kum:23367, rec:true, rr:'126/73/85', rr_ruhe:'135/85/67', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 253W · 32°C sehr heiss/schwül · Puls trotz Hitze niedrig geblieben'},
+  {n:'67', w:10, tag:'Do', dat:'30.7', dur:'21 min', k:218, kpm:10.6, watt:'185W', hf:116, kum:23585, rec:true, rr:'128/76/86', note:'Kinomap · Casal Palocco–Pontile Ostia · 10.97km · Ø76rpm · Max 263W · 31°C'},
+  {n:'68', w:10, tag:'Fr', dat:'31.7', dur:'34 min', k:352, kpm:10.3, watt:'180W', hf:111, kum:23937, rec:true, rr:'121/76/78', rr_ruhe:'136/80/68', note:'Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 296W · 134Hm · 30°C'},
+  {n:'69', w:10, tag:'Sa', dat:'1.8', dur:'39 min', k:416, kpm:10.7, watt:'186W', hf:110, kum:24353, rec:true, rr:'132/76/83', note:'Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 271W · 44Hm · 28°C · ⚠️ gestern abend Blutdruckmedikamente vergessen'},
+  {n:'70', w:10, tag:'Sa', dat:'1.8', dur:'30 min', k:289, kpm:9.7, watt:'169W', hf:110, kum:24642, rr:'135/78/87', note:'Kinomap · Greifensee · 14.60km · Ø74rpm · Max 256W · 84Hm · 30°C'},
+  {n:'71', w:10, tag:'So', dat:'2.8', dur:'22 min', k:236, kpm:10.7, watt:'186W', hf:108, kum:24878, rr:'137/84/78', rr_ruhe:'155/90/70 ⚠️', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø76rpm · Max 263W · 29°C · nicht ganz fit, muskuläre Begrenzung'},
+  {n:'72', w:10, tag:'So', dat:'2.8', dur:'26 min', k:245, kpm:9.3, watt:'161W', hf:108, kum:25123, rr:'131/83/76', note:'Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 14.49km · Ø70rpm · Max 248W · 24Hm · 30°C · nur 51% Strecke'},
+  {n:'73', w:11, tag:'Mo', dat:'3.8', dur:'28 min', k:323, kpm:11.3, watt:'198W', hf:115, kum:25446, rec:true, rr:'121/71/85', rr_ruhe:'137/87/70', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø77rpm · Max 272W · 33Hm · 30°C'},
+  {n:'74', w:11, tag:'Mo', dat:'3.8', dur:'26 min', k:294, kpm:11.2, watt:'195W', hf:115, kum:25740, note:'Kinomap · Bora Bora Matira–Vaitape · 14.21km · Ø78rpm · Max 298W · 17Hm'},
+  {n:'75', w:11, tag:'Mo', dat:'3.8', dur:'20 min', k:224, kpm:11.2, watt:'196W', hf:120, kum:25964, rec:true, rr:'121/85/84', note:'Kinomap · Évian–Grenze Schweiz · 10.24km · Ø76rpm · Max 338W 🏆 · 33Hm · 30°C · HIT 90sek locker/30sek hart'},
+  {n:'76', w:11, tag:'Di', dat:'4.8', dur:'32 min', k:361, kpm:11.3, watt:'197W', hf:116, kum:26325, rec:true, rr:'118/75/89', note:'Kinomap · Widnau–Widnau · 17.29km · Ø77rpm · Max 303W · 30Hm · 30°C'},
+  {n:'77', w:11, tag:'Mi', dat:'5.8', dur:'39 min', k:424, kpm:11.0, watt:'192W', hf:113, kum:26749, rec:true, rr:'108/71/88', rr_ruhe:'132/77/74', note:'Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C'},
+  {n:'78', w:11, tag:'Do', dat:'6.8', dur:'40 min', k:414, kpm:10.2, watt:'178W', hf:110, kum:27163, rec:true, rr:'115/75/86', note:'Kinomap · Wien New Danube Riverbed · 20.95km · Ø76rpm · Max 338W 🏆 · 46Hm · 30°C'},
+  {n:'79', w:11, tag:'Fr', dat:'7.8', dur:'38 min', k:436, kpm:11.3, watt:'197W', hf:120, kum:27599, rec:true, rr:'109/72/86', rr_ruhe:'140/85/85', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 287W · 50Hm · Temp(?) sehr anstrengend aber motiviert'},
+  {n:'–', w:11, tag:'Sa', dat:'8.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:27599, rr_ruhe:'144/84/73'},
+  {n:'80', w:11, tag:'So', dat:'9.8', dur:'32 min', k:367, kpm:11.6, watt:'203W', hf:122, kum:27966, rec:true, rr:'128/74/94', note:'Kinomap · Widnau–Widnau · 17.29km · Ø79rpm · Max 432W = Sensor-Ausreißer (ignorieren) · 30Hm · 30°C'},
+  {n:'81', w:11, tag:'So', dat:'9.8', dur:'12 min', k:126, kpm:10.1, watt:'176W', hf:110, kum:28092, rr:'120/75/85', note:'Kinomap · Pfänder–Bregenz downhill · 10.96km · Ø71rpm · Max 257W · 6Hm · 28°C'},
+  {n:'82', w:12, tag:'Mo', dat:'10.8', dur:'34 min', k:350, kpm:10.2, watt:'178W', hf:108, kum:28442, rec:true, rr:'122/74/78', rr_ruhe:'155/100/74 ⚠️ (Mittag)', note:'Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 248W · 134Hm · 31°C'},
+  {n:'83', w:12, tag:'Di', dat:'11.8', dur:'41 min', k:398, kpm:9.7, watt:'169W', hf:122, kum:28840, rr:'103/78/84', rr_ruhe:'132/82/85', rr_abend:'125/72/75', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø72rpm · Max 282W · 50Hm · 30°C · gut angefangen, nach 1. Hälfte eingebrochen, 40min trotzdem durchgehalten'},
+  {n:'–', w:12, tag:'Mi', dat:'12.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:28840, rr_ruhe:'137/82/70 (16:42)'},
+  {n:'84', w:12, tag:'Do', dat:'13.8', dur:'28 min', k:323, kpm:11.3, watt:'197W', hf:119, kum:29163, rec:true, rr:'138/76/90', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø79rpm · Max 277W · 33Hm · 29°C · ⚠️ gestern abend Blutdruckmedikamente vergessen'},
+  {n:'85', w:12, tag:'Do', dat:'13.8', dur:'27 min', k:287, kpm:10.8, watt:'188W', hf:120, kum:29450, rec:true, rr:'134/81/92', note:'Kinomap · Bora Bora Matira–Vaitape · 14.21km · Ø77rpm · Max 275W · 17Hm · 29°C'},
+  {n:'86', w:12, tag:'Fr', dat:'14.8', dur:'38 min', k:427, kpm:11.2, watt:'195W', hf:118, kum:29877, rec:true, rr:'118/74/91', note:'Kinomap · Radl Ring München Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C'},
+  {n:'87', w:12, tag:'Sa', dat:'15.8', dur:'53 min', k:518, kpm:9.8, watt:'171W', hf:114, kum:30395, rec:true, rr:'121/71/86', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø71rpm · Max 272W · 102Hm · 30°C · sehr anstrengend'},
+  {n:'88', w:12, tag:'So', dat:'16.8', dur:'28 min', k:321, kpm:11.2, watt:'196W', hf:114, kum:30716, rr_ruhe:'137/85/73', rr:'124/76/89', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 263W · 33Hm · Max 40.6km/h · 30°C'},
+];
+
+const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · ab 10.8'};
+const tb=document.getElementById('tb');
+let lw=0;
+rows.forEach(r=>{
+  if(r.w!==lw){
+    const sep=document.createElement('tr');
+    sep.innerHTML=`<td colspan="13" class="wk" style="color:${wkColors[r.w]}">${wn[r.w]}</td>`;
+    tb.appendChild(sep);
+    lw=r.w;
+  }
+  const tr=document.createElement('tr');
+  if(r.rec) tr.classList.add('rec-row');
+  tr.innerHTML=`
+    <td style="color:var(--text3)">${r.n}</td><td>${r.tag}</td><td>${r.dat}</td>
+    <td class="r">${r.dur}</td>
+    <td class="r" style="font-weight:500">${r.k}</td>
+    <td class="r" style="${r.kpm>=10?'color:#BA7517;font-weight:500':''}">${r.kpm}${r.kpm>=10?' 🟡':''}</td>
+    <td class="r">${r.watt}</td>
+    <td class="r">${r.hf?r.hf+' bpm':'–'}</td>
+    <td class="r" style="${r.rr_ruhe?'color:#185FA5;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr_ruhe||'–'}</td>
+    <td class="r" style="${r.rr?'color:#A32D2D;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr||'–'}</td>
+    <td class="r" style="${r.rr_abend?'color:#7C3AED;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr_abend||'–'}</td>
+    <td class="r" style="color:var(--text3)">${r.kum.toLocaleString()}</td>
+    <td style="font-size:11px;color:var(--text3)">${r.note||''}</td>`;
+  tb.appendChild(tr);
+});
+</script>
+
+
+</body></html>

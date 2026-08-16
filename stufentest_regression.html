@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stufentest – HF Korrelation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#0f0f0f;color:#e8e6e0;
+  min-height:100vh;padding:28px 22px;
+  max-width:700px;margin:0 auto;
+}
+.eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#555;margin-bottom:8px;}
+h1{font-size:24px;font-weight:300;letter-spacing:-0.02em;margin-bottom:4px;}
+h1 strong{font-weight:600;color:#a78bfa;}
+.meta{font-size:13px;color:#555;margin-bottom:26px;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:24px;}
+.kpi{background:#1a1a1a;border:0.5px solid #2a2a2a;border-radius:10px;padding:12px 15px;}
+.kpi-lbl{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+.kpi-val{font-size:19px;font-weight:500;color:#e8e6e0;}
+.kpi.hi{border-color:#a78bfa44;background:#1a1528;}
+.kpi.hi .kpi-val{color:#a78bfa;}
+
+.card{background:#141414;border:0.5px solid #222;border-radius:14px;padding:20px 20px 14px;margin-bottom:14px;}
+.card-title{font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;}
+.chart-wrap{position:relative;width:100%;}
+
+.formula-box{
+  background:#1a1528;border:0.5px solid #a78bfa33;
+  border-radius:10px;padding:16px 20px;margin-bottom:14px;
+  text-align:center;
+}
+.formula{font-size:22px;font-weight:300;color:#a78bfa;letter-spacing:0.02em;margin-bottom:6px;}
+.formula strong{font-weight:600;}
+.formula-sub{font-size:12px;color:#555;}
+
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;}
+.li{display:flex;align-items:center;gap:7px;font-size:12px;color:#666;}
+.sq{width:12px;height:4px;border-radius:2px;}
+.dot-sq{width:10px;height:10px;border-radius:50%;}
+
+.note{font-size:12px;color:#333;border-top:0.5px solid #1e1e1e;padding-top:14px;margin-top:4px;line-height:1.65;}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">EKG Stufentest · 1. Juli 2026 · Helmut</div>
+<h1>HF = <strong>0.11 × W</strong> + 85.5</h1>
+<p class="meta">Lineare Regression: Herzfrequenz vs. Wattleistung · 50–300W · +25W alle 2 Min.</p>
+
+<div class="kpi-row">
+  <div class="kpi hi">
+    <div class="kpi-lbl">R²</div>
+    <div class="kpi-val">0.998</div>
+  </div>
+  <div class="kpi hi">
+    <div class="kpi-lbl">Steigung</div>
+    <div class="kpi-val">0.11 bpm/W</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Y-Achsenabschnitt</div>
+    <div class="kpi-val">85.5 bpm</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">HF bei 200W</div>
+    <div class="kpi-val">~108 bpm</div>
+  </div>
+</div>
+
+<div class="formula-box">
+  <div class="formula">HF = <strong>0.1105</strong> × W + <strong>85.47</strong></div>
+  <div class="formula-sub">R² = 0.9982 · quasi-perfekte Linearität · unter Bisoprolol</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Herzfrequenz vs. Watt — Messwerte &amp; Regressionsgerade</div>
+  <div class="chart-wrap" style="height:300px">
+    <canvas id="reg" role="img" aria-label="Streudiagramm HF vs Watt mit Regressionsgerade. R²=0.998, perfekte Linearität.">
+      Messwerte von 91 bpm bei 50W bis 118 bpm bei 300W, Regressionsgerade fast deckungsgleich.
+    </canvas>
+  </div>
+  <div class="legend">
+    <div class="li"><div class="dot-sq" style="background:#f87171"></div>Messwerte (abgelesen)</div>
+    <div class="li"><div class="sq" style="background:#a78bfa;height:2px"></div>Regressionsgerade</div>
+    <div class="li"><div class="sq" style="background:#2a2a6a;height:2px;border-top:1px dashed #555"></div>Residuen</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Residuen (Messwert − Fitted)</div>
+  <div class="chart-wrap" style="height:160px">
+    <canvas id="res" role="img" aria-label="Residuen nahe null, maximale Abweichung 0.6 bpm">
+      Residuen zwischen -0.5 und +0.6 bpm — sehr gute Anpassung.
+    </canvas>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Vorhersage: HF bei gegebener Wattleistung</div>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr id="th"></tr>
+      </thead>
+      <tbody>
+        <tr id="tr-w"></tr>
+        <tr id="tr-hf"></tr>
+        <tr id="tr-fit"></tr>
+        <tr id="tr-res"></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="note">
+  Messwerte aus Amazfit-HF-Chart abgelesen (Ende jeder 2-min-Stufe). 
+  Bisoprolol dämpft HF-Anstieg systematisch — daher flache Steigung (0.11 bpm/W) vs. ~0.15 bpm/W ohne Betablocker.
+  Modell gilt nur im Bereich 50–300W. Extrapolation nicht empfohlen.
+</div>
+
+<script>
+const gc='rgba(255,255,255,0.05)';
+const tc='rgba(255,255,255,0.35)';
+
+const watts=[50,75,100,125,150,175,200,225,250,275,300];
+const bpms =[91,94,96,99,102,105,108,111,113,116,118];
+const slope=0.1105, intercept=85.47;
+const fitted=watts.map(w=>+(slope*w+intercept).toFixed(1));
+const residuals=bpms.map((b,i)=>+(b-fitted[i]).toFixed(1));
+
+// Main chart
+new Chart(document.getElementById('reg'),{
+  type:'scatter',
+  data:{
+    datasets:[
+      {
+        label:'Messwerte',
+        data:watts.map((w,i)=>({x:w,y:bpms[i]})),
+        backgroundColor:'#f87171',pointRadius:7,pointHoverRadius:9,
+        showLine:false,
+      },
+      {
+        label:'Regression',
+        data:[{x:50,y:slope*50+intercept},{x:300,y:slope*300+intercept}],
+        borderColor:'#a78bfa',borderWidth:2,
+        pointRadius:0,showLine:true,tension:0,
+        type:'line',
+      }
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{
+        label:ctx=>ctx.datasetIndex===0
+          ?`${ctx.parsed.x}W → ${ctx.parsed.y} bpm (gemessen)`
+          :`Fit: ${ctx.parsed.y.toFixed(1)} bpm`
+      }}
+    },
+    scales:{
+      x:{min:40,max:310,
+        title:{display:true,text:'Watt',color:tc,font:{size:11}},
+        grid:{color:gc},ticks:{color:tc,font:{size:11}}},
+      y:{min:85,max:125,
+        title:{display:true,text:'Herzfrequenz (bpm)',color:tc,font:{size:11}},
+        grid:{color:gc},ticks:{color:tc,font:{size:11}}}
+    }
+  }
+});
+
+// Residuals chart
+new Chart(document.getElementById('res'),{
+  type:'bar',
+  data:{
+    labels:watts.map(w=>w+'W'),
+    datasets:[{
+      label:'Residuum',
+      data:residuals,
+      backgroundColor:residuals.map(r=>r>=0?'rgba(167,139,250,0.7)':'rgba(248,113,113,0.7)'),
+      borderColor:residuals.map(r=>r>=0?'#a78bfa':'#f87171'),
+      borderWidth:1,borderRadius:3,
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y>0?'+':''}${ctx.parsed.y} bpm`}}},
+    scales:{
+      x:{grid:{color:gc},ticks:{color:tc,font:{size:10}}},
+      y:{min:-2,max:2,
+        title:{display:true,text:'bpm',color:tc,font:{size:11}},
+        grid:{color:gc},ticks:{color:tc,font:{size:11}}}
+    }
+  }
+});
+
+// Table
+const th=document.getElementById('th');
+const trW=document.getElementById('tr-w');
+const trHF=document.getElementById('tr-hf');
+const trFit=document.getElementById('tr-fit');
+const trRes=document.getElementById('tr-res');
+
+const style='padding:6px 8px;border-bottom:0.5px solid #1e1e1e;text-align:right;';
+th.innerHTML='<th style="padding:6px 8px;color:#555;font-weight:500;text-align:left;border-bottom:1px solid #222;">Kennwert</th>'+watts.map(w=>`<th style="${style}color:#555;font-weight:500">${w}W</th>`).join('');
+trW.innerHTML='<td style="padding:6px 8px;color:#666;border-bottom:0.5px solid #1e1e1e;">Watt</td>'+watts.map(w=>`<td style="${style}">${w}</td>`).join('');
+trHF.innerHTML='<td style="padding:6px 8px;color:#f87171;border-bottom:0.5px solid #1e1e1e;">Gemessen</td>'+bpms.map(b=>`<td style="${style}color:#f87171">${b}</td>`).join('');
+trFit.innerHTML='<td style="padding:6px 8px;color:#a78bfa;border-bottom:0.5px solid #1e1e1e;">Fitted</td>'+fitted.map(f=>`<td style="${style}color:#a78bfa">${f}</td>`).join('');
+trRes.innerHTML='<td style="padding:6px 8px;color:#555;">Residuum</td>'+residuals.map(r=>`<td style="${style}color:${r>=0?'#a78bfa':'#f87171'}">${r>0?'+':''}${r}</td>`).join('');
+</script>
+</body>
+</html>
