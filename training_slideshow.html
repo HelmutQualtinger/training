@@ -468,7 +468,7 @@ function goTo(i){
   if(i<0 || i>=total || i===current) return;
   const dir = i>current ? 1 : -1;
   slides[current].classList.remove('active');
-  slides[current].classList.add(dir>0?'exit-left':'');
+  if(dir>0) slides[current].classList.add('exit-left');
   slides[i].classList.remove('exit-left');
   // force reflow for re-trigger animation
   void slides[i].offsetWidth;
