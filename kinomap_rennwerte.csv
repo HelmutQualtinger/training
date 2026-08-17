@@ -1,9 +1,9 @@
 Datum,Tag,Strecke,Distanz_km,Dauer_min,kcal,kcal_min,Watt_Avg,Watt_Max,Max_HF,Hoehenmeter,Temperatur_C,Kadenz_rpm,Woche
 11.7,Sa,Donauinsel,11.64,22,236,10.7,187,256,116,,,,7
-11.7,Sa,11.18km,11.18,22,220,10.0,174,233,114,,,,7
-12.7,So,14.21km,14.21,26,293,11.3,197,315,128,,,,7
-13.7,Mo,17.29km,17.29,34,325,9.6,167,265,120,,29,76,8
-13.7,Mo,11.64km,11.64,23,222,9.7,169,230,116,,29,79,8
+11.7,Sa,,11.18,22,220,10.0,174,233,114,,,,7
+12.7,So,,14.21,26,293,11.3,197,315,128,,,,7
+13.7,Mo,,17.29,34,325,9.6,167,265,120,,29,76,8
+13.7,Mo,,11.64,23,222,9.7,169,230,116,,29,79,8
 14.7,Di,Cern,17.17,39,370,9.6,166,333,128,144,29,76,8
 14.7,Di,NYC Central Park,9.85,19,198,10.3,180,237,110,,30,81,8
 15.7,Mi,Rohrspitz–Dornbirn,16.05,31,337,10.9,189,263,119,,29,80,8
@@ -32,7 +32,7 @@ Datum,Tag,Strecke,Distanz_km,Dauer_min,kcal,kcal_min,Watt_Avg,Watt_Max,Max_HF,Ho
 1.8,Sa,Greifensee,14.60,30,289,9.7,169,256,110,84,30,74,10
 2.8,So,Wien Donauinsel Nord 10k+,11.64,22,236,10.7,186,263,108,,29,76,10
 2.8,So,Lechradweg Grießau–Weißenbach (Tirol),14.49,26,245,9.3,161,248,108,24,30,70,10
-3.8,Mo,St.Margarethen–Bregenz–Lochau,15.40,28,323,11.3,198,272,114,33,30,77,11
+3.8,Mo,St.Margarethen–Bregenz–Lochau,15.40,28,323,11.3,198,272,115,33,30,77,11
 3.8,Mo,Bora Bora Matira–Vaitape,14.21,26,294,11.2,195,298,115,17,,78,11
 3.8,Mo,Évian–Grenze Schweiz,10.24,20,224,11.2,196,338,120,33,30,76,11
 4.8,Di,Widnau–Widnau,17.29,32,361,11.3,197,303,116,30,30,77,11
@@ -48,3 +48,4 @@ Datum,Tag,Strecke,Distanz_km,Dauer_min,kcal,kcal_min,Watt_Avg,Watt_Max,Max_HF,Ho
 14.8,Fr,Radl Ring München Dachau–Ismaning,20.58,38,427,11.2,195,312,118,44,31,76,12
 15.8,Sa,Cologne Lunchbreak,26.07,53,518,9.8,171,272,114,102,30,71,12
 16.8,So,St.Margarethen–Bregenz–Lochau,15.40,28,321,11.2,196,263,114,33,30,78,12
+17.8,Mo,Berlin Marathon 2019 (1),17.28,31,384,12.5,218,364,117,8,27,81,13
