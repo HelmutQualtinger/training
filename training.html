@@ -176,19 +176,19 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
       </div>
       <div class="phase-detail">Reaktivierung &amp; Aufbau · 156W → <strong>181W Ø</strong> · 64 Einheiten · 18.222 kcal · Spitzen bis 333W (Kinomap Cern)</div>
     </div>
-    <div class="phase next">
+    <div class="phase done">
       <div>
         <div class="phase-title">Phase 3</div>
         <div class="phase-sub">Wochen 9–11</div>
-        <div class="ps ps-next">→ jetzt</div>
+        <div class="ps ps-done">✓ abgeschlossen</div>
       </div>
       <div class="phase-detail"><strong>185–190W</strong> über 35–40 Min. am Stück · Borg 13–14 · <strong>starker Einstieg (&gt;200W)</strong> aktiviert Kreislauf schneller, danach absinken lassen auf Zielbereich · HF unter 120 bpm · kurze 20-Min-Einheiten als hochintensive Ergänzung (200W+)</div>
     </div>
-    <div class="phase">
+    <div class="phase next">
       <div>
         <div class="phase-title">Phase 4</div>
         <div class="phase-sub">Wochen 12–14</div>
-        <div class="ps ps-later">geplant</div>
+        <div class="ps ps-next">→ jetzt</div>
       </div>
       <div class="phase-detail"><strong>195W</strong> über 35 Min. · Wochenziel 2.500 kcal · bei Borg ≤14 weiter steigern</div>
     </div>
@@ -485,7 +485,7 @@ new Chart(document.getElementById('cKum'),{type:'line',data:{
 
 // PLAN chart
 new Chart(document.getElementById('cPlan'),{type:'line',data:{
-  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13','W14','W15','W16'],
+  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13 (jetzt)','W14','W15','W16'],
   datasets:[
     {label:'Erreicht',data:[156,154,161,160,172,175,179,181,182,182,194,185,null,null,null,null],
      borderColor:C2,backgroundColor:'rgba(29,158,117,0.10)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:C2,fill:true,tension:0.3},
@@ -494,7 +494,7 @@ new Chart(document.getElementById('cPlan'),{type:'line',data:{
     {label:'200W',data:Array(16).fill(200),borderColor:'rgba(83,58,183,0.4)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false}
   ]
 },options:{...baseOpts,
-  scales:{x:{ticks:{color:tc,autoSkip:false,font:{size:10}},grid:{color:gc}},y:{min:140,max:210,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  scales:{x:{ticks:{color:(ctx)=>ctx.index===12?C3:tc,font:(ctx)=>ctx.index===12?{size:10,weight:'bold'}:{size:10},autoSkip:false},grid:{color:gc}},y:{min:140,max:210,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
   plugins:{legend:{display:false}}
 }});
 
