@@ -13,7 +13,7 @@ Personal indoor-cycling training log (Christopeit AX 4000 + Kinomap), tracked si
 - **Tabelle** — alle Trainingseinheiten einzeln, mit Blutdruck-Werten wo vorhanden
 - **Plan 200W** — Watt-Progression, erreicht vs. Ziel
 
-`training_dashboard_export.pdf` is a print export of all four tabs.
+`training.pdf` is a print export of all four tabs.
 
 ## Data files
 

@@ -372,7 +372,7 @@ h1 .hl-rose{color:var(--rose)}
   <!-- SLIDE 3: WATT CLIMB -->
   <section class="slide" id="s3">
     <div class="eyebrow">Leistungskurve</div>
-    <h1>Von 158 auf<br><span class="hl">185 Watt.</span></h1>
+    <h1>Von 156 auf<br><span class="hl">185 Watt.</span></h1>
     <p class="sub">Der Durchschnitt jeder Woche — konstant über der 150-Watt-Marke, seit Woche&nbsp;5 stabil über 170.</p>
     <div class="climb-wrap">
       <svg class="climb-svg" viewBox="0 0 800 220" preserveAspectRatio="none">
@@ -396,8 +396,8 @@ h1 .hl-rose{color:var(--rose)}
     <div class="records">
       <div class="record-row"><div class="record-watt">338 W</div><div class="record-route">Kinomap · Wien New Danube Riverbed</div><div class="record-meta">46 Hm · 30°C 🏆</div></div>
       <div class="record-row"><div class="record-watt">333 W</div><div class="record-route">Kinomap · Cern</div><div class="record-meta">144 Hm · 29°C</div></div>
+      <div class="record-row"><div class="record-watt">315 W</div><div class="record-route">Kinomap · Bora Bora · Matira–Vaitape</div><div class="record-meta">14.21 km · 17 Hm</div></div>
       <div class="record-row"><div class="record-watt">312 W</div><div class="record-route">Kinomap · Bavarian Tour Dachau–Ismaning</div><div class="record-meta">44 Hm · 31°C</div></div>
-      <div class="record-row"><div class="record-watt">311 W</div><div class="record-route">Kinomap · Casal Palocco–Pontile Ostia</div><div class="record-meta">10.96 km · 27°C</div></div>
     </div>
   </section>
 
@@ -424,8 +424,8 @@ h1 .hl-rose{color:var(--rose)}
     <h1>Der Weg zu<br><span class="hl">200 Watt.</span></h1>
     <div class="roadmap">
       <div class="rm-row"><div class="rm-phase">W1–W8</div><div class="rm-desc">Reaktivierung &amp; Aufbau — 156W auf 181W Ø</div><div class="rm-badge done">✓ erreicht</div></div>
-      <div class="rm-row"><div class="rm-phase">W9–W11</div><div class="rm-desc">185–190W über 35–40 Minuten am Stück, Borg 13–14</div><div class="rm-badge next">→ jetzt</div></div>
-      <div class="rm-row"><div class="rm-phase">W12–W14</div><div class="rm-desc">195W über 35 Minuten</div><div class="rm-badge later">geplant</div></div>
+      <div class="rm-row"><div class="rm-phase">W9–W11</div><div class="rm-desc">185–190W über 35–40 Minuten am Stück, Borg 13–14</div><div class="rm-badge done">✓ erreicht</div></div>
+      <div class="rm-row"><div class="rm-phase">W12–W14</div><div class="rm-desc">195W über 35 Minuten</div><div class="rm-badge next">→ jetzt</div></div>
       <div class="rm-row"><div class="rm-phase">W15–W17</div><div class="rm-desc">200W über 30–40 Minuten — Ziel</div><div class="rm-badge later">geplant</div></div>
     </div>
   </section>
@@ -507,7 +507,7 @@ wkKcal.forEach((k,i)=>{
 });
 
 // ---- Slide 3: watt climb line ----
-const wattVals = [158,150,165,161,173,180,178,182,187,183,192,185];
+const wattVals = [156,154,161,160,172,175,179,181,182,182,194,185];
 function buildClimb(){
   const w=800,h=220,pad=16;
   const min=Math.min(...wattVals)-8, max=Math.max(...wattVals)+8;

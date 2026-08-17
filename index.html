@@ -1,4 +1,91 @@
 <!DOCTYPE html>
+<html lang="de">
+<head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=training.html">
-<link rel="canonical" href="training.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ergometer Training Log</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeecea;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:rgba(0,0,0,0.10);
+  --radius:10px;--radius-lg:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--surface:#242421;--surface2:#2e2e2b;
+  --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
+  --border:rgba(255,255,255,0.10);
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{font-size:21px;font-weight:500;margin-bottom:3px}
+.sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.section-lbl{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin:24px 0 10px}
+.section-lbl:first-of-type{margin-top:0}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.link-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 16px;border-bottom:0.5px solid var(--border);text-decoration:none;color:inherit}
+.link-row:last-child{border-bottom:none}
+.link-row:hover{background:var(--surface2)}
+.link-title{font-weight:500;font-size:14px}
+.link-desc{font-size:12px;color:var(--text2)}
+.link-ext{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap}
+footer{margin-top:28px;font-size:12px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<h1>Ergometer Training Log</h1>
+<div class="sub">Christopeit AX 4000 + Kinomap · seit 25. Mai 2026</div>
+
+<div class="section-lbl">Dashboard</div>
+<div class="card">
+  <a class="link-row" href="training.html">
+    <div><div class="link-title">training.html</div><div class="link-desc">Haupt-Dashboard — Täglich, Wöchentlich, Tabelle, Plan 200W</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+  <a class="link-row" href="training.pdf">
+    <div><div class="link-title">training.pdf</div><div class="link-desc">Druckversion aller vier Tabs</div></div>
+    <div class="link-ext">PDF</div>
+  </a>
+</div>
+
+<div class="section-lbl">Weitere Dashboards</div>
+<div class="card">
+  <a class="link-row" href="stufentest.html">
+    <div><div class="link-title">stufentest.html</div><div class="link-desc">Stufentest-Kalibrierung (Watt/Puls)</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+  <a class="link-row" href="stufentest_regression.html">
+    <div><div class="link-title">stufentest_regression.html</div><div class="link-desc">Regression zur Watt-Schätzung</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+  <a class="link-row" href="wkg_histogram.html">
+    <div><div class="link-title">wkg_histogram.html</div><div class="link-desc">W/kg-Histogramm</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+  <a class="link-row" href="training_slideshow.html">
+    <div><div class="link-title">training_slideshow.html</div><div class="link-desc">Slideshow der Trainingseinheiten</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+  <a class="link-row" href="PulsCharts/puls_graphen_uebersicht.html">
+    <div><div class="link-title">PulsCharts/puls_graphen_uebersicht.html</div><div class="link-desc">Puls-Screenshots der Watch, Übersicht</div></div>
+    <div class="link-ext">HTML</div>
+  </a>
+</div>
+
+<div class="section-lbl">Dokumentation</div>
+<div class="card">
+  <a class="link-row" href="README.pdf">
+    <div><div class="link-title">README.pdf</div><div class="link-desc">Projektübersicht</div></div>
+    <div class="link-ext">PDF</div>
+  </a>
+  <a class="link-row" href="CLAUDE.pdf">
+    <div><div class="link-title">CLAUDE.pdf</div><div class="link-desc">Architektur- und Pflegehinweise</div></div>
+    <div class="link-ext">PDF</div>
+  </a>
+</div>
+
+<footer>Watt = (kcal/min × 1000 × 4.185) / 60 × 0.25 · Kein ärztlicher Rat.</footer>
+
+</body>
+</html>
