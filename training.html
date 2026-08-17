@@ -20,6 +20,7 @@
   --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
   --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.06);
 }}
+@media print{:root{--bg:#fff;--surface:#fff;--surface2:#fff}@page{size:landscape}body{max-width:none}}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px;max-width:960px;margin:0 auto;font-size:14px;line-height:1.5}
 h1{font-size:21px;font-weight:500;margin-bottom:3px}
 .sub{font-size:13px;color:var(--text2);margin-bottom:24px}
@@ -34,6 +35,7 @@ h1{font-size:21px;font-weight:500;margin-bottom:3px}
 .sec{display:none}
 .sec.on{display:block}
 .card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 14px;margin-bottom:14px}
+@media print{.card{break-inside:avoid;page-break-inside:avoid}}
 .section-lbl{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
 .li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
@@ -46,6 +48,7 @@ td{padding:7px 6px;border-bottom:0.5px solid var(--border2);color:var(--text)}
 tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 .wk{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;padding:10px 6px 3px;color:var(--text3)}
 .rec-row td{background:rgba(186,117,23,0.07)}
+@media print{.rec-row td{background:none}}
 .note{background:var(--surface2);border-left:3px solid #A32D2D;border-radius:0 var(--radius) var(--radius) 0;padding:11px 14px;font-size:13px;color:var(--text2);margin-bottom:20px}
 .note strong{color:var(--text)}
 .phases{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
@@ -104,20 +107,20 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
       <div class="li"><div class="dot" style="background:#7C3AED"></div>W12</div>
       <div class="li"><div class="dot" style="background:rgba(136,135,128,0.2)"></div>Ruhetag</div>
     </div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Ø Watt pro Trainingstag.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag">Ø Watt pro Trainingstag.</canvas></div>
   </div>
   <div class="card" style="margin-bottom:12px">
     <div class="section-lbl">Kalorien pro Tag</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cKcal" role="img" aria-label="kcal pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">kcal-Summe pro Trainingstag.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cKcal" role="img" aria-label="kcal pro Tag">kcal-Summe pro Trainingstag.</canvas></div>
   </div>
   <div class="card" style="margin-bottom:12px">
     <div class="section-lbl">Trainingszeit pro Tag</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Trainingsminuten pro Tag.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag">Trainingsminuten pro Tag.</canvas></div>
   </div>
   <div class="card" style="margin-bottom:0">
     <div class="section-lbl">Max-Puls pro Tag</div>
     <div class="legend"><div class="li"><div class="dot" style="background:#A32D2D;opacity:.6"></div>Limit 130</div></div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag" width="1766" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;">Maximale Herzfrequenz pro Tag.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag">Maximale Herzfrequenz pro Tag.</canvas></div>
   </div>
 </div>
 
@@ -126,15 +129,15 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
   <div class="card">
     <div class="section-lbl">Kalorien &amp; Minuten pro Woche</div>
     <div class="legend" id="wkLegend"><div class="li"><div class="dot" style="background:#185FA5"></div>W1 · 1575 kcal · 176 min</div><div class="li"><div class="dot" style="background:#1D9E75"></div>W2 · 2555 kcal · 289 min</div><div class="li"><div class="dot" style="background:#BA7517"></div>W3 · 2110 kcal · 229 min</div><div class="li"><div class="dot" style="background:#533AB7"></div>W4 · 2140 kcal · 234 min</div><div class="li"><div class="dot" style="background:#A32D2D"></div>W5 · 1173 kcal · 119 min</div><div class="li"><div class="dot" style="background:#6B21A8"></div>W6 · 2106 kcal · 210 min</div><div class="li"><div class="dot" style="background:#0F766E"></div>W7 · 3248 kcal · 317 min</div><div class="li"><div class="dot" style="background:#DB2777"></div>W8 · 3315 kcal · 320 min</div><div class="li"><div class="dot" style="background:#0891B2"></div>W9 · 3961 kcal · 380 min</div><div class="li"><div class="dot" style="background:#65A30D"></div>W10 · 2940 kcal · 281 min</div><div class="li"><div class="dot" style="background:#EA580C"></div>W11 · 2969 kcal · 267 min</div><div class="li"><div class="dot" style="background:#7C3AED"></div>W12 · 2303 kcal · 221 min</div></div>
-    <div class="chart-wrap" style="height:240px"><canvas id="cWeekKcal" role="img" aria-label="Kalorien und Minuten pro Woche" height="480" style="display: block; box-sizing: border-box; height: 240px; width: 883px;" width="1766">Wochenübersicht.</canvas></div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cWeekKcal" role="img" aria-label="Kalorien und Minuten pro Woche">Wochenübersicht.</canvas></div>
   </div>
   <div class="card">
     <div class="section-lbl">Ø Watt pro Woche (Hover: + kcal/min)</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;" width="1766">Ø Watt pro Woche.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche">Ø Watt pro Woche.</canvas></div>
   </div>
   <div class="card">
     <div class="section-lbl">Kumulative Kalorien</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cKum" role="img" aria-label="Kumulative Kalorien" height="400" style="display: block; box-sizing: border-box; height: 200px; width: 883px;" width="1766">Kumulative Kalorien über alle Tage.</canvas></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="cKum" role="img" aria-label="Kumulative Kalorien">Kumulative Kalorien über alle Tage.</canvas></div>
   </div>
 </div>
 
@@ -204,7 +207,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
       <div class="li"><div class="dot" style="background:#1D9E75"></div>Erreicht (Ø/Woche)</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Ziel</div>
     </div>
-    <div class="chart-wrap" style="height:220px"><canvas id="cPlan" role="img" aria-label="Watt-Progression" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0">Watt-Progression bis 200W.</canvas></div>
+    <div class="chart-wrap" style="height:220px"><canvas id="cPlan" role="img" aria-label="Watt-Progression">Watt-Progression bis 200W.</canvas></div>
   </div>
 </div>
 
@@ -422,7 +425,7 @@ const aggMin=allDays.map(d=>{
 
 const bx={ticks:{color:tc,autoSkip:true,maxRotation:45,font:{size:10}},grid:{color:gc}};
 const by=(lbl,mn,mx)=>({min:mn,max:mx,title:{display:true,text:lbl,font:{size:11},color:tc},ticks:{color:tc,font:{size:11}},grid:{color:gc}});
-const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}}};
 
 new Chart(document.getElementById('cWatt'),{type:'bar',data:{labels:aggLabels,datasets:[
   {data:aggWatt,backgroundColor:aggColors,borderRadius:3},
@@ -431,7 +434,7 @@ new Chart(document.getElementById('cWatt'),{type:'bar',data:{labels:aggLabels,da
 
 new Chart(document.getElementById('cKcal'),{type:'bar',data:{labels:aggLabels,datasets:[
   {data:aggKcal,backgroundColor:aggColors,borderRadius:3}
-]},options:{...baseOpts,scales:{x:bx,y:by('kcal',0,700)}}});
+]},options:{...baseOpts,scales:{x:bx,y:by('kcal',0,900)}}});
 
 new Chart(document.getElementById('cTime'),{type:'bar',data:{labels:aggLabels,datasets:[
   {data:aggMin,backgroundColor:aggColors,borderRadius:3}
@@ -494,6 +497,9 @@ new Chart(document.getElementById('cPlan'),{type:'line',data:{
   scales:{x:{ticks:{color:tc,autoSkip:false,font:{size:10}},grid:{color:gc}},y:{min:140,max:210,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
   plugins:{legend:{display:false}}
 }});
+
+// Charts don't repaint correctly after the print-layout resize; force a redraw right before printing.
+window.addEventListener('beforeprint',()=>{Object.values(Chart.instances).forEach(c=>{c.resize();c.update();});});
 
 // TABLE
 const rows=[
