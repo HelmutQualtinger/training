@@ -68,17 +68,17 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 <body>
 
 <h1>Ergometer Trainingsauswertung</h1>
-<p class="sub">25. Mai – 16. August 2026 · Woche 1–12 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
+<p class="sub">25. Mai – 17. August 2026 · Woche 1–13 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
 
 <div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
 
 <div class="metrics">
-  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">99</div></div>
-  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">30716<span>kcal</span></div></div>
-  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3071<span>min</span></div></div>
+  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">100</div></div>
+  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">31100<span>kcal</span></div></div>
+  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3102<span>min</span></div></div>
   <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">10.0</div></div>
   <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~176<span>W</span></div></div>
-  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">16.8<span>💪</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">17.8<span>💪</span></div></div>
 </div>
 
 <div class="tabs">
@@ -105,6 +105,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
       <div class="li"><div class="dot" style="background:#65A30D"></div>W10</div>
       <div class="li"><div class="dot" style="background:#EA580C"></div>W11</div>
       <div class="li"><div class="dot" style="background:#7C3AED"></div>W12</div>
+      <div class="li"><div class="dot" style="background:#0D9488"></div>W13</div>
       <div class="li"><div class="dot" style="background:rgba(136,135,128,0.2)"></div>Ruhetag</div>
     </div>
     <div class="chart-wrap" style="height:200px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag">Ø Watt pro Trainingstag.</canvas></div>
@@ -156,9 +157,9 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
         <tbody id="tb"></tbody>
         <tfoot><tr>
           <td colspan="3">Total</td>
-          <td class="r">3071 min</td><td class="r">30716</td>
+          <td class="r">3102 min</td><td class="r">31100</td>
           <td class="r">10.0</td><td class="r">~176 W</td>
-          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">30716</td><td></td>
+          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">31100</td><td></td>
         </tr></tfoot>
       </table>
     </div>
@@ -227,7 +228,7 @@ const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
 const gc=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
 const tc=isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.45)';
 const C1='#185FA5',C2='#1D9E75',C3='#BA7517',C4='#533AB7',C5='#A32D2D',C6='#6B21A8',C7='#0F766E';
-const wkColors={1:C1,2:C2,3:C3,4:C4,5:C5,6:C6,7:C7,8:'#DB2777',9:'#0891B2',10:'#65A30D',11:'#EA580C',12:'#7C3AED'};
+const wkColors={1:C1,2:C2,3:C3,4:C4,5:C5,6:C6,7:C7,8:'#DB2777',9:'#0891B2',10:'#65A30D',11:'#EA580C',12:'#7C3AED',13:'#0D9488'};
 
 // RAW SESSION DATA: [date, watt, kcal, hf, week]
 const raw=[
@@ -375,6 +376,7 @@ const raw=[
 
   ['15.8',171,518,114,12],
   ['16.8',196,321,114,12],
+  ['17.8',218,384,117,13],
 ];
 
 // Aggregate per day
@@ -405,7 +407,7 @@ function getWeek(s){
   return 13;
 }
 
-const startDate=parseDate('25.5'),endDate=parseDate('16.8');
+const startDate=parseDate('25.5'),endDate=parseDate('17.8');
 const allDays=[];
 for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){allDays.push(formatDate(new Date(d)));}
 
@@ -446,12 +448,12 @@ new Chart(document.getElementById('cPuls'),{type:'bar',data:{labels:aggLabels,da
 ]},options:{...baseOpts,scales:{x:bx,y:by('Max bpm',80,140)}}});
 
 // WEEKLY
-const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624];
-const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249];
-const wkWatt=[156,154,161,160,172,175,179,181,182,182,194,185];
-const wkKpm=[9.0,8.8,9.2,9.2,9.9,10.1,10.2,10.4,10.4,10.5,11.1,10.5];
-const wkLabels=['W1  25.5–31.5','W2  1.6–7.6','W3  8.6–14.6','W4  15.6–21.6','W5  22.6–28.6','W6  29.6–5.7','W7  6.7–12.7','W8  13.7–19.7','W9  20.7–26.7','W10  27.7–2.8','W11  3.8–9.8','W12  10.8–16.8'];
-const wkColArr=[C1,C2,C3,C4,C5,C6,C7,'#DB2777','#0891B2','#65A30D','#EA580C','#7C3AED'];
+const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,384];
+const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249,31];
+const wkWatt=[156,154,161,160,172,175,179,181,182,182,194,185,218];
+const wkKpm=[9.0,8.8,9.2,9.2,9.9,10.1,10.2,10.4,10.4,10.5,11.1,10.5,12.5];
+const wkLabels=['W1  25.5–31.5','W2  1.6–7.6','W3  8.6–14.6','W4  15.6–21.6','W5  22.6–28.6','W6  29.6–5.7','W7  6.7–12.7','W8  13.7–19.7','W9  20.7–26.7','W10  27.7–2.8','W11  3.8–9.8','W12  10.8–16.8','W13  ab 17.8'];
+const wkColArr=[C1,C2,C3,C4,C5,C6,C7,'#DB2777','#0891B2','#65A30D','#EA580C','#7C3AED','#0D9488'];
 
 document.getElementById('wkLegend').innerHTML=wkLabels.map((l,i)=>
   `<div class="li"><div class="dot" style="background:${wkColArr[i]}"></div>${l.split('  ')[0]} · ${wkKcal[i]} kcal · ${wkMin[i]} min</div>`).join('');
@@ -468,15 +470,15 @@ new Chart(document.getElementById('cWeekKcal'),{type:'bar',data:{
 }}});
 
 new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
-  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],
+  labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13'],
   datasets:[{data:wkWatt,backgroundColor:wkColArr,borderRadius:5}]
 },options:{...baseOpts,
-  scales:{x:{ticks:{color:tc,autoSkip:false},grid:{color:gc}},y:{min:130,max:200,title:{display:true,text:'Ø Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  scales:{x:{ticks:{color:tc,autoSkip:false},grid:{color:gc}},y:{min:130,max:230,title:{display:true,text:'Ø Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
   plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const i=ctx.dataIndex;return[`Ø Watt: ${wkWatt[i]}W`,`Ø kcal/min: ${wkKpm[i]}`];}}}}
 }});
 
 // Cumulative per calendar day
-const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,19775,20063,20505,21154,21686,22183,22183,22437,22797,23049,23367,23585,23937,24353,24642,24878,25123,25417,25740,25964,26325,26749,27163,27599,27966,28092,28442,28840,29163,29450,29877,30395];
+const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100];
 const kumMax = Math.ceil(Math.max(...kumData) * 1.08 / 1000) * 1000; // auto-scale: +8% headroom, rounded to nearest 1000
 new Chart(document.getElementById('cKum'),{type:'line',data:{
   labels:aggLabels,
@@ -487,14 +489,14 @@ new Chart(document.getElementById('cKum'),{type:'line',data:{
 new Chart(document.getElementById('cPlan'),{type:'line',data:{
   labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13 (jetzt)','W14','W15','W16'],
   datasets:[
-    {label:'Erreicht',data:[156,154,161,160,172,175,179,181,182,182,194,185,null,null,null,null],
+    {label:'Erreicht',data:[156,154,161,160,172,175,179,181,182,182,194,185,218,null,null,null],
      borderColor:C2,backgroundColor:'rgba(29,158,117,0.10)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:C2,fill:true,tension:0.3},
     {label:'Ziel',data:[null,null,null,null,null,null,null,181,187,190,190,195,195,195,200,200],
      borderColor:C3,backgroundColor:'rgba(186,117,23,0.08)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:C3,fill:true,tension:0.3,borderDash:[5,3]},
     {label:'200W',data:Array(16).fill(200),borderColor:'rgba(83,58,183,0.4)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false}
   ]
 },options:{...baseOpts,
-  scales:{x:{ticks:{color:(ctx)=>ctx.index===12?C3:tc,font:(ctx)=>ctx.index===12?{size:10,weight:'bold'}:{size:10},autoSkip:false},grid:{color:gc}},y:{min:140,max:210,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  scales:{x:{ticks:{color:(ctx)=>ctx.index===12?C3:tc,font:(ctx)=>ctx.index===12?{size:10,weight:'bold'}:{size:10},autoSkip:false},grid:{color:gc}},y:{min:140,max:230,title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
   plugins:{legend:{display:false}}
 }});
 
@@ -607,6 +609,7 @@ const rows=[
   {n:'87', w:12, tag:'Sa', dat:'15.8', dur:'53 min', k:518, kpm:9.8, watt:'171W', hf:114, kum:30395, rec:true, rr:'121/71/86', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø71rpm · Max 272W · 102Hm · 30°C · sehr anstrengend'},
   {n:'88', w:12, tag:'So', dat:'16.8', dur:'28 min', k:321, kpm:11.2, watt:'196W', hf:114, kum:30716, rr_ruhe:'137/85/73', rr:'124/76/89', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 263W · 33Hm · Max 40.6km/h · 30°C'},
   {n:'–', w:13, tag:'Mo', dat:'17.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:30716, rr_ruhe:'143/86/71 (12:46)'},
+  {n:'89', w:13, tag:'Mo', dat:'17.8', dur:'31 min', k:384, kpm:12.5, watt:'218W', hf:117, kum:31100, rec:true, rr:'131/79/90', note:'Kinomap · Berlin Marathon 2019 (1) · 17.28km · Ø81rpm · Max 364W · 8Hm · Max 38.4km/h · 27°C · kühler, sehr starke Leistung auf 30\''},
 ];
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · ab 17.8'};
