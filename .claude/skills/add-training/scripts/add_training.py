@@ -175,9 +175,9 @@ def parse_kinomap(text: str) -> dict:
     pulse = temp = bldr = None
     extra_note = None
     if ausstattung:
-        pm = re.search(r'pulse (\d+)', ausstattung)
+        pm = re.search(r'puls[e]? (\d+)', ausstattung)
         tm = re.search(r'temp (\d+)', ausstattung)
-        bm = re.search(r'bldr ([\d/]+)', ausstattung)
+        bm = re.search(r'(?:bldr|blrd) ([\d/]+)', ausstattung)
         pulse = int(pm.group(1)) if pm else None
         temp = int(tm.group(1)) if tm else None
         bldr = bm.group(1) if bm else None
