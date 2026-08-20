@@ -195,9 +195,17 @@ def parse_kinomap(text: str) -> dict:
     )
 
 
+def format_duration_exact(dur_min_precise: float) -> str:
+    """Exact 'M min' or 'M min Ss' from precise minutes, no rounding to whole minutes."""
+    total_seconds = round(dur_min_precise * 60)
+    mins, secs = divmod(total_seconds, 60)
+    return f"{mins} min" if secs == 0 else f"{mins} min {secs}s"
+
+
 def build_kinomap_row(k: dict, rec: bool) -> dict:
     watt = round(k['watt_avg'])
     dur_min = round(k['dur_min_precise'])
+    dur_str = format_duration_exact(k['dur_min_precise'])
     kpm = round(k['kcal'] / k['dur_min_precise'], 1) if k['dur_min_precise'] else None
 
     note_parts = ['Kinomap']
@@ -220,7 +228,7 @@ def build_kinomap_row(k: dict, rec: bool) -> dict:
         note += f" · {k['extra_note']}"
 
     return dict(
-        date=k['date'], dur_min=dur_min, kcal=k['kcal'], kpm=kpm, watt=watt,
+        date=k['date'], dur_min=dur_min, dur_str=dur_str, kcal=k['kcal'], kpm=kpm, watt=watt,
         hf=k['pulse'], rr=k['bldr'], rr_ruhe=None, rr_abend=None, note=note,
         rec=rec, rest=False,
     )
@@ -373,7 +381,7 @@ def build_new_row(session: dict, rows: list, running_kum: int) -> dict:
     kcal = session['kcal']
     kum = running_kum + kcal
     return dict(n=next_n(rows), w=w, tag=tag, dat=dat,
-                dur=f"{session['dur_min']} min", k=kcal, kpm=session['kpm'],
+                dur=session.get('dur_str') or f"{session['dur_min']} min", k=kcal, kpm=session['kpm'],
                 watt=f"{session['watt']}W", hf=session.get('hf'), kum=kum,
                 rec=session.get('rec', False), rr=session.get('rr'),
                 rr_ruhe=session.get('rr_ruhe'), rr_abend=session.get('rr_abend'),
