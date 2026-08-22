@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8 Wochen · Der Weg zu 200 Watt</title>
+<title>13 Wochen · Der Weg zu 200 Watt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -97,7 +97,7 @@ h1 .hl-rose{color:var(--rose)}
 .sub{
   font-size:clamp(14px,1.3vw,18px);
   color:var(--text-dim);
-  max-width:52ch;
+  max-width:56ch;
   margin-top:18px;
   line-height:1.6;
 }
@@ -114,8 +114,8 @@ h1 .hl-rose{color:var(--rose)}
 .cover-title{
   font-family:'Space Grotesk',sans-serif;
   font-weight:700;
-  font-size:clamp(44px,9vw,128px);
-  line-height:0.96;
+  font-size:clamp(40px,8.4vw,116px);
+  line-height:0.98;
   letter-spacing:-0.02em;
 }
 .cover-title .line{display:block; overflow:hidden}
@@ -128,7 +128,7 @@ h1 .hl-rose{color:var(--rose)}
   margin-top:26px;
   font-size:clamp(14px,1.4vw,19px);
   color:var(--text-dim);
-  max-width:46ch;
+  max-width:50ch;
   opacity:0; transform:translateY(10px);
   transition:opacity .7s ease .55s, transform .7s ease .55s;
 }
@@ -167,19 +167,18 @@ h1 .hl-rose{color:var(--rose)}
 
 /* Weekly bars */
 .weekbars{
-  display:flex; align-items:flex-end; gap:14px;
-  height:220px; margin-top:44px; max-width:820px;
+  display:flex; align-items:flex-end; gap:12px;
+  height:220px; margin-top:44px; max-width:900px;
 }
 .weekbar-col{display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end}
 .weekbar{
-  width:100%; max-width:64px;
+  width:100%; max-width:56px;
   background:linear-gradient(180deg, var(--amber), rgba(232,135,30,0.35));
   border-radius:6px 6px 0 0;
   height:0;
   transition:height 1s cubic-bezier(.2,.8,.2,1);
   position:relative;
 }
-.slide.active .weekbar{ }
 .weekbar-val{
   font-family:'IBM Plex Mono',monospace;
   font-size:11px; color:var(--text-dim);
@@ -211,23 +210,27 @@ h1 .hl-rose{color:var(--rose)}
   opacity:0; transition:opacity .4s ease;
 }
 .slide.active .climb-dot{opacity:1}
+.climb-goal{stroke:rgba(193,68,60,0.55); stroke-width:1.5; stroke-dasharray:5 4}
+.climb-goal-lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; fill:var(--rose)}
 
 /* records list */
 .records{display:flex; flex-direction:column; gap:0; margin-top:34px; max-width:760px}
 .record-row{
   display:grid; grid-template-columns:120px 1fr auto;
   align-items:baseline; gap:20px;
-  padding:16px 0;
+  padding:15px 0;
   border-bottom:1px solid var(--line);
 }
 .record-row:first-child{border-top:1px solid var(--line)}
 .record-watt{
   font-family:'IBM Plex Mono',monospace;
-  font-size:clamp(22px,2.6vw,32px);
+  font-size:clamp(20px,2.4vw,30px);
   font-weight:600; color:var(--amber);
 }
 .record-route{font-size:15px; color:var(--text)}
 .record-meta{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); white-space:nowrap}
+.records-note{margin-top:20px; font-size:13px; color:var(--text-dim); max-width:640px; line-height:1.6}
+.records-note b{color:var(--sage)}
 
 /* route map mini */
 .routes-grid{
@@ -246,15 +249,16 @@ h1 .hl-rose{color:var(--rose)}
 /* HR / BP note */
 .notecard{
   background:var(--surface); border-left:3px solid var(--rose);
-  border-radius:0 12px 12px 0; padding:20px 24px; margin-top:32px; max-width:640px;
+  border-radius:0 12px 12px 0; padding:18px 22px; margin-top:24px; max-width:640px;
 }
+.notecard.sage{border-left-color:var(--sage)}
 .notecard p{font-size:14px; color:var(--text-dim); line-height:1.6}
 .notecard b{color:var(--text)}
 
 /* Plan roadmap */
-.roadmap{display:flex; flex-direction:column; gap:0; margin-top:36px; max-width:720px}
+.roadmap{display:flex; flex-direction:column; gap:0; margin-top:32px; max-width:760px}
 .rm-row{
-  display:grid; grid-template-columns:90px 1fr auto;
+  display:grid; grid-template-columns:100px 1fr auto;
   gap:18px; align-items:center; padding:14px 0;
   border-bottom:1px solid var(--line);
 }
@@ -329,6 +333,7 @@ h1 .hl-rose{color:var(--rose)}
   .stat-grid{margin-top:24px}
   .record-row{grid-template-columns:80px 1fr; row-gap:4px}
   .record-meta{grid-column:2}
+  .weekbars{gap:6px}
 }
 </style>
 </head>
@@ -343,22 +348,22 @@ h1 .hl-rose{color:var(--rose)}
   <section class="slide active" id="s0">
     <div class="cover-num">65 JAHRE · 110 KG · CHRISTOPEIT AX 4000 + KINOMAP</div>
     <h1 class="cover-title">
-      <span class="line"><span>Zwölf Wochen.</span></span>
-      <span class="line"><span>Neunundneunzig Fahrten.</span></span>
+      <span class="line"><span>Dreizehn Wochen.</span></span>
+      <span class="line"><span>Hundertsechs Fahrten.</span></span>
       <span class="line"><span>Ein Ziel: <span style="color:var(--amber)">200&nbsp;Watt.</span></span></span>
     </h1>
-    <p class="cover-sub">Vom ersten Kilometer im Mai bis zur Bergetappe am Cern — dies ist die Reise in Zahlen, Watt und Herzschlägen.</p>
+    <p class="cover-sub">Vom ersten Kilometer im Mai bis zum CERN-Ring im August — die Reise vom 25. Mai bis 22. August 2026 in Zahlen, Watt und Herzschlägen.</p>
   </section>
 
   <!-- SLIDE 1: TOTALS -->
   <section class="slide" id="s1">
-    <div class="eyebrow">Bilanz · 25. Mai – 16. August 2026</div>
+    <div class="eyebrow">Bilanz · 25. Mai – 22. August 2026</div>
     <h1>Die Summe aller<br><span class="hl">Anstrengung.</span></h1>
     <div class="stat-grid">
-      <div class="stat"><div class="stat-num">99</div><div class="stat-lbl">Einheiten</div></div>
-      <div class="stat"><div class="stat-num">30.716</div><div class="stat-lbl">Kalorien</div></div>
-      <div class="stat"><div class="stat-num sage">3.071</div><div class="stat-lbl">Minuten</div></div>
-      <div class="stat"><div class="stat-num">176<span style="font-size:0.5em;color:var(--text-dim)">W</span></div><div class="stat-lbl">Ø Leistung (gesamt)</div></div>
+      <div class="stat"><div class="stat-num">106</div><div class="stat-lbl">Einheiten</div></div>
+      <div class="stat"><div class="stat-num">33.384</div><div class="stat-lbl">Kalorien</div></div>
+      <div class="stat"><div class="stat-num sage">3.302</div><div class="stat-lbl">Minuten (55&nbsp;h)</div></div>
+      <div class="stat"><div class="stat-num">177<span style="font-size:0.5em;color:var(--text-dim)">W</span></div><div class="stat-lbl">Ø Leistung (gesamt)</div></div>
     </div>
   </section>
 
@@ -372,8 +377,8 @@ h1 .hl-rose{color:var(--rose)}
   <!-- SLIDE 3: WATT CLIMB -->
   <section class="slide" id="s3">
     <div class="eyebrow">Leistungskurve</div>
-    <h1>Von 156 auf<br><span class="hl">185 Watt.</span></h1>
-    <p class="sub">Der Durchschnitt jeder Woche — konstant über der 150-Watt-Marke, seit Woche&nbsp;5 stabil über 170.</p>
+    <h1>Von 155 auf<br><span class="hl">201 Watt.</span></h1>
+    <p class="sub">Der Wochendurchschnitt jeder Woche — seit Woche&nbsp;9 durchgehend über 180&nbsp;W, in Woche&nbsp;13 zum ersten Mal über der 200-Watt-Marke.</p>
     <div class="climb-wrap">
       <svg class="climb-svg" viewBox="0 0 800 220" preserveAspectRatio="none">
         <defs>
@@ -394,17 +399,19 @@ h1 .hl-rose{color:var(--rose)}
     <div class="eyebrow">Bestleistungen</div>
     <h1>Spitzenwerte<br>auf dem <span class="hl">Rad.</span></h1>
     <div class="records">
-      <div class="record-row"><div class="record-watt">338 W</div><div class="record-route">Kinomap · Wien New Danube Riverbed</div><div class="record-meta">46 Hm · 30°C 🏆</div></div>
-      <div class="record-row"><div class="record-watt">333 W</div><div class="record-route">Kinomap · Cern</div><div class="record-meta">144 Hm · 29°C</div></div>
-      <div class="record-row"><div class="record-watt">315 W</div><div class="record-route">Kinomap · Bora Bora · Matira–Vaitape</div><div class="record-meta">14.21 km · 17 Hm</div></div>
+      <div class="record-row"><div class="record-watt">364 W</div><div class="record-route">Kinomap · Berlin Marathon 2019</div><div class="record-meta">8 Hm · 27°C 🏆</div></div>
+      <div class="record-row"><div class="record-watt">335 W</div><div class="record-route">Kinomap · Ferney-Voltaire–Divonne-les-Bains</div><div class="record-meta">134 Hm</div></div>
+      <div class="record-row"><div class="record-watt">331 W</div><div class="record-route">Kinomap · In and around CERN</div><div class="record-meta">144 Hm · 23°C</div></div>
       <div class="record-row"><div class="record-watt">312 W</div><div class="record-route">Kinomap · Bavarian Tour Dachau–Ismaning</div><div class="record-meta">44 Hm · 31°C</div></div>
+      <div class="record-row"><div class="record-watt">309 W</div><div class="record-route">Kinomap · Greifensee</div><div class="record-meta">84 Hm · 29°C</div></div>
     </div>
+    <p class="records-note">Peak-Leistung ist nur die halbe Geschichte: am <b>21.8</b> hielt die Berlin-Marathon-Fahrt <b>215&nbsp;W im Schnitt über 30&nbsp;min 52&nbsp;s</b> — die längste Session je über der 200-Watt-Linie.</p>
   </section>
 
   <!-- SLIDE 5: ROUTES -->
   <section class="slide" id="s5">
     <div class="eyebrow">Kinomap · Weltenbummler</div>
-    <h1>Fünf Strecken.<br><span class="hl-sage">Ein Wohnzimmer.</span></h1>
+    <h1>Dreißig Strecken.<br><span class="hl-sage">Ein Wohnzimmer.</span></h1>
     <div class="routes-grid" id="routesGrid"></div>
   </section>
 
@@ -412,21 +419,26 @@ h1 .hl-rose{color:var(--rose)}
   <section class="slide" id="s6">
     <div class="eyebrow">Herz &amp; Kreislauf</div>
     <h1>Der Puls lügt.<br><span class="hl-rose">Die Watt nicht.</span></h1>
-    <p class="sub">Bisoprolol dämpft den Herzfrequenzanstieg spürbar — bei 300 Watt im Stufentest blieb der Puls bei nur 120&nbsp;bpm. Gesteuert wird über Leistung und Borg-Skala, nicht über Herzschlag.</p>
+    <p class="sub">Bisoprolol dämpft den Herzfrequenzanstieg spürbar — der Puls unter Last bleibt meist im Bereich 108–120&nbsp;bpm, auch wenn die Leistung deutlich steigt. Gesteuert wird über Watt und Borg-Skala, nicht über Herzschlag.</p>
     <div class="notecard">
-      <p><b>9. Juli:</b> Bisoprolol &amp; Candesartan vergessen — Puls schoss auf 125&nbsp;bpm, deutlich über dem sonstigen Bereich von 108–120&nbsp;bpm. Der klarste Beweis, wie stark die Medikation den Puls sonst zügelt.</p>
+      <p><b>9.7 / 1.8 / 13.8:</b> Bisoprolol &amp; Candesartan vergessen — an allen drei Tagen schoss der Puls bzw. der Ruhe-Blutdruck deutlich über den sonstigen Bereich. Der klarste Beweis, wie stark die Medikation ihn sonst zügelt.</p>
+    </div>
+    <div class="notecard sage">
+      <p><b>Beobachtung:</b> von 28 protokollierten Ruhe-Blutdruckwerten lagen 9 über der ⚠️-Schwelle — zuletzt auch am 21.8 und 22.8, trotz starker Watt-Werte. Leistungssteigerung und Ruhe-RR laufen nicht immer parallel — im Blick behalten, ggf. mit Ärztin/Arzt besprechen.</p>
     </div>
   </section>
 
-  <!-- SLIDE 7: ROADMAP -->
+  <!-- SLIDE 7: AIM / ROADMAP -->
   <section class="slide" id="s7">
-    <div class="eyebrow">Die nächsten Wochen</div>
-    <h1>Der Weg zu<br><span class="hl">200 Watt.</span></h1>
+    <div class="eyebrow">Was als Nächstes zählt</div>
+    <h1>Nicht mehr <span class="hl">Watt</span> —<br><span class="hl-sage">Dauer bei Watt.</span></h1>
+    <p class="sub">200&nbsp;W im Wochenschnitt sind erreicht, und einzelne Fahrten liegen sogar bei 215–222&nbsp;W. Der ehrliche nächste Meilenstein ist deshalb nicht mehr die Spitzenzahl, sondern sie <b style="color:var(--text)">zu halten</b>: aktuell reichen 200&nbsp;W+ bis knapp 31&nbsp;Minuten, das Ziel sind 35–40&nbsp;Minuten am Stück — bei weiterhin ruhigem Puls und im Blick behaltenem Ruhe-Blutdruck.</p>
     <div class="roadmap">
-      <div class="rm-row"><div class="rm-phase">W1–W8</div><div class="rm-desc">Reaktivierung &amp; Aufbau — 156W auf 181W Ø</div><div class="rm-badge done">✓ erreicht</div></div>
-      <div class="rm-row"><div class="rm-phase">W9–W11</div><div class="rm-desc">185–190W über 35–40 Minuten am Stück, Borg 13–14</div><div class="rm-badge done">✓ erreicht</div></div>
-      <div class="rm-row"><div class="rm-phase">W12–W14</div><div class="rm-desc">195W über 35 Minuten</div><div class="rm-badge next">→ jetzt</div></div>
-      <div class="rm-row"><div class="rm-phase">W15–W17</div><div class="rm-desc">200W über 30–40 Minuten — Ziel</div><div class="rm-badge later">geplant</div></div>
+      <div class="rm-row"><div class="rm-phase">W1–W8</div><div class="rm-desc">Reaktivierung &amp; Aufbau — 155W auf 181W Ø</div><div class="rm-badge done">✓ erreicht</div></div>
+      <div class="rm-row"><div class="rm-phase">W9–W12</div><div class="rm-desc">Ausdauer-Festigung — 181–194W Ø, Sessions bis 53&nbsp;min</div><div class="rm-badge done">✓ erreicht</div></div>
+      <div class="rm-row"><div class="rm-phase">W13</div><div class="rm-desc">Erster 200W-Wochenschnitt (201W Ø), Spitzen bis 222W</div><div class="rm-badge done">✓ gerade erreicht</div></div>
+      <div class="rm-row"><div class="rm-phase">W14–W16</div><div class="rm-desc">200W+ über volle 35–40 Minuten am Stück halten</div><div class="rm-badge next">→ jetzt</div></div>
+      <div class="rm-row"><div class="rm-phase">danach</div><div class="rm-desc">210–220W als neuer Zielkorridor, Ruhe-RR stabil halten</div><div class="rm-badge later">geplant</div></div>
     </div>
   </section>
 
@@ -494,9 +506,9 @@ document.addEventListener('touchend', e=>{
   touchX=null;
 });
 
-// ---- Slide 2: weekly bars ----
-const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624];
-const wkLabels=['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'];
+// ---- Slide 2: weekly bars (kcal per week, W1–W13) ----
+const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,2668];
+const wkLabels=['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13'];
 const maxKcal = Math.max(...wkKcal);
 const weekbars = document.getElementById('weekbars');
 wkKcal.forEach((k,i)=>{
@@ -506,16 +518,17 @@ wkKcal.forEach((k,i)=>{
   weekbars.appendChild(col);
 });
 
-// ---- Slide 3: watt climb line ----
-const wattVals = [156,154,161,160,172,175,179,181,182,182,194,185];
+// ---- Slide 3: watt climb line (Ø Watt per week, W1–W13) ----
+const wattVals = [155,153,160,159,173,174,178,181,181,183,194,183,201];
 function buildClimb(){
   const w=800,h=220,pad=16;
-  const min=Math.min(...wattVals)-8, max=Math.max(...wattVals)+8;
+  const goal=200;
+  const min=Math.min(...wattVals)-8, max=Math.max(...wattVals,goal)+8;
   const stepX = (w-pad*2)/(wattVals.length-1);
+  const yOf = v => h - pad - ((v-min)/(max-min))*(h-pad*2);
   const pts = wattVals.map((v,i)=>{
     const x = pad + i*stepX;
-    const y = h - pad - ((v-min)/(max-min))*(h-pad*2);
-    return [x,y];
+    return [x, yOf(v)];
   });
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for(let i=1;i<pts.length;i++){
@@ -526,12 +539,28 @@ function buildClimb(){
   document.getElementById('climbLine').setAttribute('d', d);
   const areaD = d + ` L ${pts[pts.length-1][0]} ${h} L ${pts[0][0]} ${h} Z`;
   document.getElementById('climbArea').setAttribute('d', areaD);
+
   const dotsG = document.getElementById('climbDots');
+
+  // 200W goal reference line
+  const gy = yOf(goal);
+  const gLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+  gLine.setAttribute('x1', pad); gLine.setAttribute('x2', w-pad);
+  gLine.setAttribute('y1', gy); gLine.setAttribute('y2', gy);
+  gLine.classList.add('climb-goal');
+  dotsG.appendChild(gLine);
+  const gLbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+  gLbl.setAttribute('x', w-pad); gLbl.setAttribute('y', gy-6);
+  gLbl.setAttribute('text-anchor','end');
+  gLbl.classList.add('climb-goal-lbl');
+  gLbl.textContent = '200W Ziel';
+  dotsG.appendChild(gLbl);
+
   pts.forEach(([x,y],i)=>{
     const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
     c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',5);
     c.classList.add('climb-dot');
-    c.style.transitionDelay = (0.9 + i*0.09)+'s';
+    c.style.transitionDelay = (0.9 + i*0.08)+'s';
     dotsG.appendChild(c);
     const t = document.createElementNS('http://www.w3.org/2000/svg','text');
     t.setAttribute('x',x); t.setAttribute('y', y-14);
@@ -541,7 +570,7 @@ function buildClimb(){
     t.setAttribute('fill','#8FA3A8');
     t.textContent = wattVals[i];
     t.classList.add('climb-dot');
-    t.style.transitionDelay = (0.9 + i*0.09)+'s';
+    t.style.transitionDelay = (0.9 + i*0.08)+'s';
     dotsG.appendChild(t);
   });
 }
@@ -549,18 +578,18 @@ buildClimb();
 
 // ---- Slide 5: routes with mini elevation ----
 const routes = [
-  {name:'Cern', dist:'17.17 km', elev:'144 Hm', watt:'333 W', shape:[0,2,6,4,8,5,9,3]},
-  {name:'Wien · New Danube Riverbed', dist:'20.95 km', elev:'46 Hm', watt:'338 W', shape:[0,3,2,4,3,6,4,3]},
-  {name:'Bora Bora · Matira–Vaitape', dist:'14.21 km', elev:'17 Hm', watt:'298 W', shape:[0,2,4,3,5,4,6,3]},
-  {name:'Greifensee', dist:'14.61 km', elev:'84 Hm', watt:'309 W', shape:[0,3,2,6,4,7,5,4]},
-  {name:'Ferney-Voltaire–Divonne', dist:'15.08 km', elev:'134 Hm', watt:'296 W', shape:[0,4,3,5,2,4,3,2]},
+  {name:'Berlin Marathon 2019', dist:'17.28 km', elev:'8 Hm', watt:'364 W', shape:[0,1,1,2,1,2,1,2]},
+  {name:'CERN', dist:'17.16 km', elev:'144 Hm', watt:'331 W', shape:[0,2,6,4,8,5,9,3]},
+  {name:'Ferney-Voltaire–Divonne', dist:'15.08 km', elev:'134 Hm', watt:'335 W', shape:[0,4,3,5,2,4,3,2]},
+  {name:'Lichtenstein Castle–Killer', dist:'32.96 km', elev:'285 Hm', watt:'277 W', shape:[0,5,3,7,4,8,5,6]},
+  {name:'Kaiserstrand–Rohrspitz', dist:'20.80 km', elev:'—', watt:'292 W', shape:[0,3,2,4,3,5,3,2]},
 ];
 const routesGrid = document.getElementById('routesGrid');
 routes.forEach(r=>{
   const card = document.createElement('div');
   card.className='route-card';
   const w=200,h=40,pad=4;
-  const max = Math.max(...r.shape);
+  const max = Math.max(...r.shape,1);
   const stepX=(w-pad*2)/(r.shape.length-1);
   const pts = r.shape.map((v,i)=>[pad+i*stepX, h-pad-(v/max)*(h-pad*2)]);
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
