@@ -68,17 +68,17 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 <body>
 
 <h1>Ergometer Trainingsauswertung</h1>
-<p class="sub">25. Mai – 22. August 2026 · Woche 1–13 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
+<p class="sub">25. Mai – 23. August 2026 · Woche 1–13 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
 
 <div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
 
 <div class="metrics">
-  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">106</div></div>
-  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">33384<span>kcal</span></div></div>
-  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3302<span>min</span></div></div>
+  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">107</div></div>
+  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">33761<span>kcal</span></div></div>
+  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3335<span>min</span></div></div>
   <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">10.1</div></div>
-  <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~177<span>W</span></div></div>
-  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">22.8<span>💪</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~178<span>W</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">23.8<span>💪</span></div></div>
 </div>
 
 <div class="tabs">
@@ -157,9 +157,9 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
         <tbody id="tb"></tbody>
         <tfoot><tr>
           <td colspan="3">Total</td>
-          <td class="r">3302 min</td><td class="r">33384</td>
-          <td class="r">10.1</td><td class="r">~177 W</td>
-          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">33384</td><td></td>
+          <td class="r">3335 min</td><td class="r">33761</td>
+          <td class="r">10.1</td><td class="r">~178 W</td>
+          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">33761</td><td></td>
         </tr></tfoot>
       </table>
     </div>
@@ -383,6 +383,7 @@ const raw=[
   ['20.8',208,373,120,13],
   ['21.8',215,380,116,13],
   ['22.8',194,398,119,13],
+  ['23.8',196,377,120,13],
 ];
 
 // Aggregate per day
@@ -401,7 +402,7 @@ function getWeek(s){
   return Math.floor((d-parseDate('25.5'))/86400000/7)+1;
 }
 
-const startDate=parseDate('25.5'),endDate=parseDate('22.8');
+const startDate=parseDate('25.5'),endDate=parseDate('23.8');
 const allDays=[];
 for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){allDays.push(formatDate(new Date(d)));}
 
@@ -442,8 +443,8 @@ new Chart(document.getElementById('cPuls'),{type:'bar',data:{labels:aggLabels,da
 ]},options:{...baseOpts,scales:{x:bx,y:by('Max bpm',80,140)}}});
 
 // WEEKLY
-const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,2668];
-const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249,231];
+const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,3045];
+const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249,264];
 const wkWatt=[155,153,160,159,173,174,178,181,181,183,194,183,201];
 const wkKpm=[8.9,8.8,9.2,9.1,9.9,10.0,10.2,10.4,10.4,10.5,11.1,10.5,11.5];
 const wkLabels=['W1  25.5–31.5','W2  1.6–7.6','W3  8.6–14.6','W4  15.6–21.6','W5  22.6–28.6','W6  29.6–5.7','W7  6.7–12.7','W8  13.7–19.7','W9  20.7–26.7','W10  27.7–2.8','W11  3.8–9.8','W12  10.8–16.8','W13  ab 17.8'];
@@ -472,7 +473,7 @@ new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
 }});
 
 // Cumulative per calendar day
-const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384];
+const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384,33761];
 const kumMax = Math.ceil(Math.max(...kumData) * 1.08 / 1000) * 1000; // auto-scale: +8% headroom, rounded to nearest 1000
 new Chart(document.getElementById('cKum'),{type:'line',data:{
   labels:aggLabels,
@@ -602,15 +603,14 @@ const rows=[
   {n:'86', w:12, tag:'Fr', dat:'14.8', dur:'38 min', k:427, kpm:11.2, watt:'195W', hf:118, kum:29877, rec:true, rr:'118/74/91', note:'Kinomap · Radl Ring München Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C'},
   {n:'87', w:12, tag:'Sa', dat:'15.8', dur:'53 min', k:518, kpm:9.8, watt:'171W', hf:114, kum:30395, rec:true, rr:'121/71/86', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø71rpm · Max 272W · 102Hm · 30°C · sehr anstrengend'},
   {n:'88', w:12, tag:'So', dat:'16.8', dur:'28 min', k:321, kpm:11.2, watt:'196W', hf:114, kum:30716, rr_ruhe:'137/85/73', rr:'124/76/89', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 263W · 33Hm · Max 40.6km/h · 30°C'},
-  {n:'–', w:13, tag:'Mo', dat:'17.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:30716, rr_ruhe:'143/86/71 ⚠️ (12:46)'},
-  {n:'89', w:13, tag:'Mo', dat:'17.8', dur:'31 min', k:384, kpm:12.5, watt:'218W', hf:117, kum:31100, rec:true, rr:'131/79/90', note:'Kinomap · Berlin Marathon 2019 (1) · 17.28km · Ø81rpm · Max 364W · 8Hm · Max 38.4km/h · 27°C · kühler, sehr starke Leistung auf 30\''},
-  {n:'–', w:13, tag:'Di', dat:'18.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:31100, rr_ruhe:'135/85/70'},
-  {n:'90', w:13, tag:'Di', dat:'18.8', dur:'52 min', k:530, kpm:10.3, watt:'179W', hf:112, kum:31630, rr:'107/65//87', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø73rpm · Max 271W · 102Hm · Max 51.3km/h'},
+  {n:'89', w:13, tag:'Mo', dat:'17.8', dur:'31 min', k:384, kpm:12.5, watt:'218W', hf:117, kum:31100, rec:true, rr:'131/79/90', rr_ruhe:'143/86/71 ⚠️ (12:46)', note:'Kinomap · Berlin Marathon 2019 (1) · 17.28km · Ø81rpm · Max 364W · 8Hm · Max 38.4km/h · 27°C · kühler, sehr starke Leistung auf 30\''},
+  {n:'90', w:13, tag:'Di', dat:'18.8', dur:'52 min', k:530, kpm:10.3, watt:'179W', hf:112, kum:31630, rr:'107/65//87', rr_ruhe:'135/85/70', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø73rpm · Max 271W · 102Hm · Max 51.3km/h'},
   {n:'91', w:13, tag:'Mi', dat:'19.8', dur:'33 min', k:359, kpm:10.9, watt:'190W', hf:120, kum:31989, rr:'113/70/87', rr_ruhe:'132/85/78', note:'Kinomap · Ferney-Voltaire to Divonne-les-Bains · 15.08km · Ø75rpm · Max 335W · 134Hm · Max 49.0km/h'},
   {n:'92', w:13, tag:'Mi', dat:'19.8', dur:'19 min', k:244, kpm:12.7, watt:'222W', hf:130, kum:32233, rr:'118/78/97', note:'Kinomap · Casal Palocco - Pontile Ostia · 10.97km · Ø84rpm · Max 292W · 10Hm · Max 40.5km/h · 30°C'},
   {n:'93', w:13, tag:'Do', dat:'20.8', dur:'31 min 14s', k:373, kpm:11.9, watt:'208W', hf:120, kum:32606, rr:'121/73/87', rr_ruhe:'135/85/71', note:'Kinomap · Widnau - Widnau · 17.29km · Ø79rpm · Max 287W · 30Hm · Max 40.8km/h · 26°C'},
   {n:'94', w:13, tag:'Fr', dat:'21.8', dur:'30 min 52s', k:380, kpm:12.3, watt:'215W', hf:116, kum:32986, rr:'144/84/84', rr_ruhe:'157/87/80 ⚠️', note:'Kinomap · Berlin Marathon 2019 (1) · 17.27km · Ø79rpm · Max 287W · 8Hm · Max 36.3km/h · 25°C · sekundengenau'},
   {n:'95', w:13, tag:'Sa', dat:'22.8', dur:'35 min 38s', k:398, kpm:11.2, watt:'194W', hf:119, kum:33384, rr:'126/75/87', rr_ruhe:'140/80/73 ⚠️', note:'Kinomap · 😍 In and around CERN (🇨🇭🇫🇷) · 17.16km · Ø76rpm · Max 331W · 144Hm · Max 55.0km/h · 23°C · etwas höherer blutdruck etwas bessere leistung'},
+  {n:'96', w:13, tag:'So', dat:'23.8', dur:'33 min 32s', k:377, kpm:11.2, watt:'196W', hf:120, kum:33761, rr:'120/72/89', rr_ruhe:'140/85/70', note:'Kinomap · Golden Autumn on Vienna\'s Donauinsel · 18.14km · Ø78rpm · Max 335W · 72Hm · Max 50.5km/h'},
 ];
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · ab 17.8'};
