@@ -119,10 +119,19 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
     <div class="section-lbl">Trainingszeit pro Tag</div>
     <div class="chart-wrap" style="height:200px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag">Trainingsminuten pro Tag.</canvas></div>
   </div>
-  <div class="card" style="margin-bottom:0">
+  <div class="card" style="margin-bottom:12px">
     <div class="section-lbl">Max-Puls pro Tag</div>
     <div class="legend"><div class="li"><div class="dot" style="background:#A32D2D;opacity:.6"></div>Limit 130</div></div>
     <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag">Maximale Herzfrequenz pro Tag.</canvas></div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="section-lbl">Blutdruck vor / nach dem Training</div>
+    <div class="legend">
+      <div class="li"><div class="dot" style="background:#185FA5"></div>Vor dem Training</div>
+      <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
+      <div class="li"><div class="dot" style="background:rgba(29,158,117,0.35)"></div>Zielband 80–90 / 120–140</div>
+    </div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck vor und nach dem Training">Systolisch/diastolisch vor und nach dem Training, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
   </div>
 </div>
 
@@ -618,6 +627,27 @@ const rows=[
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · 17.8–23.8',14:'Woche 14 · ab 24.8'};
 document.title=`Training Dashboard W1–W${Math.max(...rows.filter(r=>r.n!=='–').map(r=>r.w))}`;
+
+// BLUTDRUCK vor/nach dem Training (systolisch/diastolisch), nur Zeilen mit rr_ruhe oder rr
+const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;}; // [diastolisch,systolisch]
+const bpRows=rows.filter(r=>r.n!=='–'&&(r.rr_ruhe||r.rr));
+const bpLabels=bpRows.map(r=>r.dat);
+const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
+const bpAfter=bpRows.map(r=>parseRR(r.rr));
+const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
+  const{ctx,chartArea:{left,right},scales:{y}}=chart;
+  ctx.save();ctx.fillStyle='rgba(29,158,117,0.15)';
+  [[80,90],[120,140]].forEach(([lo,hi])=>{
+    const yTop=y.getPixelForValue(hi),yBot=y.getPixelForValue(lo);
+    ctx.fillRect(left,yTop,right-left,yBot-yTop);
+  });
+  ctx.restore();
+}};
+new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datasets:[
+  {label:'Vor dem Training',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
+  {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3}
+]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
+
 const tb=document.getElementById('tb');
 tb.innerHTML='';
 let lw=0;
