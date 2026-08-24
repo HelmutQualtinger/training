@@ -130,6 +130,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
       <div class="li"><div class="dot" style="background:#185FA5"></div>Vor dem Training</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
       <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
+      <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
     </div>
     <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck vor und nach dem Training">Systolisch/diastolisch vor und nach dem Training, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
   </div>
@@ -643,10 +644,14 @@ const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
   });
   ctx.restore();
 }};
+const isExcess=v=>v&&(v[1]>140||v[0]>90);
+const excessMark=arr=>arr.map(v=>isExcess(v)?Math.max(v[1],v[0])+6:null);
 new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datasets:[
   {label:'Vor dem Training',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
-  {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3}
-]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
+  {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3},
+  {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpBefore),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1},
+  {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpAfter),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1}
+]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
 
 const tb=document.getElementById('tb');
 tb.innerHTML='';
