@@ -3,7 +3,7 @@
 <html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Training Dashboard W1–W13</title>
+<title>Training Dashboard W1–W14</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -617,6 +617,7 @@ const rows=[
 ];
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · 17.8–23.8',14:'Woche 14 · ab 24.8'};
+document.title=`Training Dashboard W1–W${Math.max(...rows.filter(r=>r.n!=='–').map(r=>r.w))}`;
 const tb=document.getElementById('tb');
 tb.innerHTML='';
 let lw=0;
