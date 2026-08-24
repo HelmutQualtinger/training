@@ -129,7 +129,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
     <div class="legend">
       <div class="li"><div class="dot" style="background:#185FA5"></div>Vor dem Training</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
-      <div class="li"><div class="dot" style="background:rgba(29,158,117,0.35)"></div>Zielband 80–90 / 120–140</div>
+      <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
     </div>
     <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck vor und nach dem Training">Systolisch/diastolisch vor und nach dem Training, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
   </div>
@@ -636,7 +636,7 @@ const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
 const bpAfter=bpRows.map(r=>parseRR(r.rr));
 const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
   const{ctx,chartArea:{left,right},scales:{y}}=chart;
-  ctx.save();ctx.fillStyle='rgba(29,158,117,0.15)';
+  ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
   [[80,90],[120,140]].forEach(([lo,hi])=>{
     const yTop=y.getPixelForValue(hi),yBot=y.getPixelForValue(lo);
     ctx.fillRect(left,yTop,right-left,yBot-yTop);
