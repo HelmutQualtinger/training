@@ -125,14 +125,15 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
     <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag">Maximale Herzfrequenz pro Tag.</canvas></div>
   </div>
   <div class="card" style="margin-bottom:0">
-    <div class="section-lbl">Blutdruck vor / nach dem Training</div>
+    <div class="section-lbl">Blutdruck: Ruhe / nach Training / abends</div>
     <div class="legend">
-      <div class="li"><div class="dot" style="background:#185FA5"></div>Vor dem Training</div>
+      <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe (vor dem Training)</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
+      <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
       <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
       <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
     </div>
-    <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck vor und nach dem Training">Systolisch/diastolisch vor und nach dem Training, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+    <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
   </div>
 </div>
 
@@ -579,19 +580,19 @@ const rows=[
   {n:'49', w:8, tag:'Do', dat:'16.7', dur:'33 min', k:342, kpm:10.4, watt:'181W', hf:116, kum:16990, rec:true, rr:'110/74/86', note:'Kinomap · Widnau–Widnau · 17.29km · Ø80rpm · Max 297W · 28°C'},
   {n:'50', w:8, tag:'Do', dat:'16.7', dur:'21 min', k:247, kpm:11.5, watt:'201W', hf:116, kum:17237, rec:true, rr:'115/75/85', note:'Kinomap · Wien Donauinsel · 11.64km · Ø84rpm · Max 277W · 29°C'},
   {n:'–', w:8, tag:'Fr', dat:'17.7', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:17237, rr_ruhe:'133/84/71 (12:00)'},
-  {n:'51', w:8, tag:'Sa', dat:'18.7', dur:'29 min', k:318, kpm:11.1, watt:'193W', hf:116, kum:17555, rec:true, rr:'118/75/87', rr_ruhe:'150/99/70 ⚠️', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø81rpm · Max 271W · 27°C'},
+  {n:'51', w:8, tag:'Sa', dat:'18.7', dur:'29 min', k:318, kpm:11.1, watt:'193W', hf:116, kum:17555, rec:true, rr:'118/75/87', rr_ruhe:'150/99/70', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø81rpm · Max 271W · 27°C'},
   {n:'52', w:8, tag:'Sa', dat:'18.7', dur:'21 min', k:251, kpm:11.9, watt:'206W', hf:119, kum:17806, rec:true, rr:'125/81/86', rr_abend:'135/80/70', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø83rpm · Max 292W 🏆 · 26°C'},
   {n:'53', w:8, tag:'So', dat:'19.7', dur:'40 min', k:416, kpm:10.5, watt:'183W', hf:111, kum:18222, rec:true, rr:'116/74/80', note:'Kinomap · Kaserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 272W · 27°C'},
   {n:'54', w:9, tag:'Mo', dat:'20.7', dur:'40 min', k:415, kpm:10.5, watt:'182W', hf:112, kum:18637, rec:true, rr:'114/71/74', rr_ruhe:'135/85/67', rr_abend:'120/76/76', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø76rpm · Max 292W · 25°C · Intervall 1:2 (1min Belastung/2min Erholung) erste 30min'},
-  {n:'55', w:9, tag:'Di', dat:'21.7', dur:'38 min', k:445, kpm:11.7, watt:'204W', hf:116, kum:19082, rec:true, rr:'122/78/84', rr_ruhe:'145/85/70 ⚠️', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø80rpm · Max 282W 🏆 · 27°C · anstrengender als Vortag (höherer Ruhe-RR)'},
+  {n:'55', w:9, tag:'Di', dat:'21.7', dur:'38 min', k:445, kpm:11.7, watt:'204W', hf:116, kum:19082, rec:true, rr:'122/78/84', rr_ruhe:'145/85/70', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø80rpm · Max 282W 🏆 · 27°C · anstrengender als Vortag (höherer Ruhe-RR)'},
   {n:'56', w:9, tag:'Di', dat:'21.7', dur:'19 min', k:244, kpm:12.8, watt:'222W', hf:122, kum:19326, rec:true, rr:'133/84/80', note:'Kinomap · Casal Palocco–Pontile Ostia · 10.96km · Ø82rpm · Max 311W 🏆 · 27°C'},
-  {n:'57', w:9, tag:'Mi', dat:'22.7', dur:'38 min', k:449, kpm:11.9, watt:'206W', hf:116, kum:19775, rec:true, rr:'125/80/85', rr_ruhe:'140/86/71 ⚠️', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø77rpm · Max 505W = Sensor-Ausreißer (ignorieren) · 27°C'},
+  {n:'57', w:9, tag:'Mi', dat:'22.7', dur:'38 min', k:449, kpm:11.9, watt:'206W', hf:116, kum:19775, rec:true, rr:'125/80/85', rr_ruhe:'140/86/71', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø77rpm · Max 505W = Sensor-Ausreißer (ignorieren) · 27°C'},
   {n:'58', w:9, tag:'Mi', dat:'22.7', dur:'30 min', k:288, kpm:9.7, watt:'169W', hf:110, kum:20063, rr_ruhe:'137/82/69', note:'Kinomap · Greifensee · 14.61km · Ø70rpm · Max 290W · 84Hm · entspannte Strecke nach Anstrengung mittags'},
   {n:'59', w:9, tag:'Do', dat:'23.7', dur:'38 min', k:442, kpm:11.6, watt:'202W', hf:118, kum:20505, rec:true, rr:'115/75/80', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 282W · 27°C'},
-  {n:'60', w:9, tag:'Fr', dat:'24.7', dur:'73 min', k:649, kpm:8.9, watt:'155W', hf:106, kum:21154, rr:'115/73/80', rr_ruhe:'147/89/74 ⚠️', note:'Kinomap · Lichtenstein Castle–Killer · 32.96km · Ø69rpm · Max 277W · 285Hm · Ausdauerstrecke starke Anstiege · 26°C'},
-  {n:'61', w:9, tag:'Sa', dat:'25.7', dur:'51 min', k:532, kpm:10.3, watt:'180W', hf:110, kum:21686, rec:true, rr:'125/73/81', rr_abend:'143/83/76 ⚠️', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø74rpm · Max 263W · 102Hm · 26°C'},
+  {n:'60', w:9, tag:'Fr', dat:'24.7', dur:'73 min', k:649, kpm:8.9, watt:'155W', hf:106, kum:21154, rr:'115/73/80', rr_ruhe:'147/89/74', note:'Kinomap · Lichtenstein Castle–Killer · 32.96km · Ø69rpm · Max 277W · 285Hm · Ausdauerstrecke starke Anstiege · 26°C'},
+  {n:'61', w:9, tag:'Sa', dat:'25.7', dur:'51 min', k:532, kpm:10.3, watt:'180W', hf:110, kum:21686, rec:true, rr:'125/73/81', rr_abend:'143/83/76', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø74rpm · Max 263W · 102Hm · 26°C'},
   {n:'62', w:9, tag:'So', dat:'26.7', dur:'53 min', k:497, kpm:9.5, watt:'165W', hf:107, kum:22183, rec:true, rr:'124/78/80', note:'Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 28.35km · Ø71rpm · Max 276W · 91Hm · 26°C · subjektiv sehr anstrengend trotz moderater Watt'},
-  {n:'–', w:10, tag:'Mo', dat:'27.7', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:22183, rr_ruhe:'142/82/72 ⚠️'},
+  {n:'–', w:10, tag:'Mo', dat:'27.7', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:22183, rr_ruhe:'142/82/72'},
   {n:'63', w:10, tag:'Di', dat:'28.7', dur:'21 min', k:254, kpm:12.1, watt:'210W', hf:116, kum:22437, rec:true, rr:'118/77/86', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø81rpm · Max 282W · 27°C · kurz&knackig, Zerrung re. Oberschenkel (Ursache: Dauer, nicht Krafteinsatz) fast abgeklungen'},
   {n:'64', w:10, tag:'Mi', dat:'29.7', dur:'32 min', k:360, kpm:11.3, watt:'196W', hf:116, kum:22797, rec:true, rr:'111/68/83', note:'Kinomap · Widnau–Widnau · 17.30km · Ø78rpm · Max 258W · 29°C'},
   {n:'65', w:10, tag:'Mi', dat:'29.7', dur:'27 min', k:252, kpm:9.2, watt:'161W', hf:104, kum:23049, rr:'100/65/76', note:'Kinomap · Cologne Lunchbreak · 11.47km · Ø70rpm · Max 239W · 78Hm · 29°C · müde, geringere Belastung'},
@@ -600,7 +601,7 @@ const rows=[
   {n:'68', w:10, tag:'Fr', dat:'31.7', dur:'34 min', k:352, kpm:10.3, watt:'180W', hf:111, kum:23937, rec:true, rr:'121/76/78', rr_ruhe:'136/80/68', note:'Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 296W · 134Hm · 30°C'},
   {n:'69', w:10, tag:'Sa', dat:'1.8', dur:'39 min', k:416, kpm:10.7, watt:'186W', hf:110, kum:24353, rec:true, rr:'132/76/83', note:'Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 271W · 44Hm · 28°C · ⚠️ gestern abend Blutdruckmedikamente vergessen'},
   {n:'70', w:10, tag:'Sa', dat:'1.8', dur:'30 min', k:289, kpm:9.7, watt:'169W', hf:110, kum:24642, rr:'135/78/87', note:'Kinomap · Greifensee · 14.60km · Ø74rpm · Max 256W · 84Hm · 30°C'},
-  {n:'71', w:10, tag:'So', dat:'2.8', dur:'22 min', k:236, kpm:10.7, watt:'186W', hf:108, kum:24878, rr:'137/84/78', rr_ruhe:'155/90/70 ⚠️', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø76rpm · Max 263W · 29°C · nicht ganz fit, muskuläre Begrenzung'},
+  {n:'71', w:10, tag:'So', dat:'2.8', dur:'22 min', k:236, kpm:10.7, watt:'186W', hf:108, kum:24878, rr:'137/84/78', rr_ruhe:'155/90/70', note:'Kinomap · Wien Donauinsel Nord 10k+ · 11.64km · Ø76rpm · Max 263W · 29°C · nicht ganz fit, muskuläre Begrenzung'},
   {n:'72', w:10, tag:'So', dat:'2.8', dur:'26 min', k:245, kpm:9.3, watt:'161W', hf:108, kum:25123, rr:'131/83/76', note:'Kinomap · Lechradweg Grießau–Weißenbach (Tirol) · 14.49km · Ø70rpm · Max 248W · 24Hm · 30°C · nur 51% Strecke'},
   {n:'73', w:11, tag:'Mo', dat:'3.8', dur:'28 min', k:323, kpm:11.3, watt:'198W', hf:115, kum:25446, rec:true, rr:'121/71/85', rr_ruhe:'137/87/70', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø77rpm · Max 272W · 33Hm · 30°C'},
   {n:'74', w:11, tag:'Mo', dat:'3.8', dur:'26 min', k:294, kpm:11.2, watt:'195W', hf:115, kum:25740, note:'Kinomap · Bora Bora Matira–Vaitape · 14.21km · Ø78rpm · Max 298W · 17Hm'},
@@ -608,11 +609,11 @@ const rows=[
   {n:'76', w:11, tag:'Di', dat:'4.8', dur:'32 min', k:361, kpm:11.3, watt:'197W', hf:116, kum:26325, rec:true, rr:'118/75/89', note:'Kinomap · Widnau–Widnau · 17.29km · Ø77rpm · Max 303W · 30Hm · 30°C'},
   {n:'77', w:11, tag:'Mi', dat:'5.8', dur:'39 min', k:424, kpm:11.0, watt:'192W', hf:113, kum:26749, rec:true, rr:'108/71/88', rr_ruhe:'132/77/74', note:'Kinomap · Bavarian Tour Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C'},
   {n:'78', w:11, tag:'Do', dat:'6.8', dur:'40 min', k:414, kpm:10.2, watt:'178W', hf:110, kum:27163, rec:true, rr:'115/75/86', note:'Kinomap · Wien New Danube Riverbed · 20.95km · Ø76rpm · Max 338W 🏆 · 46Hm · 30°C'},
-  {n:'79', w:11, tag:'Fr', dat:'7.8', dur:'38 min', k:436, kpm:11.3, watt:'197W', hf:120, kum:27599, rec:true, rr:'109/72/86', rr_ruhe:'140/85/85 ⚠️', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 287W · 50Hm · Temp(?) sehr anstrengend aber motiviert'},
-  {n:'–', w:11, tag:'Sa', dat:'8.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:27599, rr_ruhe:'144/84/73 ⚠️'},
+  {n:'79', w:11, tag:'Fr', dat:'7.8', dur:'38 min', k:436, kpm:11.3, watt:'197W', hf:120, kum:27599, rec:true, rr:'109/72/86', rr_ruhe:'140/85/85', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø78rpm · Max 287W · 50Hm · Temp(?) sehr anstrengend aber motiviert'},
+  {n:'–', w:11, tag:'Sa', dat:'8.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:27599, rr_ruhe:'144/84/73'},
   {n:'80', w:11, tag:'So', dat:'9.8', dur:'32 min', k:367, kpm:11.6, watt:'203W', hf:122, kum:27966, rec:true, rr:'128/74/94', note:'Kinomap · Widnau–Widnau · 17.29km · Ø79rpm · Max 432W = Sensor-Ausreißer (ignorieren) · 30Hm · 30°C'},
   {n:'81', w:11, tag:'So', dat:'9.8', dur:'12 min', k:126, kpm:10.1, watt:'176W', hf:110, kum:28092, rr:'120/75/85', note:'Kinomap · Pfänder–Bregenz downhill · 10.96km · Ø71rpm · Max 257W · 6Hm · 28°C'},
-  {n:'82', w:12, tag:'Mo', dat:'10.8', dur:'34 min', k:350, kpm:10.2, watt:'178W', hf:108, kum:28442, rec:true, rr:'122/74/78', rr_ruhe:'155/100/74 ⚠️ (Mittag)', note:'Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 248W · 134Hm · 31°C'},
+  {n:'82', w:12, tag:'Mo', dat:'10.8', dur:'34 min', k:350, kpm:10.2, watt:'178W', hf:108, kum:28442, rec:true, rr:'122/74/78', rr_ruhe:'155/100/74 (Mittag)', note:'Kinomap · Ferney-Voltaire–Divonne-les-Bains · 15.08km · Ø73rpm · Max 248W · 134Hm · 31°C'},
   {n:'83', w:12, tag:'Di', dat:'11.8', dur:'41 min', k:398, kpm:9.7, watt:'169W', hf:122, kum:28840, rr:'103/78/84', rr_ruhe:'132/82/85', rr_abend:'125/72/75', note:'Kinomap · Kaiserstrand–Rohrspitz (Bodensee) · 20.80km · Ø72rpm · Max 282W · 50Hm · 30°C · gut angefangen, nach 1. Hälfte eingebrochen, 40min trotzdem durchgehalten'},
   {n:'–', w:12, tag:'Mi', dat:'12.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:28840, rr_ruhe:'137/82/70 (16:42)'},
   {n:'84', w:12, tag:'Do', dat:'13.8', dur:'28 min', k:323, kpm:11.3, watt:'197W', hf:119, kum:29163, rec:true, rr:'138/76/90', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø79rpm · Max 277W · 33Hm · 29°C · ⚠️ gestern abend Blutdruckmedikamente vergessen'},
@@ -620,13 +621,13 @@ const rows=[
   {n:'86', w:12, tag:'Fr', dat:'14.8', dur:'38 min', k:427, kpm:11.2, watt:'195W', hf:118, kum:29877, rec:true, rr:'118/74/91', note:'Kinomap · Radl Ring München Dachau–Ismaning · 20.58km · Ø76rpm · Max 312W · 44Hm · 31°C'},
   {n:'87', w:12, tag:'Sa', dat:'15.8', dur:'53 min', k:518, kpm:9.8, watt:'171W', hf:114, kum:30395, rec:true, rr:'121/71/86', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø71rpm · Max 272W · 102Hm · 30°C · sehr anstrengend'},
   {n:'88', w:12, tag:'So', dat:'16.8', dur:'28 min', k:321, kpm:11.2, watt:'196W', hf:114, kum:30716, rr_ruhe:'137/85/73', rr:'124/76/89', note:'Kinomap · St.Margarethen–Bregenz–Lochau · 15.40km · Ø78rpm · Max 263W · 33Hm · Max 40.6km/h · 30°C'},
-  {n:'89', w:13, tag:'Mo', dat:'17.8', dur:'31 min', k:384, kpm:12.5, watt:'218W', hf:117, kum:31100, rec:true, rr:'131/79/90', rr_ruhe:'143/86/71 ⚠️ (12:46)', note:'Kinomap · Berlin Marathon 2019 (1) · 17.28km · Ø81rpm · Max 364W · 8Hm · Max 38.4km/h · 27°C · kühler, sehr starke Leistung auf 30\''},
+  {n:'89', w:13, tag:'Mo', dat:'17.8', dur:'31 min', k:384, kpm:12.5, watt:'218W', hf:117, kum:31100, rec:true, rr:'131/79/90', rr_ruhe:'143/86/71 (12:46)', note:'Kinomap · Berlin Marathon 2019 (1) · 17.28km · Ø81rpm · Max 364W · 8Hm · Max 38.4km/h · 27°C · kühler, sehr starke Leistung auf 30\''},
   {n:'90', w:13, tag:'Di', dat:'18.8', dur:'52 min', k:530, kpm:10.3, watt:'179W', hf:112, kum:31630, rr:'107/65//87', rr_ruhe:'135/85/70', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø73rpm · Max 271W · 102Hm · Max 51.3km/h'},
   {n:'91', w:13, tag:'Mi', dat:'19.8', dur:'33 min', k:359, kpm:10.9, watt:'190W', hf:120, kum:31989, rr:'113/70/87', rr_ruhe:'132/85/78', note:'Kinomap · Ferney-Voltaire to Divonne-les-Bains · 15.08km · Ø75rpm · Max 335W · 134Hm · Max 49.0km/h'},
   {n:'92', w:13, tag:'Mi', dat:'19.8', dur:'19 min', k:244, kpm:12.7, watt:'222W', hf:130, kum:32233, rr:'118/78/97', note:'Kinomap · Casal Palocco - Pontile Ostia · 10.97km · Ø84rpm · Max 292W · 10Hm · Max 40.5km/h · 30°C'},
   {n:'93', w:13, tag:'Do', dat:'20.8', dur:'31 min 14s', k:373, kpm:11.9, watt:'208W', hf:120, kum:32606, rr:'121/73/87', rr_ruhe:'135/85/71', note:'Kinomap · Widnau - Widnau · 17.29km · Ø79rpm · Max 287W · 30Hm · Max 40.8km/h · 26°C'},
-  {n:'94', w:13, tag:'Fr', dat:'21.8', dur:'30 min 52s', k:380, kpm:12.3, watt:'215W', hf:116, kum:32986, rr:'144/84/84', rr_ruhe:'157/87/80 ⚠️', note:'Kinomap · Berlin Marathon 2019 (1) · 17.27km · Ø79rpm · Max 287W · 8Hm · Max 36.3km/h · 25°C · sekundengenau'},
-  {n:'95', w:13, tag:'Sa', dat:'22.8', dur:'35 min 38s', k:398, kpm:11.2, watt:'194W', hf:119, kum:33384, rr:'126/75/87', rr_ruhe:'140/80/73 ⚠️', note:'Kinomap · 😍 In and around CERN (🇨🇭🇫🇷) · 17.16km · Ø76rpm · Max 331W · 144Hm · Max 55.0km/h · 23°C · etwas höherer blutdruck etwas bessere leistung'},
+  {n:'94', w:13, tag:'Fr', dat:'21.8', dur:'30 min 52s', k:380, kpm:12.3, watt:'215W', hf:116, kum:32986, rr:'144/84/84', rr_ruhe:'157/87/80', note:'Kinomap · Berlin Marathon 2019 (1) · 17.27km · Ø79rpm · Max 287W · 8Hm · Max 36.3km/h · 25°C · sekundengenau'},
+  {n:'95', w:13, tag:'Sa', dat:'22.8', dur:'35 min 38s', k:398, kpm:11.2, watt:'194W', hf:119, kum:33384, rr:'126/75/87', rr_ruhe:'140/80/73', note:'Kinomap · 😍 In and around CERN (🇨🇭🇫🇷) · 17.16km · Ø76rpm · Max 331W · 144Hm · Max 55.0km/h · 23°C · etwas höherer blutdruck etwas bessere leistung'},
   {n:'96', w:13, tag:'So', dat:'23.8', dur:'33 min 32s', k:377, kpm:11.2, watt:'196W', hf:120, kum:33761, rr:'120/72/89', rr_ruhe:'140/85/70', note:'Kinomap · Golden Autumn on Vienna\'s Donauinsel · 18.14km · Ø78rpm · Max 335W · 72Hm · Max 50.5km/h'},
   {n:'97', w:14, tag:'Mo', dat:'24.8', dur:'37 min 37s', k:440, kpm:11.7, watt:'204W', hf:116, kum:34201, rr_ruhe:'135/85/67', rr:'113/75/83', note:'Kinomap · 🚴 Radl Ring München - Dachau-->Ismaning ☀️📹 · 20.58km · Ø79rpm · Max 303W · 44Hm · Max 48.5km/h · 35°C'},
   {n:'98', w:14, tag:'Di', dat:'25.8', dur:'49 min 42s', k:557, kpm:11.2, watt:'195W', hf:113, kum:34758, rr:'120/78/80', rr_ruhe:'140/85/68', rr_abend:'127/77/76', note:'Kinomap · Cologne Lunchbreak · 26.07km · Ø77rpm · Max 330W · 102Hm · Max 51.9km/h · 21°C'},
@@ -639,12 +640,16 @@ const rows=[
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · 17.8–23.8',14:'Woche 14 · ab 24.8'};
 document.title=`Training Dashboard W1–W${Math.max(...rows.filter(r=>r.n!=='–').map(r=>r.w))}`;
 
-// BLUTDRUCK vor/nach dem Training (systolisch/diastolisch), nur Zeilen mit rr_ruhe oder rr
+// BLUTDRUCK Ruhe/nach Training/abends (systolisch/diastolisch), automatisch als "außerhalb Zielband"
+// markiert wenn systolisch>140 oder diastolisch>90 (Zielband 120-140/80-90) — einzige Quelle für
+// diese Schwelle, gilt für Chart und Tabelle gleichermaßen.
 const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;}; // [diastolisch,systolisch]
-const bpRows=rows.filter(r=>r.n!=='–'&&(r.rr_ruhe||r.rr));
+const isExcess=v=>v&&(v[1]>140||v[0]>90);
+const bpRows=rows.filter(r=>r.n!=='–'&&(r.rr_ruhe||r.rr||r.rr_abend));
 const bpLabels=bpRows.map(r=>r.dat);
 const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
 const bpAfter=bpRows.map(r=>parseRR(r.rr));
+const bpEvening=bpRows.map(r=>parseRR(r.rr_abend));
 const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
   const{ctx,chartArea:{left,right},scales:{y}}=chart;
   ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
@@ -654,15 +659,22 @@ const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
   });
   ctx.restore();
 }};
-const isExcess=v=>v&&(v[1]>140||v[0]>90);
 const excessMark=arr=>arr.map(v=>isExcess(v)?Math.max(v[1],v[0])+6:null);
 new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datasets:[
-  {label:'Vor dem Training',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
+  {label:'Ruhe (vor dem Training)',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
   {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3},
+  {label:'Abends',data:bpEvening,backgroundColor:'#7C3AED',borderRadius:3},
   {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpBefore),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1},
-  {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpAfter),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1}
+  {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpAfter),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1},
+  {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpEvening),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1}
 ]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
 
+const bpCell=(raw,color)=>{
+  if(!raw) return `<td class="r" style="color:var(--text3)">–</td>`;
+  const exc=isExcess(parseRR(raw));
+  const style=`color:${exc?'#B8860B':color};font-weight:500;font-size:11px`;
+  return `<td class="r" style="${style}">${raw}${exc?' ⚠️':''}</td>`;
+};
 const tb=document.getElementById('tb');
 tb.innerHTML='';
 let lw=0;
@@ -682,9 +694,9 @@ rows.forEach(r=>{
     <td class="r" style="${r.kpm>=10?'color:#BA7517;font-weight:500':''}">${r.kpm}${r.kpm>=10?' 🟡':''}</td>
     <td class="r">${r.watt}</td>
     <td class="r">${r.hf?r.hf+' bpm':'–'}</td>
-    <td class="r" style="${r.rr_ruhe?'color:#185FA5;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr_ruhe||'–'}</td>
-    <td class="r" style="${r.rr?'color:#A32D2D;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr||'–'}</td>
-    <td class="r" style="${r.rr_abend?'color:#7C3AED;font-weight:500;font-size:11px':'color:var(--text3)'}">${r.rr_abend||'–'}</td>
+    ${bpCell(r.rr_ruhe,'#185FA5')}
+    ${bpCell(r.rr,'#A32D2D')}
+    ${bpCell(r.rr_abend,'#7C3AED')}
     <td class="r" style="color:var(--text3)">${r.kum.toLocaleString()}</td>
     <td style="font-size:11px;color:var(--text3)">${r.note||''}</td>`;
   tb.appendChild(tr);

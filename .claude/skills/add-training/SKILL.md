@@ -77,6 +77,12 @@ Use `--rr` instead of `--rr-ruhe` for a post-training-style reading logged
 on an otherwise-rest day, or `--rr-abend` for an evening reading. At least
 one of the three is required for `--rest`.
 
+Never type a `⚠️` into `--rr`/`--rr-ruhe`/`--rr-abend` yourself — training.html's
+own script flags systolic>140 or diastolic>90 automatically (chart triangle +
+table marker) from the numbers, for all three readings. Pass the plain
+`SYS/DIA/PULS` reading; the script also strips any stray `⚠️` you do pass, so
+manually flagging it just gets silently discarded rather than double-marked.
+
 Full flag reference: `python3 .claude/skills/add-training/scripts/add_training.py --help`
 
 ## Step 3 — read the result

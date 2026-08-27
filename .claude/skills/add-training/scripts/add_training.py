@@ -696,6 +696,15 @@ def node_syntax_check_text(text: str) -> bool:
 # CLI
 # --------------------------------------------------------------------------
 
+def strip_excess_marker(s):
+    """Out-of-band BP (systolic>140 or diastolic>90) is flagged automatically by
+    training.html's own rendering script (bpCell/isExcess) — never stored as text.
+    Strip a stray manually-typed warning emoji so it can't double up with that."""
+    if not s:
+        return s
+    return re.sub(r'\s*⚠️\s*', ' ', s).strip()
+
+
 def build_session_from_args(args) -> dict:
     if args.paste is not None:
         k = parse_kinomap(args.paste)
@@ -707,11 +716,15 @@ def build_session_from_args(args) -> dict:
         raise ValueError("--date ist erforderlich (oder --paste verwenden).")
     date = parse_date_str(args.date)
 
+    rr = strip_excess_marker(args.rr)
+    rr_ruhe = strip_excess_marker(args.rr_ruhe)
+    rr_abend = strip_excess_marker(args.rr_abend)
+
     if args.rest:
-        if not (args.rr_ruhe or args.rr or args.rr_abend):
+        if not (rr_ruhe or rr or rr_abend):
             raise ValueError("Ruhetag-Log braucht mindestens --rr-ruhe/--rr/--rr-abend.")
-        return dict(date=date, rest=True, rr=args.rr, rr_ruhe=args.rr_ruhe,
-                    rr_abend=args.rr_abend, note=args.note)
+        return dict(date=date, rest=True, rr=rr, rr_ruhe=rr_ruhe,
+                    rr_abend=rr_abend, note=args.note)
 
     if args.kcal is None or args.duration is None:
         raise ValueError("Manuelle Session braucht --kcal und --duration (Minuten).")
@@ -725,8 +738,8 @@ def build_session_from_args(args) -> dict:
         watt = round(kpm * WATT_PER_KCALMIN)
 
     return dict(date=date, rest=False, kcal=kcal, dur_min=dur_min, kpm=kpm,
-                watt=watt, hf=args.hf, rr=args.rr, rr_ruhe=args.rr_ruhe,
-                rr_abend=args.rr_abend, note=args.note, rec=args.rec)
+                watt=watt, hf=args.hf, rr=rr, rr_ruhe=rr_ruhe,
+                rr_abend=rr_abend, note=args.note, rec=args.rec)
 
 
 def main():
