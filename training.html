@@ -68,17 +68,17 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 <body>
 
 <h1>Ergometer Trainingsauswertung</h1>
-<p class="sub">25. Mai – 26. August 2026 · Woche 1–14 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
+<p class="sub">25. Mai – 27. August 2026 · Woche 1–14 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
 
 <div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
 
 <div class="metrics">
-  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">111</div></div>
-  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">35380<span>kcal</span></div></div>
-  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3473<span>min</span></div></div>
+  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">112</div></div>
+  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val">35737<span>kcal</span></div></div>
+  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3506<span>min</span></div></div>
   <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">10.2</div></div>
   <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~178<span>W</span></div></div>
-  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">26.8<span>💪</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">27.8<span>💪</span></div></div>
 </div>
 
 <div class="tabs">
@@ -168,9 +168,9 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
         <tbody id="tb"></tbody>
         <tfoot><tr>
           <td colspan="3">Total</td>
-          <td class="r">3473 min</td><td class="r">35380</td>
+          <td class="r">3506 min</td><td class="r">35737</td>
           <td class="r">10.2</td><td class="r">~178 W</td>
-          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">35380</td><td></td>
+          <td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="r">35737</td><td></td>
         </tr></tfoot>
       </table>
     </div>
@@ -399,6 +399,7 @@ const raw=[
   ['25.8',195,557,113,14],
   ['26.8',212,378,113,14],
   ['26.8',197,244,114,14],
+  ['27.8',185,357,125,14],
 ];
 
 // Aggregate per day
@@ -417,7 +418,7 @@ function getWeek(s){
   return Math.floor((d-parseDate('25.5'))/86400000/7)+1;
 }
 
-const startDate=parseDate('25.5'),endDate=parseDate('26.8');
+const startDate=parseDate('25.5'),endDate=parseDate('27.8');
 const allDays=[];
 for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){allDays.push(formatDate(new Date(d)));}
 
@@ -459,10 +460,10 @@ new Chart(document.getElementById('cPuls'),{type:'bar',data:{labels:aggLabels,da
 ]},options:{...baseOpts,scales:{x:bx,y:by('Max bpm',80,pulsMax)}}});
 
 // WEEKLY
-const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,3045,1619];
-const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249,264,138];
-const wkWatt=[155,153,160,159,173,174,178,181,181,183,194,183,201,204];
-const wkKpm=[8.9,8.8,9.2,9.1,9.9,10.0,10.2,10.4,10.4,10.5,11.1,10.5,11.5,11.7];
+const wkKcal=[1575,2555,2110,2140,1173,2106,3248,3315,3961,2940,2969,2624,3045,1976];
+const wkMin=[176,289,229,234,119,210,317,320,380,281,267,249,264,171];
+const wkWatt=[155,153,160,159,173,174,178,181,181,183,194,183,201,202];
+const wkKpm=[8.9,8.8,9.2,9.1,9.9,10.0,10.2,10.4,10.4,10.5,11.1,10.5,11.5,11.6];
 const wkLabels=['W1  25.5–31.5','W2  1.6–7.6','W3  8.6–14.6','W4  15.6–21.6','W5  22.6–28.6','W6  29.6–5.7','W7  6.7–12.7','W8  13.7–19.7','W9  20.7–26.7','W10  27.7–2.8','W11  3.8–9.8','W12  10.8–16.8','W13  17.8–23.8','W14  ab 24.8'];
 const wkColArr=[C1,C2,C3,C4,C5,C6,C7,'#DB2777','#0891B2','#65A30D','#EA580C','#7C3AED','#0D9488','#CA8A04'];
 
@@ -489,7 +490,7 @@ new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
 }});
 
 // Cumulative per calendar day
-const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384,33761,34201,34758,35380];
+const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384,33761,34201,34758,35380,35737];
 const kumMax = Math.ceil(Math.max(...kumData) * 1.08 / 1000) * 1000; // auto-scale: +8% headroom, rounded to nearest 1000
 new Chart(document.getElementById('cKum'),{type:'line',data:{
   labels:aggLabels,
@@ -500,7 +501,7 @@ new Chart(document.getElementById('cKum'),{type:'line',data:{
 new Chart(document.getElementById('cPlan'),{type:'line',data:{
   labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12','W13','W14 (jetzt)','W15','W16','W17'],
   datasets:[
-    {label:'Erreicht',data:[155,153,160,159,173,174,178,181,181,183,194,183,201,204,null,null,null],
+    {label:'Erreicht',data:[155,153,160,159,173,174,178,181,181,183,194,183,201,202,null,null,null],
      borderColor:C2,backgroundColor:'rgba(29,158,117,0.10)',borderWidth:2.5,pointRadius:5,pointBackgroundColor:C2,fill:true,tension:0.3},
     {label:'Ziel',data:[null,null,null,null,null,null,null,181,187,190,190,195,195,195,200,200,200],
      borderColor:C3,backgroundColor:'rgba(186,117,23,0.08)',borderWidth:2.5,pointRadius:4,pointBackgroundColor:C3,fill:true,tension:0.3,borderDash:[5,3]},
@@ -632,6 +633,7 @@ const rows=[
   {n:'–', w:14, tag:'Mi', dat:'26.8', dur:'–', k:null, kpm:null, watt:'–', hf:null, kum:34758, rr_ruhe:'147/89/80 (11:36)'},
   {n:'99', w:14, tag:'Mi', dat:'26.8', dur:'31 min', k:378, kpm:12.2, watt:'212W', hf:113, kum:35136, rr:'108/66/82', note:'Kinomap · Widnau - Widnau · 17.30km · Ø80rpm · Max 330W · 30Hm · Max 41.8km/h · 26°C'},
   {n:'100', w:14, tag:'Mi', dat:'26.8', dur:'21 min 34s', k:244, kpm:11.3, watt:'197W', hf:114, kum:35380, rr:'150/85/85', note:'Kinomap · Vienna - Donnauinsel Nord - 10k+ · 11.64km · Ø78rpm · Max 277W · 21Hm · Max 38.8km/h · 26°C'},
+  {n:'101', w:14, tag:'Do', dat:'27.8', dur:'33 min 36s', k:357, kpm:10.6, watt:'185W', hf:125, kum:35737, rr:'125/78/87', note:'Kinomap · Ferney-Voltaire to Divonne-les-Bains · 15.08km · Ø74rpm · Max 277W · 134Hm · Max 49.3km/h · 27°C · sehr hoch, ziemlich schwach aber durchgehalten'},
 ];
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · 17.8–23.8',14:'Woche 14 · ab 24.8'};
