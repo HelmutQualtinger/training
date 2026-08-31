@@ -68,7 +68,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 <body>
 
 <h1>Ergometer Trainingsauswertung</h1>
-<p class="sub">25. Mai – 30. August 2026 · Woche 1–14 · Christopeit AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
+<p class="sub">25. Mai – 31. August 2026 · Woche 1–15 · christpoet AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
 
 <div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
 
@@ -78,7 +78,7 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
   <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val">3557<span>min</span></div></div>
   <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">10.2</div></div>
   <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val">~179<span>W</span></div></div>
-  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">30.8<span>💪</span></div></div>
+  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val">31.8<span>💪</span></div></div>
 </div>
 
 <div class="tabs">
@@ -420,7 +420,7 @@ function getWeek(s){
   return Math.floor((d-parseDate('25.5'))/86400000/7)+1;
 }
 
-const startDate=parseDate('25.5'),endDate=parseDate('30.8');
+const startDate=parseDate('25.5'),endDate=parseDate('31.8');
 const allDays=[];
 for(let d=new Date(startDate);d<=endDate;d.setDate(d.getDate()+1)){allDays.push(formatDate(new Date(d)));}
 
@@ -492,7 +492,7 @@ new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
 }});
 
 // Cumulative per calendar day
-const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384,33761,34201,34758,35380,35737,35737,35737,36276];
+const kumData=[330,330,600,1000,1270,1575,1575,2075,2425,2425,2775,3180,3580,4130,4130,4480,4890,5300,5700,5700,6240,6240,6760,7280,7680,8080,8380,8380,8688,9088,9553,9553,9553,9553,9553,9553,9553,10115,10691,11233,11659,11659,11659,12181,12791,13396,14011,14614,14907,15454,16022,16648,17237,17237,17806,18222,18637,19326,20063,20505,21154,21686,22183,22183,22437,23049,23585,23937,24642,25123,25964,26325,26749,27163,27599,27599,28092,28442,28840,28840,29450,29877,30395,30716,31100,31630,32233,32606,32986,33384,33761,34201,34758,35380,35737,35737,35737,36276,36276];
 const kumMax = Math.ceil(Math.max(...kumData) * 1.08 / 1000) * 1000; // auto-scale: +8% headroom, rounded to nearest 1000
 new Chart(document.getElementById('cKum'),{type:'line',data:{
   labels:aggLabels,
@@ -641,7 +641,7 @@ const rows=[
 ];
 
 const wn={1:'Woche 1 · 25.5–31.5',2:'Woche 2 · 1.6–7.6',3:'Woche 3 · 8.6–14.6',4:'Woche 4 · 15.6–21.6',5:'Woche 5 · 22.6–28.6',6:'Woche 6 · 29.6–5.7',7:'Woche 7 · 6.7–12.7',8:'Woche 8 · 13.7–19.7',9:'Woche 9 · 20.7–26.7',10:'Woche 10 · 27.7–2.8',11:'Woche 11 · 3.8–9.8',12:'Woche 12 · 10.8–16.8',13:'Woche 13 · 17.8–23.8',14:'Woche 14 · 24.8–30.8',15:'Woche 15 · ab 31.8'};
-document.title=`Training Dashboard W1–W${Math.max(...rows.filter(r=>r.n!=='–').map(r=>r.w))}`;
+document.title=`Training Dashboard W1–W${Math.max(...rows.map(r=>r.w))}`; // incl. Wochen, die bisher nur einen Ruhetag-Eintrag haben
 
 // BLUTDRUCK Ruhe/nach Training/abends (systolisch/diastolisch), automatisch als "außerhalb Zielband"
 // markiert wenn systolisch>140 oder diastolisch>90 (Zielband 120-140/80-90) — einzige Quelle für

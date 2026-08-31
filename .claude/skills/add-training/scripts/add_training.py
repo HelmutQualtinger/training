@@ -420,7 +420,11 @@ def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
     # row's own w — so those two must cover every week present in `rows`, or the
     # separator renders "undefined" in an undefined color.
     table_max_week = max([max_week] + [r['w'] for r in rows])
-    end_date = parse_date_str(raw[-1]['dat']) if raw else START_DATE
+    # The logged period runs to the last *row*, not the last training session:
+    # a trailing rest-day/BP row extends the log (and the daily charts show it
+    # as a grey Ruhetag column) even though it adds nothing to `raw`.
+    end_date = max([parse_date_str(r['dat']) for r in rows] +
+                   ([parse_date_str(raw[-1]['dat'])] if raw else [START_DATE]))
 
     # ---- hero metrics ----
     total_kcal = sum(r['k'] for r in real_rows if r['k'] is not None)
@@ -521,7 +525,7 @@ def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
     sub_end = f"{end_date.day}. {month_de[end_date.month]} 2026"
     html.text = re.sub(
         r'(<p class="sub">25\. Mai – )[^·]+( · Woche 1–)\d+',
-        lambda m2: m2.group(1) + sub_end + m2.group(2) + str(max_week),
+        lambda m2: m2.group(1) + sub_end + m2.group(2) + str(table_max_week),
         html.text)
 
     # ---- endDate ----
