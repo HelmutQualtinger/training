@@ -648,7 +648,9 @@ document.title=`Training Dashboard W1–W${Math.max(...rows.filter(r=>r.n!=='–
 // diese Schwelle, gilt für Chart und Tabelle gleichermaßen.
 const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;}; // [diastolisch,systolisch]
 const isExcess=v=>v&&(v[1]>140||v[0]>90);
-const bpRows=rows.filter(r=>r.n!=='–'&&(r.rr_ruhe||r.rr||r.rr_abend));
+// Rest days carry real BP readings too (n:'–' only means "no training that day"),
+// so they belong in this chart — filter on the readings alone, not on n.
+const bpRows=rows.filter(r=>r.rr_ruhe||r.rr||r.rr_abend);
 const bpLabels=bpRows.map(r=>r.dat);
 const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
 const bpAfter=bpRows.map(r=>parseRR(r.rr));
