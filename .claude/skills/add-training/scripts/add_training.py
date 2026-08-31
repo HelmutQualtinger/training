@@ -414,6 +414,12 @@ def week_color_css(w: int) -> str:
 def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
     real_rows = [r for r in rows if r['n'] != '–']
     max_week = max(r['w_num'] for r in raw) if raw else 1
+    # Rest-day/BP-only rows can open a week before any session lands in it. The
+    # charts and weekly rollups stay on max_week (a week with no training has
+    # nothing to plot), but the table's week separator reads wn/wkColors by the
+    # row's own w — so those two must cover every week present in `rows`, or the
+    # separator renders "undefined" in an undefined color.
+    table_max_week = max([max_week] + [r['w'] for r in rows])
     end_date = parse_date_str(raw[-1]['dat']) if raw else START_DATE
 
     # ---- hero metrics ----
@@ -471,7 +477,10 @@ def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
 
     labels = []
     for w in range(1, max_week + 1):
-        if w == max_week:
+        # Only open-end the last week if no later week has been opened yet —
+        # otherwise wkLabels would say "ab 24.8" while wn already closed that
+        # week off as a range, drifting the two week-label sets apart.
+        if w == max_week == table_max_week:
             s, _e = week_range(w)
             labels.append(f"W{w}  ab {fmt_date(s)}")
         else:
@@ -480,8 +489,8 @@ def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
                           ','.join(js_str(l) for l in labels), end_marker='];')
 
     wn_entries = []
-    for w in range(1, max_week + 1):
-        if w == max_week:
+    for w in range(1, table_max_week + 1):
+        if w == table_max_week:
             s, _e = week_range(w)
             wn_entries.append(f"{w}:'Woche {w} · ab {fmt_date(s)}'")
         else:
@@ -490,7 +499,8 @@ def rebuild(html: Html, raw: list, rows: list, dry_run: bool) -> dict:
 
     colors = [week_color_js(w) for w in range(1, max_week + 1)]
     html.replace_section('const wkColors={',
-                          ','.join(f"{w}:{c}" for w, c in zip(range(1, max_week + 1), colors)),
+                          ','.join(f"{w}:{week_color_js(w)}"
+                                   for w in range(1, table_max_week + 1)),
                           end_marker='};')
     html.replace_section('const wkColArr=[', ','.join(colors), end_marker='];')
 
