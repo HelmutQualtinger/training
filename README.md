@@ -6,7 +6,7 @@ Personal indoor-cycling training log (Christopeit AX 4000 + Kinomap), tracked si
 
 ## Dashboard
 
-`training.html` is the main dashboard — open it in a browser. It has four tabs:
+`training.html` is the main dashboard — it fetches `training_log.csv` at load time, so it needs to be served over HTTP rather than opened directly (e.g. `python3 -m http.server` from this folder, then open `http://localhost:8000/training.html`). It has four tabs:
 
 - **Täglich** — Ø Watt, Kalorien, Trainingszeit und Max-Puls pro Tag
 - **Wöchentlich** — Kalorien & Minuten sowie Ø Watt pro Woche, kumulative Kalorien
@@ -17,11 +17,9 @@ Personal indoor-cycling training log (Christopeit AX 4000 + Kinomap), tracked si
 
 ## Data files
 
-- `training_data.csv` — one row per session (Datum, Dauer, kcal, Watt, Max HF, Woche)
-- `kinomap_rennwerte.csv` — Kinomap-Fahrten mit Strecke, Distanz, Höhenmeter, Temperatur, Kadenz
-- `training_data_mysql.sql` — älterer Export mit Blutdruck-Werten (nicht mehr aktuell gehalten)
+- `training_log.csv` — the single source of truth: one row per session (or per rest-day BP log), with Datum/Dauer/kcal/Watt/MaxHF/Blutdruck plus structured Kinomap fields (Strecke, Distanz, Höhenmeter, Temperatur, Kadenz). Everything else (Wochentag, Woche, kumulative kcal, Charts, Tabelle) is derived from this file by `training.html` at render time.
 
-All data lives as hardcoded JS arrays inside the HTML files — there's no database or build step. See `CLAUDE.md` for how the files relate to each other and the watt-estimation formula.
+There's no database or build step. See `CLAUDE.md` for the CSV schema, the watt-estimation formula, and how to add a new session (via the `add-training` skill).
 
 ## Other files
 

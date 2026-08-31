@@ -2,28 +2,27 @@
 name: add-training
 description: >
   Add one new training session (or a rest-day blood-pressure log) to
-  training.html and regenerate training.pdf — done entirely by a
-  deterministic Python script, no LLM parsing/editing of the HTML involved.
-  Handles three input styles: a pasted Kinomap session-summary screen, a
-  manually described session (duration/kcal/watt/etc.), or a rest-day BP-only
-  entry. Use this whenever the user wants to log a new ergometer session,
-  paste Kinomap results, or record a rest-day blood pressure reading in this
-  repo — trigger phrases: "add training", "log this session", "neue Einheit
-  eintragen", "bldr jetzt ...", or a pasted Kinomap summary block.
+  training_log.csv and regenerate training.pdf — done entirely by a
+  deterministic Python script, no LLM parsing/editing involved. Handles
+  three input styles: a pasted Kinomap session-summary screen, a manually
+  described session (duration/kcal/watt/etc.), or a rest-day BP-only entry.
+  Use this whenever the user wants to log a new ergometer session, paste
+  Kinomap results, or record a rest-day blood pressure reading in this
+  repo — trigger phrases: "add training", "log this session", "neue
+  Einheit eintragen", "bldr jetzt ...", or a pasted Kinomap summary block.
 ---
 
 # Add Training Skill
 
-Appends a session to `training.html` (and regenerates `training.pdf`) via
-`scripts/add_training.py`. The script is the source of truth for the
-mechanics — it fully re-derives every dependent section (hero metrics,
-weekly rollups, table footer, cumulative-kcal chart, axis ranges, the
-Plan-200W chart, the daily-tab legend, the subtitle) from the `raw`/`rows`
-arrays on every run, so there is no hand-editing and no risk of the
-staleness bugs documented in `CLAUDE.md`.
+Appends one row to `training_log.csv` (and regenerates `training.pdf`) via
+`scripts/add_training.py`. `training_log.csv` is the single source of truth
+for this repo (see `CLAUDE.md`) — `training.html` is static and fetches +
+parses the CSV at load time, deriving every chart, table row, hero metric
+and weekly rollup from it itself. This script therefore **never touches
+training.html** — it only ever appends one well-formed CSV row.
 
 **Your job when this skill runs is to gather the right input and call the
-script — not to edit training.html yourself.**
+script — not to edit any files yourself.**
 
 ## Step 1 — figure out what kind of entry this is
 
@@ -40,8 +39,10 @@ If it's ambiguous which one, ask.
 
 ## Step 2 — run the script
 
-All three modes regenerate `training.pdf` by default (~8s, headless Chrome).
-Pass `--no-pdf` only if the user explicitly wants to skip that.
+All three modes regenerate `training.pdf` by default (~8s: it briefly
+serves the repo over a local HTTP port and renders it in headless Chrome —
+see "Why HTTP, not file://" below). Pass `--no-pdf` only if the user
+explicitly wants to skip that.
 
 **Kinomap paste** — pipe the raw pasted text in via stdin, don't try to
 reformat it first:
@@ -88,19 +89,20 @@ Full flag reference: `python3 .claude/skills/add-training/scripts/add_training.p
 ## Step 3 — read the result
 
 The script prints one JSON object to stdout and exits non-zero on failure —
-**never try to patch training.html by hand if it errors; report the error
-and stop.** Known guardrails it enforces:
+**never try to patch the CSV by hand if it errors; report the error and
+stop.** Known guardrails it enforces:
 
-- Refuses out-of-order dates (a date before the last logged session) —
-  this script only supports appending the newest session, not inserting.
+- Refuses out-of-order dates (a date before the last logged row) — this
+  script only supports appending the newest session, not inserting.
 - Refuses a `--rest` entry with no BP field at all.
-- Runs a Node syntax-check on the rewritten `<script>` block before saving
-  anything; if that fails, nothing is written.
+
+For a Kinomap paste, `Watt_Max_PR` is set automatically when the parsed max
+watt beats every `Watt_Max` already in the CSV — never set this by hand.
 
 On success, summarize for the user: date, kcal/watt/duration logged, new
 running totals (`einheiten`, `total_kcal`, `avg_watt`), and whether the PDF
-was regenerated. If the session opened a new week, mention that the
-previous week's label got closed off and a new color was assigned.
+was regenerated. `training.html` needs no changes — it will show the new
+row the next time it's loaded (or re-served), since it reads the CSV live.
 
 ## Notes on the Kinomap parser
 
@@ -109,16 +111,26 @@ route name on the line before the distance number, then labeled blocks
 (`Geschwindigkeit`/`Leistung`/`Kadenz` each with `Avr.`/`Max.`, then
 `Entfernung`, `Erhebungen`, `Dauer`, `Kalorien`, `Ausstattung`). The
 `Ausstattung` line's free text after `pulse NNN`/`temp NN`/`bldr X/Y/Z`
-becomes the note's trailing commentary. If the paste is missing `Leistung`,
-`Kalorien`, or `Dauer`, the script errors out asking for those explicitly
-rather than guessing.
+becomes the `Kommentar` column's trailing commentary. If the paste is
+missing `Leistung`, `Kalorien`, or `Dauer`, the script errors out asking
+for those explicitly rather than guessing.
 
-`kum` (cumulative), `n` (row number), `tag` (weekday) and the week number
-are always computed by the script — never ask the user for these.
+`Nr` (row number) is always computed by the script (a plain next-integer,
+matching the convention already used since roughly week 9 — no letter
+suffixes) — never ask the user for it. `Woche`, weekday, and cumulative
+kcal are never stored at all; `training.html` derives them from `Datum`
+and row order at render time.
+
+## Why HTTP, not file://
+
+`training.html` loads `training_log.csv` via `fetch()`, which Chrome
+refuses for local files opened as `file://` (CORS). So PDF regeneration
+briefly runs `python3 -m http.server` on a free port in the repo root,
+points headless Chrome's `--print-to-pdf` at `http://localhost:<port>/...`,
+and tears the server down afterward. This is the same reason `training.html`
+itself needs to be viewed through a local server rather than double-clicked.
 
 ## What this skill does NOT touch
 
-`training_data.csv`, `kinomap_rennwerte.csv`, `training_data_mysql.sql`,
-`training_slideshow.html`, `training_dashboard.html` — these are documented
-in `CLAUDE.md` as separate, manually-synced snapshots. Don't update them as
-part of this skill unless the user explicitly asks.
+`training.html` — it's static and reads `training_log.csv` at render time,
+so there is nothing in it to update when a session is added.
