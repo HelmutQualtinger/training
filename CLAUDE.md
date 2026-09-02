@@ -31,21 +31,33 @@ Recipe (headless Google Chrome + poppler's `pdftoppm`/`pdftotext` for verificati
 
 ```bash
 SCRATCH=/path/to/scratch   # any writable temp dir
+
 python3 - <<'EOF'
 p = '/Users/haraldbeker/training/training.html'
 s = open(p).read()
-s = s.replace(".sec{display:none}", ".sec{display:block}")   # show all 4 tabs
-s = s.replace("const isDark=matchMedia('(prefers-color-scheme: dark)').matches;", "const isDark=false;")
-open('/Users/haraldbeker/training/_training_print_tmp.html', 'w').write(s)  # must live in the repo root, next to training_log.csv
+s = s.replace(
+    ".sec{display:none}", ".sec{display:block}"
+)   # show all 4 tabs
+s = s.replace(
+    "const isDark=matchMedia("
+    "'(prefers-color-scheme: dark)').matches;",
+    "const isDark=false;",
+)
+out = '/Users/haraldbeker/training/_training_print_tmp.html'
+open(out, 'w').write(s)  # must live in repo root, next to CSV
 EOF
 
 PORT=8756   # any free local port, not 5000 (macOS AirPlay)
-(cd /Users/haraldbeker/training && python3 -m http.server $PORT >/dev/null 2>&1 &)
+(cd /Users/haraldbeker/training \
+  && python3 -m http.server $PORT >/dev/null 2>&1 &)
 sleep 1
 
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless --disable-gpu --no-pdf-header-footer --virtual-time-budget=8000 \
-  --print-to-pdf="$SCRATCH/final.pdf" "http://localhost:$PORT/_training_print_tmp.html"
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+URL="http://localhost:$PORT/_training_print_tmp.html"
+"$CHROME" \
+  --headless --disable-gpu --no-pdf-header-footer \
+  --virtual-time-budget=8000 \
+  --print-to-pdf="$SCRATCH/final.pdf" "$URL"
 
 cp "$SCRATCH/final.pdf" /Users/haraldbeker/training/training.pdf
 rm /Users/haraldbeker/training/_training_print_tmp.html
@@ -55,9 +67,12 @@ lsof -ti:$PORT | xargs -r kill
 Before trusting the output, verify at high DPI — the low-res inline PDF preview is not reliable enough to catch either of the bugs below:
 
 ```bash
-pdftoppm -png -r 200 -f 1 -l 1 /Users/haraldbeker/training/training.pdf "$SCRATCH/check"
-# crop/zoom the daily "Ø Watt pro Tag" chart and confirm the tallest bar's pixel
-# height actually lines up with its real value's gridline.
+pdftoppm -png -r 200 -f 1 -l 1 \
+  /Users/haraldbeker/training/training.pdf \
+  "$SCRATCH/check"
+# crop/zoom the daily "Ø Watt pro Tag" chart and confirm
+# the tallest bar's pixel height lines up with its real
+# value's gridline.
 ```
 
 Pitfalls already fixed in training.html — don't reintroduce them:
