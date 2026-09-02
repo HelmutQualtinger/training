@@ -138,7 +138,8 @@ def parse_kinomap(text: str) -> dict:
     ausstattung = None
     for i, l in enumerate(lines):
         if l == 'Ausstattung' and i + 1 < len(lines):
-            ausstattung = lines[i + 1]
+            # device name + telemetry/comment can span multiple lines
+            ausstattung = ' '.join(lines[i + 1:])
             break
 
     if watt_avg is None or kcal is None or dauer_str is None:
