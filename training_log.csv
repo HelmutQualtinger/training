@@ -112,8 +112,7 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 23.8,96,2012,377,196,120,,140/85/70,120/72/89,,1,Golden Autumn on Vienna's Donauinsel,18.14,78,335,,72,,50.5,
 24.8,97,2257,440,204,116,,135/85/67,113/75/83,,1,🚴 Radl Ring München - Dachau-->Ismaning ☀️📹,20.58,79,303,,44,35,48.5,
 25.8,98,2982,557,195,113,,140/85/68,120/78/80,127/77/76,1,Cologne Lunchbreak,26.07,77,330,,102,21,51.9,
-26.8,–,,,,,,147/89/80 (11:36),,,,,,,,,,,,
-26.8,99,1860,378,212,113,,,108/66/82,,1,Widnau - Widnau,17.30,80,330,,30,26,41.8,
+26.8,99,1860,378,212,113,,147/89/80 (11:36),108/66/82,,1,Widnau - Widnau,17.30,80,330,,30,26,41.8,
 26.8,100,1294,244,197,114,,,150/85/85,,1,Vienna - Donnauinsel Nord - 10k+,11.64,78,277,,21,26,38.8,
 27.8,101,2016,357,185,125,,,125/78/87,,1,Ferney-Voltaire to Divonne-les-Bains,15.08,74,277,,134,27,49.3,"sehr hoch, ziemlich schwach aber durchgehalten"
 30.8,102,3098,539,183,120,,,116/70/87,,1,Cologne Lunchbreak,26.07,73,306,,102,29,52.7,"lange pause in der mitte eingelegt, schwach, nicht jeder tag ist gut"
@@ -121,21 +120,17 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 31.8,104,1259,255,212,124,,,128/80/94,,1,Vienna - Donnauinsel Nord - 10k+,11.64,81,349,,21,26,41.1,
 1.9,105,3086,522,177,125,,,108/70/84,,1,Lechradweg - von Grießau nach Weißenbach (Tirol/Austria/Österreich),28.34,73,368,1,91,26,52.2,"bldr, schwach mit pause in der mitte, kein rekordtag, aber immerhi 52 minutn totaleabfahrt"
 2.9,106,3012,502,174,107,,135/80/77,123/73/84,,1,CERN-Divonne,24.21,72,320,,142,25,58.4,"sehr geringe kadenz, langsam angegangen, am schluss noch reserve, aber am stück zuende gefahren"
-3.9,–,,,,,,130/75/67,,,,,,,,,,,,
-3.9,107,2257,454,210,116,,,125/79/87,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.80,79,316,,50,25,52.6,
+3.9,107,2257,454,210,116,,130/75/67,125/79/87,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.80,79,316,,50,25,52.6,
 3.9,108,1745,312,187,112,,,145/90/81,,1,St. Margrethen- Bregenz- Lochau,15.41,75,258,,33,24,39.6,
 5.9,109,2319,422,190,120,,,104/67/93,,1,🚴 Radl Ring München - Dachau-->Ismaning ☀️📹,20.58,76,349,,44,25,47.5,ausgepowert
-6.9,–,,,,,,138/80/67,,,,,,,,,,,,
-6.9,110,2325,435,196,114,,,113/71/88,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.81,77,354,,50,26,53.8,
+6.9,110,2325,435,196,114,,138/80/67,113/71/88,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.81,77,354,,50,26,53.8,
 7.9,111,2139,397,195,110,,,117/74/82,,1,Radfahren Baden bei Wien - Laxenburg 030526,20.07,77,386,1,57,26,50.8,"nicht in den tritt gekommen, in der zweiten hälfte noch steigern kännen"
 8.9,112,3982,683,179,108,,,131/81/81,,1,Sankt-Peter Ording-Eidersperrwerk-Tönning,34.80,73,445,1,11,27,38.0,
 9.9,113,4526,730,168,100,,,125/86/74,,1,Büsum-- Sankt Peter-Ording,38.28,71,287,,59,24,42.4,"sehr niedriger puls, lange Strecke langsam angegangen  nach 2/3 20 minute pause, anschiessend fertig gemacht und noch kraft für sprint gehabt"
 10.9,–,,,,,,127/75/71,,,,,,,,,,,,
 12.9,–,,,,,,135/77/68,,,,,,,,,,,,
 13.9,114,2005,380,198,123,,,124/78/93,,1,Golden Autumn on Vienna's Donauinsel,18.14,79,340,,72,,51.1,
-14.9,–,,,,,,137/77/78,,,,,,,,,,,,
-14.9,115,2422,405,175,116,,,121/77/86,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.81,73,238,,50,25,51.6,
-15.9,–,,,,,,149/88/72 (05:11),,,,,,,,,,,,
-15.9,116,2993,555,193,115,,,127/79/89,,1,Cologne Lunchbreak,26.07,76,383,,102,25,52.3,
+14.9,115,2422,405,175,116,,137/77/78,121/77/86,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.81,73,238,,50,25,51.6,
+15.9,116,2993,555,193,115,,149/88/72 (05:11),127/79/89,,1,Cologne Lunchbreak,26.07,76,383,,102,25,52.3,
 16.9,117,2787,554,208,120,,,125/73/94,,1,CERN-Divonne,24.21,79,378,,142,25,60.4,
 17.9,118,1868,376,210,121,,135/85/69,120/80/92,,1,Berlin Marathon 2019 (1),17.28,79,344,,8,24,37.6,

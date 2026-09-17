@@ -272,7 +272,7 @@ function getTag(s){return TAGE[parseDate(s).getDay()];}
 const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 function formatGerman(dt){return `${dt.getDate()}. ${MONATE[dt.getMonth()]}`;}
 
-function durLabel(sec){ if(sec==null) return '–'; const m=Math.floor(sec/60), s=sec%60; return s>0?`${m} min ${s}s`:`${m} min`; }
+function durLabel(sec){ if(sec==null) return '–'; const m=Math.floor(sec/60), s=sec%60; return `${m}:${String(s).padStart(2,'0')}`; }
 function wattLabel(w){ return w==null?'–':`~${w}W`; }
 
 async function loadSessions(){
@@ -302,6 +302,7 @@ async function loadSessions(){
     if(s.kinomap){
       const parts=[];
       if(s.strecke) parts.push(s.strecke);
+      
       if(s.distanzKm) parts.push(`${s.distanzKm}km`);
       if(s.kadenzRpm) parts.push(`Ø${s.kadenzRpm}rpm`);
       if(s.wattMax) parts.push(`Max ${s.wattMax}W${s.wattMaxPR?' 🏆':''}`);
