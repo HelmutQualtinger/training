@@ -20,77 +20,148 @@ if('serviceWorker' in navigator){
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f4f0;--surface:#fff;--surface2:#eeecea;
-  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --bg:#f2f1ec;--surface:#fff;--surface2:#eceae5;
+  --text:#14140f;--text2:#56554f;--text3:#87867d;
   --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.06);
   --C1:#185FA5;--C2:#1D9E75;--C3:#BA7517;--C4:#533AB7;
   --C5:#A32D2D;--C6:#6B21A8;--C7:#0F766E;
-  --radius:10px;--radius-lg:14px;
+  --radius:12px;--radius-lg:16px;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px -18px rgba(0,0,0,.35);
+  --num:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#1a1a18;--surface:#242421;--surface2:#2e2e2b;
+  --bg:#141414;--surface:#1f1f1d;--surface2:#2a2a27;
   --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
-  --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.07);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.8);
 }}
-@media print{:root{--bg:#fff;--surface:#fff;--surface2:#fff}@page{size:landscape}body{max-width:none}}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px;max-width:960px;margin:0 auto;font-size:14px;line-height:1.5}
-h1{font-size:21px;font-weight:500;margin-bottom:3px}
-.sub{font-size:13px;color:var(--text2);margin-bottom:24px}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:24px}
-.metric{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px}
-.metric-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
-.metric-val{font-size:20px;font-weight:500}
-.metric-val span{font-size:12px;font-weight:400;color:var(--text3);margin-left:2px}
-.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:6px 16px;border-radius:20px;border:0.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;color:var(--text2)}
-.tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:22px 20px 40px;max-width:1180px;margin:0 auto;font-size:14px;line-height:1.5}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:28px 28px 24px;margin-bottom:16px;color:#f3f1ea;
+  background:linear-gradient(135deg,#101d2b 0%,#1b3350 48%,#2c2142 100%)}
+.hero::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 88% -18%,rgba(186,117,23,.5),transparent 58%)}
+.hero-inner{position:relative;z-index:1}
+.hero-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:7px}
+.hero h1{font-size:clamp(25px,3.4vw,36px);font-weight:600;letter-spacing:-.025em;line-height:1.08}
+.hero .sub{font-size:13px;color:rgba(255,255,255,.62);margin-top:7px;max-width:62ch}
+.hero-figure{text-align:right;flex-shrink:0}
+.hero-figure .metric-lbl{font-size:10.5px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px}
+.hero-figure .metric-val{font-family:var(--num);font-size:clamp(38px,6vw,54px);font-weight:600;letter-spacing:-.04em;line-height:1;
+  background:linear-gradient(180deg,#fff,#f0b860);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-figure .metric-val span{font-size:17px;font-weight:500;letter-spacing:0;margin-left:3px;-webkit-text-fill-color:rgba(255,255,255,.6)}
+.hero-note{position:relative;z-index:1;margin-top:20px;padding:11px 15px;font-size:12.5px;line-height:1.45;color:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.07);border-left:3px solid #E0903A;border-radius:0 var(--radius) var(--radius) 0}
+.hero-note strong{color:#fff;font-weight:600}
+
+/* ---------- METRICS ---------- */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+.metric{position:relative;overflow:hidden;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:14px 16px 13px;box-shadow:var(--shadow)}
+.metric::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--text3))}
+.metric-lbl{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.9px;font-weight:600;margin-bottom:6px}
+.metric-val{font-family:var(--num);font-size:23px;font-weight:600;letter-spacing:-.03em}
+.metric-val span{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;font-weight:400;color:var(--text3);margin-left:3px;letter-spacing:0}
+
+/* ---------- TABS ---------- */
+.tabs{display:inline-flex;gap:3px;margin-bottom:18px;padding:4px;background:var(--surface2);border-radius:999px;flex-wrap:wrap}
+.tab{padding:7px 18px;border-radius:999px;border:none;background:transparent;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);
+  font-family:inherit;transition:background .15s,color .15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 .sec{display:none}
 .sec.on{display:block}
-.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 14px;margin-bottom:14px}
-@media print{.card{break-inside:avoid;page-break-inside:avoid}}
-.section-lbl{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
-.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
-.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
+
+/* ---------- CARDS / GRID ---------- */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));margin-bottom:14px}
+.span-all{grid-column:1/-1}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 14px;box-shadow:var(--shadow)}
+@media print{.card{break-inside:avoid;page-break-inside:avoid;box-shadow:none}}
+.section-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.9px;margin-bottom:12px;
+  display:flex;align-items:center;gap:7px}
+.section-lbl::before{content:'';width:6px;height:6px;border-radius:2px;background:var(--c,var(--C1));flex-shrink:0}
+.legend{display:flex;flex-wrap:wrap;gap:11px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2)}
 .dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .chart-wrap{position:relative;width:100%}
+
+/* ---------- TABLE ---------- */
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;padding:8px 6px;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+th{text-align:left;padding:9px 6px;color:var(--text3);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+  border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface);position:sticky;top:0;z-index:2}
 th.r,td.r{text-align:right}
-td{padding:7px 6px;border-bottom:0.5px solid var(--border2);color:var(--text)}
-tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
-.wk{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;padding:10px 6px 3px;color:var(--text3)}
-.rec-row td{background:rgba(186,117,23,0.07)}
+td{padding:8px 6px;border-bottom:0.5px solid var(--border2);color:var(--text)}
+td.r{font-family:var(--num);font-variant-numeric:tabular-nums}
+tbody tr:hover td{background:var(--surface2)}
+tfoot td{font-weight:600;border-top:1px solid var(--border);border-bottom:none}
+.wk{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.9px;padding:12px 6px 4px;color:var(--text3)}
+.rec-row td{background:rgba(186,117,23,0.08)}
 @media print{.rec-row td{background:none}}
-.note{background:var(--surface2);border-left:3px solid #A32D2D;border-radius:0 var(--radius) var(--radius) 0;padding:11px 14px;font-size:13px;color:var(--text2);margin-bottom:20px}
-.note strong{color:var(--text)}
-.phases{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.phase{background:var(--surface);border:0.5px solid var(--border);border-left:3px solid var(--C1);border-radius:0 var(--radius) var(--radius) 0;padding:12px 16px;display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:start}
-.phase.done{border-left-color:var(--C2)}
-.phase.next{border-left-color:var(--C3)}
-.phase-title{font-size:13px;font-weight:500}
-.phase-sub{font-size:12px;color:var(--text2);margin-top:1px}
-.ps{font-size:11px;font-weight:500;padding:2px 8px;border-radius:5px;display:inline-block;margin-top:5px}
+
+/* ---------- PLAN ---------- */
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px}
+.phase{position:relative;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;
+  box-shadow:var(--shadow);border-top:3px solid var(--C1)}
+.phase.done{border-top-color:var(--C2)}
+.phase.next{border-top-color:var(--C3)}
+.phase-title{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.phase-sub{font-size:11.5px;color:var(--text3);margin-top:1px;text-transform:uppercase;letter-spacing:.7px;font-weight:500}
+.ps{font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-block;margin:8px 0 10px;text-transform:uppercase;letter-spacing:.5px}
 .ps-done{background:#E1F5EE;color:#085041}
 .ps-next{background:#FAEEDA;color:#633806}
 .ps-later{background:var(--surface2);color:var(--text3)}
-.phase-detail{font-size:13px;color:var(--text2)}
-.footer{font-size:12px;color:var(--text3);margin-top:24px;padding-top:16px;border-top:0.5px solid var(--border)}
+.phase-detail{font-size:12.5px;color:var(--text2);line-height:1.55}
+.footer{font-size:11.5px;color:var(--text3);margin-top:26px;padding-top:16px;border-top:0.5px solid var(--border)}
+
+/* ---------- PRINT ---------- */
+@media print{
+  :root{--bg:#fff;--surface:#fff;--surface2:#fff;--shadow:none}
+  @page{size:landscape}
+  body{max-width:none;padding:0}
+  .hero{background:#fff;color:#000;border:0.5px solid var(--border);border-radius:0;padding:14px 16px}
+  .hero::after{display:none}
+  .hero h1{color:#000}
+  .hero .sub,.eyebrow,.hero-figure .metric-lbl{color:#444}
+  .hero-figure .metric-val{background:none;color:#000;-webkit-text-fill-color:#000}
+  .hero-figure .metric-val span{-webkit-text-fill-color:#444}
+  .hero-note{background:none;color:#333;border-left-color:#A32D2D}
+  .hero-note strong{color:#000}
+  .tabs{display:none}
+  th{position:static}
+  /* one card per row on paper: the print viewport is narrower than the
+     screen layout the canvases were sized for, so a 2-col grid clips them */
+  .grid,.phases{grid-template-columns:1fr}
+  .chart-wrap canvas{width:100%!important}
+}
 </style>
 </head>
 <body>
 
-<h1>Ergometer Trainingsauswertung</h1>
-<p class="sub"><span id="subRange">…</span> · christpoet AX 4000 + Kinomap · 65 J · 110 kg · Bisoprolol</p>
-
-<div class="note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-head">
+      <div>
+        <div class="eyebrow">Christopeit AX 4000 · Kinomap</div>
+        <h1>Ergometer Trainingsauswertung</h1>
+        <p class="sub"><span id="subRange">…</span> · 65 J · 110 kg · Bisoprolol</p>
+      </div>
+      <div class="hero-figure">
+        <div class="metric-lbl">Ø Watt gesamt</div>
+        <div class="metric-val" id="mWatt">–</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-note"><strong>Betablocker-Hinweis:</strong> HF-Werte nur Orientierung — Bisoprolol dämpft den Pulsanstieg. Steuerung über <strong>Watt + Borg 13–14</strong>.</div>
+</header>
 
 <div class="metrics">
-  <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val" id="mEinheiten">–</div></div>
-  <div class="metric"><div class="metric-lbl">Kalorien total</div><div class="metric-val" id="mKalorien">–</div></div>
-  <div class="metric"><div class="metric-lbl">Dauer total</div><div class="metric-val" id="mDauer">–</div></div>
-  <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val" id="mKpm">–</div></div>
-  <div class="metric" style="border-left:3px solid var(--C3)"><div class="metric-lbl">Ø Watt</div><div class="metric-val" id="mWatt">–</div></div>
-  <div class="metric" style="border-left:3px solid var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val" id="mLetzte">–</div></div>
+  <div class="metric" style="--c:var(--C1)"><div class="metric-lbl">Einheiten</div><div class="metric-val" id="mEinheiten">–</div></div>
+  <div class="metric" style="--c:var(--C5)"><div class="metric-lbl">Kalorien total</div><div class="metric-val" id="mKalorien">–</div></div>
+  <div class="metric" style="--c:var(--C4)"><div class="metric-lbl">Dauer total</div><div class="metric-val" id="mDauer">–</div></div>
+  <div class="metric" style="--c:var(--C7)"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val" id="mKpm">–</div></div>
+  <div class="metric" style="--c:var(--C2)"><div class="metric-lbl">Letzte Einheit</div><div class="metric-val" id="mLetzte">–</div></div>
 </div>
 
 <div class="tabs">
@@ -102,58 +173,62 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 
 <!-- TÄGLICH -->
 <div id="daily" class="sec on">
-  <div class="card" style="margin-bottom:12px">
-    <div class="section-lbl">Ø Watt pro Tag</div>
-    <div class="legend" id="dailyLegend"></div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag">Ø Watt pro Trainingstag.</canvas></div>
-  </div>
-  <div class="card" style="margin-bottom:12px">
-    <div class="section-lbl">Kalorien pro Tag</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cKcal" role="img" aria-label="kcal pro Tag">kcal-Summe pro Trainingstag.</canvas></div>
-  </div>
-  <div class="card" style="margin-bottom:12px">
-    <div class="section-lbl">Trainingszeit pro Tag</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag">Trainingsminuten pro Tag.</canvas></div>
-  </div>
-  <div class="card" style="margin-bottom:12px">
-    <div class="section-lbl">Max-Puls pro Tag</div>
-    <div class="legend"><div class="li"><div class="dot" style="background:#A32D2D;opacity:.6"></div>Limit 130</div></div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag">Maximale Herzfrequenz pro Tag.</canvas></div>
-  </div>
-  <div class="card" style="margin-bottom:0">
-    <div class="section-lbl">Blutdruck: Ruhe / nach Training / abends</div>
-    <div class="legend">
-      <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe (vor dem Training)</div>
-      <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
-      <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
-      <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
-      <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
+  <div class="grid">
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C3)">Ø Watt pro Tag</div>
+      <div class="legend" id="dailyLegend"></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cWatt" role="img" aria-label="Watt pro Tag">Ø Watt pro Trainingstag.</canvas></div>
     </div>
-    <div class="chart-wrap" style="height:240px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C5)">Kalorien pro Tag</div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cKcal" role="img" aria-label="kcal pro Tag">kcal-Summe pro Trainingstag.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C4)">Trainingszeit pro Tag</div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cTime" role="img" aria-label="Trainingszeit pro Tag">Trainingsminuten pro Tag.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C5)">Max-Puls pro Tag</div>
+      <div class="legend"><div class="li"><div class="dot" style="background:#A32D2D;opacity:.6"></div>Limit 130</div></div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cPuls" role="img" aria-label="Max HF pro Tag">Maximale Herzfrequenz pro Tag.</canvas></div>
+    </div>
+    <div class="card span-all">
+      <div class="section-lbl" style="--c:var(--C1)">Blutdruck: Ruhe / nach Training / abends</div>
+      <div class="legend">
+        <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe (vor dem Training)</div>
+        <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
+        <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
+        <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
+        <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
+      </div>
+      <div class="chart-wrap" style="height:250px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+    </div>
   </div>
 </div>
 
 <!-- WÖCHENTLICH -->
 <div id="weekly" class="sec">
-  <div class="card">
-    <div class="section-lbl">Kalorien &amp; Minuten pro Woche</div>
-    <div class="legend" id="wkLegend"></div>
-    <div class="chart-wrap" style="height:240px"><canvas id="cWeekKcal" role="img" aria-label="Kalorien und Minuten pro Woche">Wochenübersicht.</canvas></div>
-  </div>
-  <div class="card">
-    <div class="section-lbl">Ø Watt pro Woche (Hover: + kcal/min)</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche">Ø Watt pro Woche.</canvas></div>
-  </div>
-  <div class="card">
-    <div class="section-lbl">Kumulative Kalorien</div>
-    <div class="chart-wrap" style="height:200px"><canvas id="cKum" role="img" aria-label="Kumulative Kalorien">Kumulative Kalorien über alle Tage.</canvas></div>
+  <div class="grid">
+    <div class="card span-all">
+      <div class="section-lbl" style="--c:var(--C5)">Kalorien &amp; Minuten pro Woche</div>
+      <div class="legend" id="wkLegend"></div>
+      <div class="chart-wrap" style="height:250px"><canvas id="cWeekKcal" role="img" aria-label="Kalorien und Minuten pro Woche">Wochenübersicht.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C3)">Ø Watt pro Woche (Hover: + kcal/min)</div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche">Ø Watt pro Woche.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-lbl" style="--c:var(--C2)">Kumulative Kalorien</div>
+      <div class="chart-wrap" style="height:210px"><canvas id="cKum" role="img" aria-label="Kumulative Kalorien">Kumulative Kalorien über alle Tage.</canvas></div>
+    </div>
   </div>
 </div>
 
 <!-- TABELLE -->
 <div id="table" class="sec">
   <div class="card">
-    <div class="section-lbl">Alle Trainingseinheiten · 🟡 ≥10 kcal/min</div>
+    <div class="section-lbl" style="--c:var(--C1)">Alle Trainingseinheiten · 🟡 ≥10 kcal/min</div>
     <div style="overflow-x:auto">
       <table>
         <thead><tr>
@@ -178,45 +253,37 @@ tfoot td{font-weight:500;border-top:1px solid var(--border);border-bottom:none}
 <div id="plan" class="sec">
   <div class="phases">
     <div class="phase done">
-      <div>
-        <div class="phase-title">Phase 1 &amp; 2</div>
-        <div class="phase-sub">Wochen 1–8</div>
-        <div class="ps ps-done">✓ abgeschlossen</div>
-      </div>
+      <div class="phase-title">Phase 1 &amp; 2</div>
+      <div class="phase-sub">Wochen 1–8</div>
+      <div class="ps ps-done">✓ abgeschlossen</div>
       <div class="phase-detail">Reaktivierung &amp; Aufbau · 156W → <strong>181W Ø</strong> · 64 Einheiten · 18.222 kcal · Spitzen bis 333W (Kinomap CERN)</div>
     </div>
     <div class="phase done">
-      <div>
-        <div class="phase-title">Phase 3</div>
-        <div class="phase-sub">Wochen 9–11</div>
-        <div class="ps ps-done">✓ abgeschlossen</div>
-      </div>
+      <div class="phase-title">Phase 3</div>
+      <div class="phase-sub">Wochen 9–11</div>
+      <div class="ps ps-done">✓ abgeschlossen</div>
       <div class="phase-detail"><strong>185–190W</strong> über 35–40 Min. am Stück · Borg 13–14 · <strong>starker Einstieg (&gt;200W)</strong> aktiviert Kreislauf schneller, danach absinken lassen auf Zielbereich · HF unter 120 bpm · kurze 20-Min-Einheiten als hochintensive Ergänzung (200W+)</div>
     </div>
     <div class="phase done">
-      <div>
-        <div class="phase-title">Phase 4</div>
-        <div class="phase-sub">Wochen 12–14</div>
-        <div class="ps ps-done">✓ abgeschlossen</div>
-      </div>
+      <div class="phase-title">Phase 4</div>
+      <div class="phase-sub">Wochen 12–14</div>
+      <div class="ps ps-done">✓ abgeschlossen</div>
       <div class="phase-detail"><strong>195W</strong> über 35 Min. · Wochenziel 2.500 kcal · bei Borg ≤14 weiter steigern</div>
     </div>
     <div class="phase next">
-      <div>
-        <div class="phase-title">Phase 5 — Ziel</div>
-        <div class="phase-sub">Wochen 15–17</div>
-        <div class="ps ps-next">→ jetzt</div>
-      </div>
+      <div class="phase-title">Phase 5 — Ziel</div>
+      <div class="phase-sub">Wochen 15–17</div>
+      <div class="ps ps-next">→ jetzt</div>
       <div class="phase-detail"><strong>200W über 30–40 Min.</strong> · Kardiologen-Check empfohlen · Gewichtsreduktion via Volumen &gt;2.000 kcal/Woche</div>
     </div>
   </div>
   <div class="card">
-    <div class="section-lbl">Watt-Progression: Erreicht vs. Ziel</div>
+    <div class="section-lbl" style="--c:var(--C2)">Watt-Progression: Erreicht vs. Ziel</div>
     <div class="legend">
       <div class="li"><div class="dot" style="background:#1D9E75"></div>Erreicht (Ø/Woche)</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Ziel</div>
     </div>
-    <div class="chart-wrap" style="height:220px"><canvas id="cPlan" role="img" aria-label="Watt-Progression">Watt-Progression bis 200W.</canvas></div>
+    <div class="chart-wrap" style="height:230px"><canvas id="cPlan" role="img" aria-label="Watt-Progression">Watt-Progression bis 200W.</canvas></div>
   </div>
 </div>
 
