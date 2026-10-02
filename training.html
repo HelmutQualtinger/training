@@ -99,6 +99,8 @@ tfoot td{font-weight:600;border-top:1px solid var(--border);border-bottom:none}
 .wk{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.9px;padding:12px 6px 4px;color:var(--text3)}
 .rec-row td{background:rgba(186,117,23,0.08)}
 .wk-row{cursor:pointer;user-select:none}
+.wk-hidden{display:none}
+@media print{.wk-hidden{display:table-row}}
 .wk-row td{border-bottom:1px solid var(--border)}
 .wks{font-size:11px;font-weight:600;color:var(--text2);padding-top:12px}
 .chev{display:inline-block;width:12px}
@@ -607,10 +609,10 @@ sessions.forEach(r=>{
   if(r.w!==lw){
     const a=wkStats[r.w];
     const sep=document.createElement('tr');
-    sep.className='wk-row'; sep.dataset.w=r.w;
+    sep.className='wk-row collapsed'; sep.dataset.w=r.w;
     const kpm=a.kSec?(a.k/(a.kSec/60)).toFixed(1):'–';
     const aw=a.wN?'~'+Math.round(a.wSum/a.wN)+'W':'–';
-    sep.innerHTML=`<td colspan="3" class="wk" style="color:${weekColor(r.w)}"><span class="chev">▾</span> ${wn[r.w]}</td>
+    sep.innerHTML=`<td colspan="3" class="wk" style="color:${weekColor(r.w)}"><span class="chev">▸</span> ${wn[r.w]}</td>
       <td class="r wks">Σ ${durLabel(a.sec)}</td><td class="r wks">Σ ${a.k}</td>
       <td class="r wks">Ø ${kpm}</td><td class="r wks">Ø ${aw}</td>
       <td class="r wks">${a.hf?'max '+a.hf+' bpm':'–'}</td><td class="r wks" colspan="3" style="color:var(--text3)">${a.n} Einheiten</td>
@@ -618,13 +620,14 @@ sessions.forEach(r=>{
     sep.addEventListener('click',()=>{
       const c=sep.classList.toggle('collapsed');
       sep.querySelector('.chev').textContent=c?'▸':'▾';
-      tb.querySelectorAll(`tr[data-wk="${r.w}"]`).forEach(t=>t.style.display=c?'none':'');
+      tb.querySelectorAll(`tr[data-wk="${r.w}"]`).forEach(t=>t.classList.toggle('wk-hidden',c));
     });
     tb.appendChild(sep);
     lw=r.w;
   }
   const tr=document.createElement('tr');
   tr.dataset.wk=r.w;
+  tr.classList.add('wk-hidden');
   if(r.rec) tr.classList.add('rec-row');
   const kpmDisp = r.k!=null && r.durSec ? +(r.k/(r.durSec/60)).toFixed(1) : null;
   tr.innerHTML=`
