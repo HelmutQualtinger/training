@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blutdruck – letzte 2 Monate</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f1ec;--surface:#fff;--surface2:#eceae5;
+  --text:#14140f;--text2:#56554f;--text3:#87867d;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.06);
+  --C1:#185FA5;--C5:#A32D2D;--C7:#0F766E;
+  --radius:12px;--radius-lg:16px;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 10px 30px -18px rgba(0,0,0,.35);
+  --num:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141414;--surface:#1f1f1d;--surface2:#2a2a27;
+  --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
+  --border:rgba(255,255,255,0.12);--border2:rgba(255,255,255,0.07);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -18px rgba(0,0,0,.8);
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:22px 20px 40px;max-width:1180px;margin:0 auto;font-size:14px;line-height:1.5}
+h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.sub{font-size:13px;color:var(--text2);margin:6px 0 18px}
+
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.metric{position:relative;overflow:hidden;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);
+  padding:14px 16px 13px;box-shadow:var(--shadow)}
+.metric::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--text3))}
+.metric-lbl{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.9px;font-weight:600;margin-bottom:6px}
+.metric-val{font-family:var(--num);font-size:23px;font-weight:600;letter-spacing:-.03em}
+.metric-val span{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;font-weight:400;color:var(--text3);margin-left:3px;letter-spacing:0}
+
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 14px;box-shadow:var(--shadow);margin-bottom:14px}
+.section-lbl{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.9px;margin-bottom:12px;
+  display:flex;align-items:center;gap:7px}
+.section-lbl::before{content:'';width:6px;height:6px;border-radius:2px;background:var(--c,var(--C1));flex-shrink:0}
+.legend{display:flex;flex-wrap:wrap;gap:11px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2)}
+.dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.dash{width:14px;height:0;border-top:2px dashed var(--text);flex-shrink:0}
+.chart-wrap{position:relative;width:100%}
+
+@media print{
+  :root{--bg:#fff;--surface:#fff;--surface2:#fff;--shadow:none}
+  @page{size:landscape}
+  body{max-width:none;padding:0}
+  .card{break-inside:avoid;page-break-inside:avoid;box-shadow:none}
+  .chart-wrap canvas{width:100%!important}
+}
+</style>
+</head>
+<body>
+
+<h1>Blutdruck</h1>
+<div class="sub" id="subRange">–</div>
+
+<div class="metrics">
+  <div class="metric" style="--c:var(--C1)"><div class="metric-lbl">Messungen</div><div class="metric-val" id="mN">–</div></div>
+  <div class="metric" style="--c:var(--C5)"><div class="metric-lbl">Ø Systolisch</div><div class="metric-val" id="mSys">–</div></div>
+  <div class="metric" style="--c:var(--C7)"><div class="metric-lbl">Ø Diastolisch</div><div class="metric-val" id="mDia">–</div></div>
+  <div class="metric" style="--c:var(--C5)"><div class="metric-lbl">Systolisch über 140</div><div class="metric-val" id="mSysOver">–</div></div>
+  <div class="metric" style="--c:var(--C7)"><div class="metric-lbl">Diastolisch über 80</div><div class="metric-val" id="mDiaOver">–</div></div>
+</div>
+
+<div class="card">
+  <div class="section-lbl" style="--c:var(--C1)">Blutdruck: Ruhe / nach Training / abends</div>
+  <div class="legend">
+    <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe (vor dem Training)</div>
+    <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
+    <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
+    <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
+    <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
+  </div>
+  <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+</div>
+
+<div class="card">
+  <div class="section-lbl" style="--c:var(--C5)">Histogramm: Verteilung der Messwerte</div>
+  <div class="legend">
+    <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
+    <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
+    <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
+  </div>
+  <div class="chart-wrap" style="height:300px"><canvas id="cHist" role="img" aria-label="Histogramm der Blutdruckwerte">Häufigkeit der systolischen und diastolischen Werte in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
+</div>
+
+<script>
+const MONTHS_BACK=2;   // Zeitraum: die letzten 2 Monate bis zum jüngsten Eintrag in training_log.csv
+const BIN=5;           // Klassenbreite des Histogramms in mmHg
+const LIMIT_DIA=80, LIMIT_SYS=140;
+
+const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+const gc=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+const tc=isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.45)';
+const fg=isDark?'#f0efe9':'#14140f';
+
+// ---- CSV parsing (RFC4180-ish: quoted fields, doubled-quote escaping) ----
+function parseCSV(text){
+  const rows=[]; let row=[], field='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c==='\r'){/*skip*/}
+      else field+=c;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.length>1||r[0]!=='');
+}
+
+function parseDate(s){const[d,m]=s.split('.');return new Date(2026,parseInt(m)-1,parseInt(d));}
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function formatGerman(dt){return `${dt.getDate()}. ${MONATE[dt.getMonth()]}`;}
+
+async function loadRows(){
+  const text = await (await fetch('training_log.csv')).text();
+  const table = parseCSV(text);
+  const idx = Object.fromEntries(table[0].map((h,i)=>[h,i]));
+  return table.slice(1).map(r=>({
+    dat: r[idx['Datum']],
+    rr_ruhe: r[idx['RR_ruhe']]||null, rr: r[idx['RR_training']]||null, rr_abend: r[idx['RR_abend']]||null,
+  }));
+}
+
+loadRows().then(render);
+
+function render(all){
+const endDate=all.reduce((mx,r)=>{const d=parseDate(r.dat);return d>mx?d:mx;},parseDate(all[0].dat));
+const startDate=new Date(endDate.getFullYear(),endDate.getMonth()-MONTHS_BACK,endDate.getDate());
+
+// Zielband 120-140/80-90 und "außerhalb"-Markierung (systolisch>140 oder diastolisch>90) wie in training.html
+const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;}; // [diastolisch,systolisch]
+const isExcess=v=>v&&(v[1]>140||v[0]>90);
+const bpRows=all.filter(r=>(r.rr_ruhe||r.rr||r.rr_abend)&&parseDate(r.dat)>=startDate);
+const bpLabels=bpRows.map(r=>r.dat);
+const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
+const bpAfter=bpRows.map(r=>parseRR(r.rr));
+const bpEvening=bpRows.map(r=>parseRR(r.rr_abend));
+const readings=[...bpBefore,...bpAfter,...bpEvening].filter(Boolean);
+const sys=readings.map(v=>v[1]), dia=readings.map(v=>v[0]);
+
+// ---- METRICS ----
+const avg=a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length);
+const share=(a,lim)=>{const n=a.filter(v=>v>lim).length;return `${Math.round(n/a.length*100)}<span>% · ${n} von ${a.length}</span>`;};
+document.getElementById('subRange').textContent=`${formatGerman(startDate)} – ${formatGerman(endDate)} 2026 · ${bpRows.length} Tage mit Messung`;
+document.getElementById('mN').textContent=readings.length;
+document.getElementById('mSys').innerHTML=`${avg(sys)}<span>mmHg</span>`;
+document.getElementById('mDia').innerHTML=`${avg(dia)}<span>mmHg</span>`;
+document.getElementById('mSysOver').innerHTML=share(sys,LIMIT_SYS);
+document.getElementById('mDiaOver').innerHTML=share(dia,LIMIT_DIA);
+
+const bx={ticks:{color:tc,autoSkip:true,maxRotation:45,font:{size:10}},grid:{color:gc}};
+const by=(lbl,mn,mx)=>({min:mn,max:mx,title:{display:true,text:lbl,font:{size:11},color:tc},ticks:{color:tc,font:{size:11}},grid:{color:gc}});
+const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}}};
+
+// ---- BÄNDER ----
+const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
+  const{ctx,chartArea:{left,right},scales:{y}}=chart;
+  ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
+  [[80,90],[120,140]].forEach(([lo,hi])=>{
+    const yTop=y.getPixelForValue(hi),yBot=y.getPixelForValue(lo);
+    ctx.fillRect(left,yTop,right-left,yBot-yTop);
+  });
+  ctx.restore();
+}};
+const excessMark=arr=>arr.map(v=>isExcess(v)?Math.max(v[1],v[0])+6:null);
+const tri={type:'line',showLine:false,pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1};
+new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datasets:[
+  {label:'Ruhe (vor dem Training)',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
+  {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3},
+  {label:'Abends',data:bpEvening,backgroundColor:'#7C3AED',borderRadius:3},
+  {label:'außerhalb Zielband',...tri,data:excessMark(bpBefore)},
+  {label:'außerhalb Zielband',...tri,data:excessMark(bpAfter)},
+  {label:'außerhalb Zielband',...tri,data:excessMark(bpEvening)}
+]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
+
+// ---- HISTOGRAMM ----
+// Klassen sind rechts abgeschlossen (z.B. 136–140), damit ein Wert von genau 80 bzw. 140
+// links der Grenzlinie liegt — passend zu "über 80" / "über 140" in den Kennzahlen.
+const xMin=Math.floor((Math.min(...dia)-1)/10)*10, xMax=Math.ceil(Math.max(...sys)/10)*10;
+const hist=vals=>{
+  const out=[];
+  for(let hi=xMin+BIN;hi<=xMax;hi+=BIN) out.push({x:hi-BIN/2,y:vals.filter(v=>v>hi-BIN&&v<=hi).length});
+  return out;
+};
+const hDia=hist(dia), hSys=hist(sys);
+const yMax=Math.max(...hDia.map(b=>b.y),...hSys.map(b=>b.y));
+const limitPlugin={id:'limits',afterDatasetsDraw(chart){
+  const{ctx,chartArea:{top,bottom},scales:{x}}=chart;
+  ctx.save();ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
+  ctx.font='600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.textBaseline='top';
+  [[LIMIT_DIA,'diastolisch'],[LIMIT_SYS,'systolisch']].forEach(([v,lbl])=>{
+    const px=x.getPixelForValue(v);
+    ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke();
+    ctx.fillText(`${v} · Grenze ${lbl}`,px+6,top+2);
+  });
+  ctx.restore();
+}};
+const bar={barPercentage:1,categoryPercentage:1,grouped:false,borderRadius:2};
+new Chart(document.getElementById('cHist'),{type:'bar',data:{datasets:[
+  {label:'Diastolisch',data:hDia,backgroundColor:'rgba(15,148,136,0.85)',...bar},
+  {label:'Systolisch',data:hSys,backgroundColor:'rgba(194,65,59,0.85)',...bar}
+]},options:{...baseOpts,
+  scales:{
+    x:{type:'linear',min:xMin,max:xMax,title:{display:true,text:'mmHg',font:{size:11},color:tc},ticks:{color:tc,font:{size:11},stepSize:10},grid:{color:gc}},
+    y:{...by('Anzahl Messungen',0,Math.ceil((yMax+2)/5)*5),ticks:{color:tc,font:{size:11},precision:0}}
+  },
+  plugins:{legend:{display:false},tooltip:{filter:i=>i.raw.y>0,callbacks:{
+    title:items=>items.length?`${items[0].raw.x-BIN/2+1}–${items[0].raw.x+BIN/2} mmHg`:'',
+    label:ctx=>`${ctx.dataset.label}: ${ctx.raw.y} Messungen`}}}
+},plugins:[limitPlugin]});
+
+window.addEventListener('beforeprint',()=>{Object.values(Chart.instances).forEach(c=>{c.resize();c.update();});});
+}
+</script>
+</body></html>
