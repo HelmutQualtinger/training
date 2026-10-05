@@ -142,3 +142,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 2.10,124,2933,517,184,120,,,109/73/93,,1,CERN-Divonne,24.21,74,311,,142,24,57.6,"gut angefangen, stark nachgelassen"
 3.10,125,2037,350,179,113,,,132/78/90,,1,Ferney-Voltaire to Divonne-les-Bains,15.07,73,344,,134,23,51.1,schwache form hoher bldr
 4.10,126,2308,435,197,117,,,127/82/77,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.80,78,421,,50,24,52.4,mittelprächtig
+5.10,–,,,,,,135/80/69,,,,,,,,,,,,
