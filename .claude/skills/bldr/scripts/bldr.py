@@ -32,6 +32,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 PLACEHOLDER = "/*__DATA__*/null"
 RR_COLS = {"RR_ruhe": "rr_ruhe", "RR_training": "rr", "RR_abend": "rr_abend"}
@@ -60,7 +61,7 @@ def months_before(d: datetime.date, n: int) -> datetime.date:
     return datetime.date(y, m + 1, min(d.day, calendar.monthrange(y, m + 1)[1]))
 
 
-def fail(msg: str) -> None:
+def fail(msg: str) -> NoReturn:
     print(json.dumps({"error": msg}, ensure_ascii=False))
     sys.exit(1)
 
