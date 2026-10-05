@@ -2,8 +2,9 @@
 """
 bldr.py — self-contained HTML blood-pressure report (blutdruck.html), read
 straight from training_log.csv, for a given date period: the same
-Zielband chart as training.html (80–90 / 120–140) plus a histogram of the
-systolic/diastolic readings with the 80/140 limits drawn in.
+Zielband chart as training.html (80–90 / 120–140) plus two histograms of the
+systolic/diastolic readings — one before exertion (RR_ruhe), one after
+(RR_training) — each with the 80/140 limits drawn in.
 
 training_log.csv is the single source of truth (see CLAUDE.md). This script
 only reads it — it never writes to the CSV or touches training.html. The
@@ -90,7 +91,8 @@ def main() -> None:
     if start > end:
         fail(f"start {fmt_date(start)} is after end {fmt_date(end)}")
 
-    rows, sys_vals, dia_vals = [], [], []
+    rows = []
+    vals = {key: [] for key in RR_COLS.values()}  # key -> [(sys, dia), ...]
     for r in table:
         if not start <= parse_date_str(r["Datum"]) <= end:
             continue
@@ -99,8 +101,7 @@ def main() -> None:
             m = re.match(r"\s*(\d+)/(\d+)", r[col] or "")
             row[key] = r[col] if m else None
             if m:
-                sys_vals.append(int(m[1]))
-                dia_vals.append(int(m[2]))
+                vals[key].append((int(m[1]), int(m[2])))
         if any(row[k] for k in RR_COLS.values()):
             rows.append(row)
     if not rows:
@@ -113,17 +114,26 @@ def main() -> None:
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     args.out.write_text(template.replace(PLACEHOLDER, payload), encoding="utf-8")
 
-    n = len(sys_vals)
+    def stats(readings: list[tuple[int, int]]) -> dict:
+        n = len(readings)
+        if not n:
+            return {"messungen": 0}
+        return {
+            "messungen": n,
+            "avg_sys": round(sum(r[0] for r in readings) / n),
+            "avg_dia": round(sum(r[1] for r in readings) / n),
+            "sys_ueber_140": sum(r[0] > LIMIT_SYS for r in readings),
+            "dia_ueber_80": sum(r[1] > LIMIT_DIA for r in readings),
+        }
+
     print(json.dumps({
         "out": str(args.out),
         "start": data["start"],
         "end": data["end"],
         "tage": len(rows),
-        "messungen": n,
-        "avg_sys": round(sum(sys_vals) / n),
-        "avg_dia": round(sum(dia_vals) / n),
-        "sys_ueber_140": sum(v > LIMIT_SYS for v in sys_vals),
-        "dia_ueber_80": sum(v > LIMIT_DIA for v in dia_vals),
+        **stats([r for v in vals.values() for r in v]),
+        "vor_belastung": stats(vals["rr_ruhe"]),
+        "nach_belastung": stats(vals["rr"]),
     }, ensure_ascii=False, indent=2))
 
 

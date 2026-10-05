@@ -4,8 +4,9 @@ description: >
   Generate blutdruck.html — a self-contained blood-pressure report from
   training_log.csv for a date period (default: the last 2 months): the same
   Zielband chart as training.html (green bands 80–90 / 120–140, Ruhe / nach
-  Training / abends) plus a histogram of systolic/diastolic readings with
-  the 80/140 limits drawn in — done entirely by a deterministic Python
+  Training / abends) plus two histograms of systolic/diastolic readings, one
+  before exertion (Ruhe) and one after (nach Training), each with the
+  80/140 limits drawn in — done entirely by a deterministic Python
   script, no LLM parsing of the CSV involved. Use this whenever the user
   invokes /bldr, or wants a blood-pressure chart, overview, histogram or
   distribution ("Blutdruck-Übersicht", "Blutdruck der letzten 3 Monate",
@@ -64,14 +65,18 @@ report the error and stop rather than retrying with guessed values.
 
 On success, summarize for the user: output file, period, number of readings
 (`messungen`) and days (`tage`), average (`avg_sys`/`avg_dia`), and how many
-readings were above the limits (`sys_ueber_140`, `dia_ueber_80`). Then open
+readings were above the limits (`sys_ueber_140`, `dia_ueber_80`) — overall,
+and the same figures for `vor_belastung` and `nach_belastung` side by side
+(a group with no readings in the period only carries `messungen: 0`). Then open
 it with `open <out>` unless the user only wanted the file.
 
 ## Notes
 
-- All three reading columns count (`RR_ruhe`, `RR_training`, `RR_abend`),
-  including rest-day rows — every reading contributes one systolic and one
-  diastolic value to the histogram and the averages.
+- There are two histograms on a shared mmHg axis: **vor Belastung**
+  (`RR_ruhe`, including rest-day rows) and **nach Belastung**
+  (`RR_training`). Every reading contributes one systolic and one diastolic
+  value to its histogram. `RR_abend` readings belong to neither — they only
+  show up in the band chart and in the overall figures at the top.
 - Two different thresholds are in play, on purpose: the yellow triangles in
   the band chart mark readings outside the Zielband exactly like
   `training.html` does (systolic > 140 or diastolic > 90), while the

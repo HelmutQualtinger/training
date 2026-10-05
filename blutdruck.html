@@ -40,6 +40,7 @@ h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-
 .li{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2)}
 .dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .dash{width:14px;height:0;border-top:2px dashed var(--text);flex-shrink:0}
+.li.stat{margin-left:auto;font-family:var(--num);color:var(--text)}
 .chart-wrap{position:relative;width:100%}
 
 @media print{
@@ -77,13 +78,25 @@ h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-
 </div>
 
 <div class="card">
-  <div class="section-lbl" style="--c:var(--C5)">Histogramm: Verteilung der Messwerte</div>
+  <div class="section-lbl" style="--c:var(--C5)">Histogramm vor Belastung (Ruhe)</div>
   <div class="legend">
     <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
     <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
     <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
+    <div class="li stat" id="sHistVor"></div>
   </div>
-  <div class="chart-wrap" style="height:300px"><canvas id="cHist" role="img" aria-label="Histogramm der Blutdruckwerte">Häufigkeit der systolischen und diastolischen Werte in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cHistVor" role="img" aria-label="Histogramm vor Belastung (Ruhe)">Häufigkeit der systolischen und diastolischen Ruhewerte in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
+</div>
+
+<div class="card">
+  <div class="section-lbl" style="--c:var(--C5)">Histogramm nach Belastung (nach dem Training)</div>
+  <div class="legend">
+    <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
+    <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
+    <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
+    <div class="li stat" id="sHistNach"></div>
+  </div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cHistNach" role="img" aria-label="Histogramm nach Belastung (nach dem Training)">Häufigkeit der systolischen und diastolischen Werte nach dem Training in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
 </div>
 
 <script>
@@ -154,7 +167,10 @@ new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datas
   {label:'außerhalb Zielband',...tri,data:excessMark(bpEvening)}
 ]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
 
-// ---- HISTOGRAMM ----
+// ---- HISTOGRAMME ----
+// Je eines vor Belastung (RR_ruhe) und nach Belastung (RR_training), auf derselben mmHg-Achse,
+// damit sich die beiden Verteilungen direkt untereinander vergleichen lassen. Abendwerte gehören
+// zu keinem von beiden und erscheinen nur im Bänder-Chart und in den Kennzahlen oben.
 // Klassen sind rechts abgeschlossen (z.B. 136–140), damit ein Wert von genau 80 bzw. 140
 // links der Grenzlinie liegt — passend zu "über 80" / "über 140" in den Kennzahlen.
 const xMin=Math.floor((Math.min(...dia)-1)/10)*10, xMax=Math.ceil(Math.max(...sys)/10)*10;
@@ -163,8 +179,6 @@ const hist=vals=>{
   for(let hi=xMin+BIN;hi<=xMax;hi+=BIN) out.push({x:hi-BIN/2,y:vals.filter(v=>v>hi-BIN&&v<=hi).length});
   return out;
 };
-const hDia=hist(dia), hSys=hist(sys);
-const yMax=Math.max(...hDia.map(b=>b.y),...hSys.map(b=>b.y));
 const limitPlugin={id:'limits',afterDatasetsDraw(chart){
   const{ctx,chartArea:{top,bottom},scales:{x}}=chart;
   ctx.save();ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
@@ -177,18 +191,29 @@ const limitPlugin={id:'limits',afterDatasetsDraw(chart){
   ctx.restore();
 }};
 const bar={barPercentage:1,categoryPercentage:1,grouped:false,borderRadius:2};
-new Chart(document.getElementById('cHist'),{type:'bar',data:{datasets:[
-  {label:'Diastolisch',data:hDia,backgroundColor:'rgba(15,148,136,0.85)',...bar},
-  {label:'Systolisch',data:hSys,backgroundColor:'rgba(194,65,59,0.85)',...bar}
-]},options:{...baseOpts,
-  scales:{
-    x:{type:'linear',min:xMin,max:xMax,title:{display:true,text:'mmHg',font:{size:11},color:tc},ticks:{color:tc,font:{size:11},stepSize:10},grid:{color:gc}},
-    y:{...by('Anzahl Messungen',0,Math.ceil((yMax+2)/5)*5),ticks:{color:tc,font:{size:11},precision:0}}
-  },
-  plugins:{legend:{display:false},tooltip:{filter:i=>i.raw.y>0,callbacks:{
-    title:items=>items.length?`${items[0].raw.x-BIN/2+1}–${items[0].raw.x+BIN/2} mmHg`:'',
-    label:ctx=>`${ctx.dataset.label}: ${ctx.raw.y} Messungen`}}}
-},plugins:[limitPlugin]});
+function drawHist(canvasId,statId,vals){
+  const stat=document.getElementById(statId);
+  if(!vals.length){stat.textContent='keine Messungen im Zeitraum';document.getElementById(canvasId).parentElement.style.display='none';return;}
+  const s=vals.map(v=>v[1]), d=vals.map(v=>v[0]);
+  const over=(a,lim)=>a.filter(v=>v>lim).length;
+  stat.textContent=`n=${vals.length} · Ø ${avg(s)}/${avg(d)} · über 140: ${over(s,LIMIT_SYS)} · über 80: ${over(d,LIMIT_DIA)}`;
+  const hDia=hist(d), hSys=hist(s);
+  const yMax=Math.max(...hDia.map(b=>b.y),...hSys.map(b=>b.y));
+  new Chart(document.getElementById(canvasId),{type:'bar',data:{datasets:[
+    {label:'Diastolisch',data:hDia,backgroundColor:'rgba(15,148,136,0.85)',...bar},
+    {label:'Systolisch',data:hSys,backgroundColor:'rgba(194,65,59,0.85)',...bar}
+  ]},options:{...baseOpts,
+    scales:{
+      x:{type:'linear',min:xMin,max:xMax,title:{display:true,text:'mmHg',font:{size:11},color:tc},ticks:{color:tc,font:{size:11},stepSize:10},grid:{color:gc}},
+      y:{...by('Anzahl Messungen',0,Math.ceil((yMax+2)/5)*5),ticks:{color:tc,font:{size:11},precision:0}}
+    },
+    plugins:{legend:{display:false},tooltip:{filter:i=>i.raw.y>0,callbacks:{
+      title:items=>items.length?`${items[0].raw.x-BIN/2+1}–${items[0].raw.x+BIN/2} mmHg`:'',
+      label:ctx=>`${ctx.dataset.label}: ${ctx.raw.y} Messungen`}}}
+  },plugins:[limitPlugin]});
+}
+drawHist('cHistVor','sHistVor',bpBefore.filter(Boolean));
+drawHist('cHistNach','sHistNach',bpAfter.filter(Boolean));
 
 window.addEventListener('beforeprint',()=>{Object.values(Chart.instances).forEach(c=>{c.resize();c.update();});});
 }
