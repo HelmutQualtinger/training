@@ -81,6 +81,7 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
     <button id="play">▶ Abspielen</button>
     <select id="speed" aria-label="Tempo"><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
     <label><input type="checkbox" id="follow"> Mitfahren</label>
+    <label><input type="checkbox" id="sound" checked> Ton</label>
     <input type="range" id="scrub" min="0" value="0" step="1" aria-label="Position auf der Strecke">
   </div>
 </div>
@@ -405,7 +406,75 @@ function readout(){
   drawProf();
 }
 function setPlaying(p){playing=p;playBtn.textContent=p?'❚❚ Pause':'▶ Abspielen';}
-playBtn.onclick=()=>{if(!playing&&t>=N-1)t=0;setPlaying(!playing);};
+// ---- sound: pedal strokes, chain whirr, breathing and heartbeat, synthesised (no audio files). Pedals,
+// chain and heart follow the ride's real cadence and measured pulse, not the playback speed-up — at 30×
+// the true rhythm would be a 45 Hz buzz. Breathing is stretched over this ride's own power range: its
+// lowest watt reading breathes at BREATH[0] breaths per minute, its highest at BREATH[1]. ----
+const soundBox=document.getElementById('sound');let au=null;
+const BREATH=[14,50],WMIN=Math.min(...T.watt),WMAX=Math.max(...T.watt);
+function audio(){                  // first call must come from a click: browsers block audio until then
+  if(au){au.ctx.resume();return;}
+  const ctx=new AudioContext(),sr=ctx.sampleRate,buf=ctx.createBuffer(1,sr*2,sr),ch=buf.getChannelData(0);
+  for(let i=0;i<ch.length;i++)ch[i]=Math.random()*2-1;
+  const noise=ctx.createBufferSource();noise.buffer=buf;noise.loop=true;
+  const master=ctx.createGain();master.gain.value=0;master.connect(ctx.destination);
+  const drive=ctx.createGain();drive.gain.value=0;drive.connect(master);   // pedals + chain, silent while coasting
+  // one band of noise whose loudness an oscillator swings between 0 and 1
+  const voice=(type,freq,q,level,wave,dest)=>{
+    const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
+    const g=ctx.createGain();g.gain.value=.5;
+    const o=ctx.createOscillator();o.type=wave;o.frequency.value=1;   // not the 440 Hz default: sound() glides from here
+    const depth=ctx.createGain();depth.gain.value=.5;
+    o.connect(depth).connect(g.gain);o.start();
+    const out=ctx.createGain();out.gain.value=level;
+    noise.connect(f).connect(g).connect(out).connect(dest);
+    o.filter=f;o.out=out;
+    return o;
+  };
+  const link=voice('bandpass',3200,1.2,.35,'sawtooth',drive);   // chain: a bright tick per link onto the chainring
+  const stroke=voice('lowpass',420,.7,1.6,'sine',drive);        // pedals: a low whoosh per downstroke
+  // breath: two swells per breath (in, out); a second oscillator at half that rate brightens the
+  // inhale and darkens the exhale so the two are told apart
+  const breath=voice('bandpass',1100,1.1,1,'sine',master);
+  const tone=ctx.createOscillator(),toneDepth=ctx.createGain();toneDepth.gain.value=450;
+  tone.frequency.value=.5;tone.connect(toneDepth).connect(breath.filter.frequency);tone.start();
+  noise.start();
+  au={ctx,master,drive,link,stroke,breath,tone,beat:0};
+}
+// one heart sound: a short sine thump that drops in pitch
+function thump(at,f0,f1,level,len){
+  const o=au.ctx.createOscillator(),g=au.ctx.createGain();
+  o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+len);
+  g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(level,at+.008);g.gain.exponentialRampToValueAtTime(.001,at+len);
+  o.connect(g).connect(au.master);o.start(at);o.stop(at+len+.02);
+}
+function sound(){
+  if(!au)return;
+  const i=Math.min(N-2,Math.floor(t)),rpm=T.rpm[i],now=au.ctx.currentTime;
+  const effort=(T.watt[i]-WMIN)/((WMAX-WMIN)||1);            // 0 at the ride's lowest power, 1 at its highest
+  au.master.gain.setTargetAtTime(playing&&soundBox.checked?1:0,now,.08);
+  au.drive.gain.setTargetAtTime(rpm>5?.25+.45*Math.min(1,T.watt[i]/300):0,now,.08);   // harder effort = louder
+  if(rpm>5){
+    au.stroke.frequency.setTargetAtTime(rpm/30,now,.1);        // two downstrokes per crank revolution
+    au.link.frequency.setTargetAtTime(rpm/60*50,now,.1);       // 50-tooth chainring
+  }
+  // slow time constant: breathing lags behind the power, and at 30× the watts jump from frame to frame
+  const hz=(BREATH[0]+(BREATH[1]-BREATH[0])*effort)/60;
+  au.tone.frequency.setTargetAtTime(hz,now,.6);au.breath.frequency.setTargetAtTime(hz*2,now,.6);
+  au.breath.out.gain.setTargetAtTime(.08+.17*effort,now,.6);   // and it gets heavier
+  // heartbeat at the measured pulse: "lub-dub" per beat, queued a little ahead of the audio clock
+  if(playing&&soundBox.checked){
+    if(au.beat<now)au.beat=now+.02;
+    while(au.beat<now+.15){
+      const period=60/Math.max(40,T.hf[i]);
+      thump(au.beat,95,45,.45,.13);thump(au.beat+Math.min(.3,period*.38),120,60,.3,.09);
+      au.beat+=period;
+    }
+  }
+}
+soundBox.onchange=()=>{if(soundBox.checked&&playing)audio();};
+document.addEventListener('visibilitychange',()=>{if(au)document.hidden?au.ctx.suspend():au.ctx.resume();});
+playBtn.onclick=()=>{if(!playing&&t>=N-1)t=0;setPlaying(!playing);if(playing&&soundBox.checked)audio();};
 scrub.oninput=()=>{t=+scrub.value;readout();};
 readout();
 
@@ -465,6 +534,7 @@ function tick(now){
     if(t>=N-1){t=N-1;setPlaying(false);}
     scrub.value=Math.round(t);readout();
   }
+  sound();
   const d=distAt(t);
   atDist(d,pos);
   // heading: smoothed direction of travel
