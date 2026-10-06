@@ -46,6 +46,8 @@ button,select{font:inherit;font-size:13px;padding:4px 11px;border-radius:999px;b
   #stats .v{font-size:17px}
 }
 @media (max-width:560px){#cockpit{bottom:132px}}
+/* phones: cockpit at the top, right under the title; resize() sets its top and moves the rider's-eye inset below it */
+@media (max-width:760px){#cockpit{bottom:auto;left:12px;right:12px;width:auto}}
 label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
 #left{position:fixed;top:12px;left:12px;width:430px;max-width:calc(100% - 24px);display:flex;flex-direction:column;gap:10px}
 #left .panel{position:static;max-width:none}
@@ -186,10 +188,50 @@ scene.add(new THREE.Mesh(tg,new THREE.MeshLambertMaterial({map:tex})));
 
 // ---- buildings: one merged mesh, walls + flat roof per footprint ----
 // each entry: [height_dm, x0_dm, z0_dm, dx1, dz1, ...] (delta-encoded outline)
+// Textures are painted here on small canvases (nothing is downloaded) in near-white/grey, and the
+// per-building vertex colour tints them: a facade of window bays for the walls, rows of tiles for
+// house roofs, speckled gravel for large flat roofs.
 {
-  const pos=[],col=[];
+  const BAY=3.2,STOREY=3,CELLS=4;                   // metres per window bay / storey; facade texture = 4 x 4 of them
+  const paint=(size,draw)=>{
+    const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;
+    t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+    return t;
+  };
+  let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;    // fixed sequence: same look on every load
+  const facade=paint(512,(c,S)=>{
+    const u=S/CELLS;
+    c.fillStyle='#f3f0ea';c.fillRect(0,0,S,S);
+    for(let r=0;r<CELLS;r++)for(let q=0;q<CELLS;q++){
+      const x=q*u,y=r*u;
+      c.fillStyle='rgba(0,0,0,.07)';c.fillRect(x,y+u-3,u,3);                 // floor line
+      c.fillStyle='#fbfaf7';c.fillRect(x+u*.24,y+u*.2,u*.52,u*.56);           // frame
+      const k=rnd();
+      c.fillStyle=k<.18?'#d9c9a0':k<.5?'#3d4a5c':'#566579';                   // a few lit/curtained panes among dark glass
+      c.fillRect(x+u*.28,y+u*.24,u*.44,u*.48);
+      c.fillStyle='rgba(255,255,255,.22)';c.fillRect(x+u*.28,y+u*.24,u*.44,u*.1);   // sky reflection
+      c.fillStyle='#fbfaf7';c.fillRect(x+u*.49,y+u*.24,u*.02,u*.48);          // mullion
+      c.fillStyle='rgba(0,0,0,.18)';c.fillRect(x+u*.22,y+u*.76,u*.56,u*.03);  // sill shadow
+    }
+  });
+  const tiles=paint(128,(c,S)=>{
+    c.fillStyle='#ffffff';c.fillRect(0,0,S,S);
+    for(let r=0;r<8;r++){
+      c.fillStyle='rgba(0,0,0,.28)';c.fillRect(0,r*16+13,S,3);                // shadow under each row
+      for(let q=0;q<8;q++){c.fillStyle=`rgba(0,0,0,${(.04+rnd()*.14).toFixed(2)})`;c.fillRect(q*16+(r%2)*8,r*16,15,13);}
+      c.fillStyle='rgba(0,0,0,.2)';for(let q=0;q<9;q++)c.fillRect(q*16+(r%2)*8-1,r*16,1,13);
+    }
+  });
+  const gravel=paint(128,(c,S)=>{
+    c.fillStyle='#ffffff';c.fillRect(0,0,S,S);
+    for(let k=0;k<2600;k++){c.fillStyle=`rgba(0,0,0,${(rnd()*.22).toFixed(2)})`;c.fillRect(rnd()*S,rnd()*S,2,2);}
+    c.fillStyle='rgba(0,0,0,.16)';c.fillRect(0,0,S,2);c.fillRect(0,0,2,S);    // roofing-felt seams
+  });
+  const mk=()=>({pos:[],col:[],uv:[]});
+  const walls=mk(),pitched=mk(),flatR=mk();
   const wall=new THREE.Color(),roof=new THREE.Color();
-  const push=(x,y,z,c)=>{pos.push(x,y,z);col.push(c.r,c.g,c.b);};
+  const push=(m,x,y,z,c,u,v)=>{m.pos.push(x,y,z);m.col.push(c.r,c.g,c.b);m.uv.push(u,v);};
   for(const b of D.blds){
     const h=b[0]/10,p=[];let x=0,z=0;
     for(let i=1;i<b.length;i+=2){x+=b[i];z+=b[i+1];p.push(new THREE.Vector2(x/10,z/10));}
@@ -201,21 +243,32 @@ scene.add(new THREE.Mesh(tg,new THREE.MeshLambertMaterial({map:tex})));
     area=Math.abs(area)/2;
     const base=lo-1,top=lo+h,j=(b[1]*7+b[2]*13)%100/100;     // stable per-building tint
     wall.setHSL(0.10,0.18,0.80+j*0.12);
-    if(area>500||h<4)roof.setHSL(0.08,0.04,0.50+j*0.15);     // large/low: grey flat roof
-    else roof.setHSL(0.03+j*0.03,0.42,0.40+j*0.10);          // houses: tile red-brown
+    const big=area>500||h<4;
+    if(big)roof.setHSL(0.08,0.04,0.62+j*0.15);               // large/low: grey flat roof
+    else roof.setHSL(0.03+j*0.03,0.48,0.52+j*0.10);          // houses: tile red-brown
+    // whole storeys from the ground up, whole window bays per wall; each building starts at its own
+    // cell of the facade texture so neighbours don't show the same lit windows
+    const st=Math.max(1,Math.round(h/STOREY)),v0=Math.floor(j*CELLS)/CELLS,u0=Math.floor(j*7)%CELLS/CELLS;
+    const vB=v0+(base-lo)/(h/st)/CELLS,vT=v0+st/CELLS;
     for(let i=0;i<p.length;i++){
-      const a=p[i],c=p[(i+1)%p.length];
-      push(a.x,base,a.y,wall);push(c.x,base,c.y,wall);push(c.x,top,c.y,wall);
-      push(a.x,base,a.y,wall);push(c.x,top,c.y,wall);push(a.x,top,a.y,wall);
+      const a=p[i],c=p[(i+1)%p.length],n=Math.round(a.distanceTo(c)/BAY);
+      const uA=u0,uC=n?u0+n/CELLS:u0+0.04;                   // too short for a window: plain wall strip
+      push(walls,a.x,base,a.y,wall,uA,vB);push(walls,c.x,base,c.y,wall,uC,vB);push(walls,c.x,top,c.y,wall,uC,vT);
+      push(walls,a.x,base,a.y,wall,uA,vB);push(walls,c.x,top,c.y,wall,uC,vT);push(walls,a.x,top,a.y,wall,uA,vT);
     }
+    const m=big?flatR:pitched,sc=big?8:4;                    // metres per texture repeat
     for(const t of THREE.ShapeUtils.triangulateShape(p,[]))
-      for(const k of t)push(p[k].x,top,p[k].y,roof);
+      for(const k of t)push(m,p[k].x,top,p[k].y,roof,p[k].x/sc,p[k].y/sc);
   }
-  const bg=new THREE.BufferGeometry();
-  bg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  bg.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  bg.computeVertexNormals();
-  scene.add(new THREE.Mesh(bg,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})));
+  for(const [m,map] of [[walls,facade],[pitched,tiles],[flatR,gravel]]){
+    if(!m.pos.length)continue;
+    const bg=new THREE.BufferGeometry();
+    bg.setAttribute('position',new THREE.Float32BufferAttribute(m.pos,3));
+    bg.setAttribute('color',new THREE.Float32BufferAttribute(m.col,3));
+    bg.setAttribute('uv',new THREE.Float32BufferAttribute(m.uv,2));
+    bg.computeVertexNormals();
+    scene.add(new THREE.Mesh(bg,new THREE.MeshLambertMaterial({map,vertexColors:true,side:THREE.DoubleSide})));
+  }
 }
 
 // ---- route ----
@@ -487,6 +540,10 @@ function resize(){
   const w=innerWidth,h=innerHeight;
   renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
   for(const m of [lineMat,casingMat,ghostMat])m.resolution.set(w,h);
+  // phones: stack title, cockpit and rider's-eye inset from the top, leaving the lower screen to the scene
+  const mob=matchMedia('(max-width:760px)').matches,ck=document.getElementById('cockpit');
+  ck.style.top=mob?document.getElementById('left').getBoundingClientRect().bottom+8+'px':'';
+  document.getElementById('pov').style.top=mob?ck.getBoundingClientRect().bottom+8+'px':'';
 }
 addEventListener('resize',resize);resize();
 

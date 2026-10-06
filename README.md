@@ -25,7 +25,7 @@ A ride exported from Kinomap (`export_<id>.zip`) can be turned into two map page
 
 The ride replayed in a 3D scene of the real landscape:
 
-- **Terrain and buildings** — an elevation model of the area with the OpenStreetMap map as ground texture, plus the buildings along the route as 3D blocks; around the rider the map is reloaded in sharper detail
+- **Terrain and buildings** — an elevation model of the area with the OpenStreetMap map as ground texture, plus the buildings along the route as 3D blocks with window facades and tiled or gravel roofs; around the rider the map is reloaded in sharper detail
 - **Route** — a line coloured by power, blue (low) to red (high)
 - **Cyclist** — a figure on a road bike that pedals and follows the route
 - **Playback** — play/pause, time-lapse at 10×, 30× or 90×, and a slider for the position
