@@ -7,99 +7,145 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f4f0;--surface:#fff;--surface2:#eeecea;
-  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
-  --border:rgba(0,0,0,0.10);
-  --radius:10px;--radius-lg:14px;
+  --bg:#fff7ef;--surface:#fff;--surface2:#fff1e4;
+  --text:#2b2320;--text2:#6f625b;--text3:#a39489;
+  --border:#f3e1d2;--road:#e8d3c1;
+  --pink:#ff8fab;--pink-bg:#ffe5ec;
+  --mint:#3dbf9b;--mint-bg:#dcf7ee;
+  --sky:#4aa8e8;--sky-bg:#e0f1fd;
+  --sun:#f2a516;--sun-bg:#fff0cc;
+  --radius:22px;
 }
 @media(prefers-color-scheme:dark){:root{
-  --bg:#1a1a18;--surface:#242421;--surface2:#2e2e2b;
-  --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
-  --border:rgba(255,255,255,0.10);
+  --bg:#1f1a1c;--surface:#2a2326;--surface2:#352c30;
+  --text:#f6ece6;--text2:#b9aaa3;--text3:#85776f;
+  --border:#3a3035;--road:#4a3e43;
+  --pink-bg:#4a2a35;--mint-bg:#1f3f37;--sky-bg:#1f3547;--sun-bg:#453618;
 }}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px 20px;max-width:720px;margin:0 auto;font-size:14px;line-height:1.5}
-h1{font-size:21px;font-weight:500;margin-bottom:3px}
-.sub{font-size:13px;color:var(--text2);margin-bottom:24px}
-.section-lbl{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin:24px 0 10px}
-.section-lbl:first-of-type{margin-top:0}
-.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.link-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:12px 16px;border-bottom:0.5px solid var(--border);text-decoration:none;color:inherit}
+body{font-family:ui-rounded,'SF Pro Rounded','Nunito','Quicksand',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:28px 18px 36px;max-width:720px;margin:0 auto;font-size:15px;line-height:1.5}
+
+/* header: a little rider rolling along a dashed road */
+header{text-align:center;margin-bottom:26px}
+h1{font-size:27px;font-weight:800;letter-spacing:-0.3px}
+h1 span{color:var(--pink)}
+.sub{font-size:13px;color:var(--text2);margin-top:2px}
+.road{position:relative;height:38px;margin:12px auto 0;max-width:420px;overflow:hidden}
+.road::after{content:'';position:absolute;left:0;right:0;bottom:5px;border-bottom:3px dashed var(--road)}
+.rider{position:absolute;bottom:5px;left:0;font-size:26px;line-height:1;animation:ride 9s linear -3s infinite}
+.rider b{display:inline-block;font-weight:400;transform:scaleX(-1);animation:bob .45s ease-in-out infinite alternate}
+@keyframes ride{from{transform:translateX(-40px)}to{transform:translateX(440px)}}
+@keyframes bob{from{translate:0 0}to{translate:0 -2px}}
+
+.section-lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--text2);margin:26px 4px 10px}
+.section-lbl i{font-style:normal;font-size:16px}
+.card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.link-row{display:flex;align-items:center;gap:13px;padding:12px 14px;border-bottom:2px dashed var(--border);text-decoration:none;color:inherit;transition:background .15s}
 .link-row:last-child{border-bottom:none}
-.link-row:hover{background:var(--surface2)}
-.link-title{font-weight:500;font-size:14px}
-.link-desc{font-size:12px;color:var(--text2)}
-.link-ext{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;white-space:nowrap}
-.thumb{display:block;width:100%;height:auto;aspect-ratio:1365/768;border-bottom:0.5px solid var(--border)}
-footer{margin-top:28px;font-size:12px;color:var(--text3)}
+.link-row:hover,.link-row:focus-visible{background:var(--surface2);outline:none}
+.ico{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:21px;background:var(--c-bg);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.link-row:hover .ico,.link-row:focus-visible .ico{transform:rotate(-8deg) scale(1.12)}
+.txt{flex:1;min-width:0}
+.link-title{font-weight:700;font-size:15px;overflow-wrap:anywhere}
+.link-desc{font-size:12.5px;color:var(--text2)}
+.link-ext{flex:none;font-size:10.5px;font-weight:800;letter-spacing:0.5px;padding:3px 9px;border-radius:999px;background:var(--c-bg);color:var(--c)}
+.link-row::after{content:'→';flex:none;color:var(--text3);font-weight:800;transition:transform .2s,color .2s}
+.link-row:hover::after,.link-row:focus-visible::after{transform:translateX(4px);color:var(--c)}
+.pink{--c:var(--pink);--c-bg:var(--pink-bg)}
+.mint{--c:var(--mint);--c-bg:var(--mint-bg)}
+.sky{--c:var(--sky);--c-bg:var(--sky-bg)}
+.sun{--c:var(--sun);--c-bg:var(--sun-bg)}
+
+.thumb-link{display:block;position:relative;border-bottom:2px dashed var(--border)}
+.thumb{display:block;width:100%;height:auto;aspect-ratio:1365/768}
+.play{position:absolute;left:14px;bottom:14px;background:var(--surface);color:var(--text);font-weight:800;font-size:13px;padding:7px 14px 7px 11px;border-radius:999px;border:2px solid var(--border);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.thumb-link:hover .play,.thumb-link:focus-visible .play{transform:scale(1.08)}
+
+footer{margin-top:30px;font-size:12px;color:var(--text3);text-align:center}
+@media(max-width:480px){.link-ext{display:none}}
+@media(prefers-reduced-motion:reduce){.rider,.rider b{animation:none}.rider{left:calc(50% - 13px)}.ico,.play,.link-row::after{transition:none}}
 </style>
 </head>
 <body>
 
-<h1>Ergometer Training Log</h1>
-<div class="sub">Christopeit AX 4000 + Kinomap · seit 25. Mai 2026</div>
+<header>
+  <h1>Ergometer <span>Training</span> Log</h1>
+  <div class="sub">Christopeit AX 4000 + Kinomap · seit 25. Mai 2026</div>
+  <div class="road" aria-hidden="true"><div class="rider"><b>🚴</b></div></div>
+</header>
 
-<div class="section-lbl">Dashboard</div>
-<div class="card">
+<div class="section-lbl"><i>📊</i>Dashboard</div>
+<div class="card pink">
   <a class="link-row" href="training.html">
-    <div><div class="link-title">training.html</div><div class="link-desc">Haupt-Dashboard — Täglich, Wöchentlich, Tabelle, Plan 200W</div></div>
+    <div class="ico">📈</div>
+    <div class="txt"><div class="link-title">training.html</div><div class="link-desc">Haupt-Dashboard — Täglich, Wöchentlich, Tabelle, Plan 200W</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="training.pdf">
-    <div><div class="link-title">training.pdf</div><div class="link-desc">Druckversion aller vier Tabs</div></div>
+    <div class="ico">🖨️</div>
+    <div class="txt"><div class="link-title">training.pdf</div><div class="link-desc">Druckversion aller vier Tabs</div></div>
     <div class="link-ext">PDF</div>
   </a>
 </div>
 
-<div class="section-lbl">3D-Fahrt</div>
-<div class="card">
-  <a href="karte_6.10_widnau_3d.html"><img class="thumb" src="karte_6.10_widnau_3d.jpg" alt="3D-Karte der Fahrt Widnau – Widnau mit Tempo, Leistung, Puls und Höhe"></a>
+<div class="section-lbl"><i>🏔️</i>3D-Fahrt</div>
+<div class="card mint">
+  <a class="thumb-link" href="karte_6.10_widnau_3d.html"><img class="thumb" src="karte_6.10_widnau_3d.jpg" alt="3D-Karte der Fahrt Widnau – Widnau mit Tempo, Leistung, Puls und Höhe"><span class="play" aria-hidden="true">▶ Mitfahren</span></a>
   <a class="link-row" href="karte_6.10_widnau_3d.html">
-    <div><div class="link-title">3D-Reenactment · Widnau – Widnau (6.10.)</div><div class="link-desc">Fahrt nachgespielt in 3D — Gelände, Gebäude, Cockpit, Mitfahren, Pedal-, Ketten-, Atem- und Herzgeräusch</div></div>
+    <div class="ico">🚴</div>
+    <div class="txt"><div class="link-title">3D-Reenactment · Widnau – Widnau (6.10.)</div><div class="link-desc">Fahrt nachgespielt in 3D — Gelände, Gebäude, Cockpit, Mitfahren, Pedal-, Ketten-, Atem- und Herzgeräusch</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="karte_6.10_widnau.html">
-    <div><div class="link-title">karte_6.10_widnau.html</div><div class="link-desc">Dieselbe Strecke als 2D-Karte mit Höhenprofil</div></div>
+    <div class="ico">🗺️</div>
+    <div class="txt"><div class="link-title">karte_6.10_widnau.html</div><div class="link-desc">Dieselbe Strecke als 2D-Karte mit Höhenprofil</div></div>
     <div class="link-ext">HTML</div>
   </a>
 </div>
 
-<div class="section-lbl">Weitere Dashboards</div>
-<div class="card">
+<div class="section-lbl"><i>✨</i>Weitere Dashboards</div>
+<div class="card sky">
   <a class="link-row" href="stufentest.html">
-    <div><div class="link-title">stufentest.html</div><div class="link-desc">Stufentest-Kalibrierung (Watt/Puls)</div></div>
+    <div class="ico">🪜</div>
+    <div class="txt"><div class="link-title">stufentest.html</div><div class="link-desc">Stufentest-Kalibrierung (Watt/Puls)</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="stufentest_regression.html">
-    <div><div class="link-title">stufentest_regression.html</div><div class="link-desc">Regression zur Watt-Schätzung</div></div>
+    <div class="ico">📐</div>
+    <div class="txt"><div class="link-title">stufentest_regression.html</div><div class="link-desc">Regression zur Watt-Schätzung</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="wkg_histogram.html">
-    <div><div class="link-title">wkg_histogram.html</div><div class="link-desc">W/kg-Histogramm</div></div>
+    <div class="ico">⚡</div>
+    <div class="txt"><div class="link-title">wkg_histogram.html</div><div class="link-desc">W/kg-Histogramm</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="training_slideshow.html">
-    <div><div class="link-title">training_slideshow.html</div><div class="link-desc">Slideshow der Trainingseinheiten</div></div>
+    <div class="ico">🎞️</div>
+    <div class="txt"><div class="link-title">training_slideshow.html</div><div class="link-desc">Slideshow der Trainingseinheiten</div></div>
     <div class="link-ext">HTML</div>
   </a>
   <a class="link-row" href="PulsCharts/puls_graphen_uebersicht.html">
-    <div><div class="link-title">PulsCharts/puls_graphen_uebersicht.html</div><div class="link-desc">Puls-Screenshots der Watch, Übersicht</div></div>
+    <div class="ico">💓</div>
+    <div class="txt"><div class="link-title">PulsCharts/puls_graphen_uebersicht.html</div><div class="link-desc">Puls-Screenshots der Watch, Übersicht</div></div>
     <div class="link-ext">HTML</div>
   </a>
 </div>
 
-<div class="section-lbl">Dokumentation</div>
-<div class="card">
+<div class="section-lbl"><i>📚</i>Dokumentation</div>
+<div class="card sun">
   <a class="link-row" href="README.pdf">
-    <div><div class="link-title">README.pdf</div><div class="link-desc">Projektübersicht</div></div>
+    <div class="ico">📖</div>
+    <div class="txt"><div class="link-title">README.pdf</div><div class="link-desc">Projektübersicht</div></div>
     <div class="link-ext">PDF</div>
   </a>
   <a class="link-row" href="CLAUDE.pdf">
-    <div><div class="link-title">CLAUDE.pdf</div><div class="link-desc">Architektur- und Pflegehinweise</div></div>
+    <div class="ico">🛠️</div>
+    <div class="txt"><div class="link-title">CLAUDE.pdf</div><div class="link-desc">Architektur- und Pflegehinweise</div></div>
     <div class="link-ext">PDF</div>
   </a>
 </div>
 
-<footer>Watt = (kcal/min × 1000 × 4.185) / 60 × 0.25 · Kein ärztlicher Rat.</footer>
+<footer>Watt = (kcal/min × 1000 × 4.185) / 60 × 0.25 · Kein ärztlicher Rat · mit 💛 gestrampelt</footer>
 
 </body>
 </html>
