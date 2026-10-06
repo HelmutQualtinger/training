@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karte 3D</title>
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<style>
+:root{--surface:rgba(255,255,255,.9);--text:#1c1c1a;--muted:#5f5f5a;--border:rgba(0,0,0,.12);--accent:#c2410c}
+@media (prefers-color-scheme: dark){:root{--surface:rgba(28,28,26,.88);--text:#ececE6;--muted:#a3a39c;--border:rgba(255,255,255,.14);--accent:#fb923c}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#bcd7ee;color:var(--text);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+canvas{display:block;touch-action:none}
+.panel{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;backdrop-filter:blur(6px)}
+#top{top:12px;left:12px;max-width:calc(100% - 24px)}
+#top h1{font-size:17px;margin:0}
+#top .sub{color:var(--muted);font-size:12px}
+#top a{color:var(--accent)}
+button,select{font:inherit;font-size:13px;padding:4px 11px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
+#bottom{left:12px;right:556px;bottom:26px}
+#bottom .row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+#scrub{flex:1;min-width:160px;accent-color:var(--accent)}
+/* bike-computer cockpit: always dark, like a head unit */
+#cockpit{position:fixed;right:12px;bottom:26px;width:532px;background:#0d0f12;border:1px solid #2a2e35;border-radius:16px;padding:10px 12px 8px;color:#f4f4f5;box-shadow:inset 0 0 0 3px #16191e}
+#dials{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+#dials svg{display:block;width:100%}
+#cockpit .track{fill:none;stroke:#262a31;stroke-width:9;stroke-linecap:round}
+#cockpit .val{fill:none;stroke-width:9;stroke-linecap:round}
+#cockpit .tl{fill:#a1a7b3;font-size:8px;text-anchor:middle;dominant-baseline:central}
+#cockpit .needle{stroke:#fff;stroke-width:3;stroke-linecap:round}
+#cockpit .num{fill:#fff;font-size:24px;font-weight:700;text-anchor:middle;font-variant-numeric:tabular-nums}
+#cockpit .unit{fill:#9aa1ad;font-size:9px;text-anchor:middle}
+#cockpit .lab{fill:#d4d7dd;font-size:9px;font-weight:600;letter-spacing:.08em;text-anchor:middle;text-transform:uppercase}
+#stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:6px;border-top:1px solid #2a2e35;padding-top:6px;text-align:center}
+#stats .l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9aa1ad}
+#stats .v{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+#stats .v small{font-size:12px;font-weight:500;color:#9aa1ad}
+@media (max-width:1000px){
+  #bottom{right:12px}
+  #cockpit{bottom:96px;width:min(532px,calc(100% - 24px))}
+  #stats .v{font-size:17px}
+}
+@media (max-width:560px){#cockpit{bottom:132px}}
+label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
+#left{position:fixed;top:12px;left:12px;width:430px;max-width:calc(100% - 24px);display:flex;flex-direction:column;gap:10px}
+#left .panel{position:static;max-width:none}
+/* profile strip: dark like the cockpit, same series colours as its dials */
+#profbox{background:#0d0f12;border:1px solid #2a2e35;border-radius:12px;padding:8px 10px}
+#prof{display:block;width:100%;cursor:crosshair;touch-action:none}
+@media (max-width:760px){#profbox{display:none}}
+/* frame for the rider's-eye inset; the picture itself is a second viewport on the WebGL canvas */
+#pov{position:fixed;top:12px;right:12px;width:min(400px,34vw);aspect-ratio:16/10;border:2px solid #0d0f12;border-radius:4px;box-shadow:0 0 0 1px rgba(255,255,255,.5);pointer-events:none}
+#pov span{position:absolute;left:6px;top:6px;background:rgba(13,15,18,.78);color:#f4f4f5;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+@media (max-width:760px){#pov{top:150px;width:46vw}}
+body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback controls */
+#attr{position:fixed;right:12px;bottom:6px;font-size:11px;color:#333;text-shadow:0 0 3px #fff}
+#attr a{color:inherit}
+#hint{font-size:12px;color:var(--accent);margin-top:8px;max-width:400px}
+</style>
+</head>
+<body>
+<div id="left">
+<div class="panel" id="top">
+  <h1 id="title"></h1>
+  <div class="sub" id="sub"></div>
+  <div id="hint" hidden>Kartenbild lädt nur über HTTP: im Repo <code>python3 -m http.server 8756</code> starten und <code id="hint-url"></code> öffnen.</div>
+</div>
+
+<div id="profbox"><canvas id="prof" aria-label="Verlauf von Tempo, Leistung, Puls und Höhe"></canvas></div>
+</div>
+
+<div id="pov"><span>Fahrersicht</span></div>
+
+<div class="panel" id="bottom">
+  <div class="row">
+    <button id="play">▶ Abspielen</button>
+    <select id="speed" aria-label="Tempo"><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
+    <label><input type="checkbox" id="follow"> Mitfahren</label>
+    <input type="range" id="scrub" min="0" value="0" step="1" aria-label="Position auf der Strecke">
+  </div>
+</div>
+<div id="cockpit" aria-label="Fahrradcomputer">
+  <div id="dials"><div id="d-kmh"></div><div id="d-watt"></div><div id="d-hf"></div><div id="d-rpm"></div></div>
+  <div id="stats">
+    <div><div class="l">Distanz</div><div class="v"><span id="s-km"></span> <small>km</small></div></div>
+    <div><div class="l">Zeit</div><div class="v" id="s-time"></div></div>
+    <div><div class="l">Höhe</div><div class="v"><span id="s-ele"></span> <small>m</small></div></div>
+  </div>
+</div>
+<div id="attr">Karte &amp; Gebäude © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende · Höhendaten: Mapzen Terrain Tiles</div>
+
+<script type="application/json" id="data">/*__DATA__*/null</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {Line2} from 'three/addons/lines/Line2.js';
+import {LineGeometry} from 'three/addons/lines/LineGeometry.js';
+import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
+
+// Heightmap, building footprints and track are baked into the JSON block above; only the ground
+// texture (OSM tiles) is fetched live. Scene units are metres: x east, z south, y up.
+const D=JSON.parse(document.getElementById('data').textContent);
+const T=D.track,N=T.x.length;
+const TITLE_SUFFIX=' in 3D',H1_SUFFIX=' in 3D',OTHER={file:D.meta.file2d,label:'2D-Karte'};
+// D.meta comes from kinomap_karte.py: {title, sub, file2d, file3d}; set via textContent since the
+// route name is whatever the Kinomap export says.
+document.title=D.meta.title+TITLE_SUFFIX;
+document.getElementById('title').textContent=D.meta.title+H1_SUFFIX;
+{
+  const sub=document.getElementById('sub'),a=document.createElement('a');
+  a.href=OTHER.file;a.textContent=OTHER.label;
+  sub.append(D.meta.sub+' · ',a);
+}
+document.getElementById('hint-url').textContent='http://localhost:8756/'+D.meta.file3d;
+const params=new URLSearchParams(location.search);
+const fmt=(v,d=0)=>v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+// ---- heightmap (uint16 decimetres above D.hmin, row 0 = north) ----
+const hb=atob(D.H),H=new Uint16Array(hb.length/2);
+for(let i=0;i<H.length;i++)H[i]=hb.charCodeAt(2*i)|hb.charCodeAt(2*i+1)<<8;
+function hAt(x,z){
+  const u=Math.min(D.nx-1.001,Math.max(0,(x/D.W+.5)*(D.nx-1)));
+  const v=Math.min(D.ny-1.001,Math.max(0,(z/D.D+.5)*(D.ny-1)));
+  const i=Math.floor(u),j=Math.floor(v),f=u-i,g=v-j,k=j*D.nx+i;
+  return ((H[k]*(1-f)+H[k+1]*f)*(1-g)+(H[k+D.nx]*(1-f)+H[k+D.nx+1]*f)*g)/10;
+}
+
+// ---- renderer / scene ----
+const SKY=0xbcd7ee;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:params.has('shot')||params.has('rec')});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(SKY);
+const SPAN=Math.max(D.W,D.D);
+scene.fog=new THREE.Fog(SKY,SPAN*0.75,Math.max(32000,SPAN*2.6));
+const camera=new THREE.PerspectiveCamera(45,1,5,Math.max(60000,SPAN*5));
+// start south-east of the route's centre, looking north across it
+const mid={x:T.x.reduce((s,v)=>s+v,0)/N,z:T.z.reduce((s,v)=>s+v,0)/N};
+camera.position.set(mid.x+SPAN*0.21,SPAN*0.26,mid.z+SPAN*0.63);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(mid.x,0,mid.z);
+controls.enableDamping=true;
+controls.maxPolarAngle=Math.PI/2-0.04;
+controls.minDistance=4;controls.maxDistance=Math.max(26000,SPAN*2.1);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8f80,1.3));
+const sun=new THREE.DirectionalLight(0xfff4e0,2.5);   // strong enough that slopes read as relief
+sun.position.set(-0.6,0.8,0.5);   // from the south-west, afternoon
+scene.add(sun);
+
+// ---- terrain ----
+const tg=new THREE.PlaneGeometry(D.W,D.D,D.nx-1,D.ny-1);
+tg.rotateX(-Math.PI/2);
+const tp=tg.attributes.position;
+for(let i=0;i<H.length;i++)tp.setY(i,H[i]/10);
+tg.computeVertexNormals();
+// Ground texture: the OSM tiles covering the area are drawn into one canvas as they arrive.
+// tile.openstreetmap.org blocks pages opened via file:// (no Referer), so there the terrain stays plain.
+const cv=document.createElement('canvas');cv.width=D.tx*256;cv.height=D.ty*256;
+const cx=cv.getContext('2d');cx.fillStyle='#dde5d0';cx.fillRect(0,0,cv.width,cv.height);
+const tex=new THREE.CanvasTexture(cv);
+if(location.protocol==='file:')document.getElementById('hint').hidden=false;
+else{
+  let dirty=false;
+  for(let y=0;y<D.ty;y++)for(let x=0;x<D.tx;x++){
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>{cx.drawImage(img,x*256,y*256,256,256);dirty=true;};
+    img.src=`https://tile.openstreetmap.org/${D.zt}/${D.x0+x}/${D.y0+y}.png`;
+  }
+  setInterval(()=>{if(dirty){tex.needsUpdate=true;dirty=false;}},400);
+}
+tex.colorSpace=THREE.SRGBColorSpace;
+tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+scene.add(new THREE.Mesh(tg,new THREE.MeshLambertMaterial({map:tex})));
+
+// ---- buildings: one merged mesh, walls + flat roof per footprint ----
+// each entry: [height_dm, x0_dm, z0_dm, dx1, dz1, ...] (delta-encoded outline)
+{
+  const pos=[],col=[];
+  const wall=new THREE.Color(),roof=new THREE.Color();
+  const push=(x,y,z,c)=>{pos.push(x,y,z);col.push(c.r,c.g,c.b);};
+  for(const b of D.blds){
+    const h=b[0]/10,p=[];let x=0,z=0;
+    for(let i=1;i<b.length;i+=2){x+=b[i];z+=b[i+1];p.push(new THREE.Vector2(x/10,z/10));}
+    let lo=Infinity,area=0;
+    for(let i=0;i<p.length;i++){
+      const q=p[(i+1)%p.length];
+      lo=Math.min(lo,hAt(p[i].x,p[i].y));area+=p[i].x*q.y-q.x*p[i].y;
+    }
+    area=Math.abs(area)/2;
+    const base=lo-1,top=lo+h,j=(b[1]*7+b[2]*13)%100/100;     // stable per-building tint
+    wall.setHSL(0.10,0.18,0.80+j*0.12);
+    if(area>500||h<4)roof.setHSL(0.08,0.04,0.50+j*0.15);     // large/low: grey flat roof
+    else roof.setHSL(0.03+j*0.03,0.42,0.40+j*0.10);          // houses: tile red-brown
+    for(let i=0;i<p.length;i++){
+      const a=p[i],c=p[(i+1)%p.length];
+      push(a.x,base,a.y,wall);push(c.x,base,c.y,wall);push(c.x,top,c.y,wall);
+      push(a.x,base,a.y,wall);push(c.x,top,c.y,wall);push(a.x,top,a.y,wall);
+    }
+    for(const t of THREE.ShapeUtils.triangulateShape(p,[]))
+      for(const k of t)push(p[k].x,top,p[k].y,roof);
+  }
+  const bg=new THREE.BufferGeometry();
+  bg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  bg.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  bg.computeVertexNormals();
+  scene.add(new THREE.Mesh(bg,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})));
+}
+
+// ---- route ----
+const P=[];for(let i=0;i<N;i++)P.push(new THREE.Vector3(T.x[i],hAt(T.x[i],T.z[i])+3,T.z[i]));
+// the export repeats positions; drop zero-length steps for the line, remember the source index for colouring
+const keep=[0];for(let i=1;i<N;i++)if(P[i].distanceToSquared(P[keep[keep.length-1]])>0.01)keep.push(i);
+const flat=[];for(const i of keep)flat.push(P[i].x,P[i].y,P[i].z);
+const casingGeo=new LineGeometry();casingGeo.setPositions(flat);
+const casingMat=new LineMaterial({color:0x111111,linewidth:8,depthWrite:false});
+const casing=new Line2(casingGeo,casingMat);casing.renderOrder=1;scene.add(casing);
+const lineGeo=new LineGeometry();lineGeo.setPositions(flat);
+const lineMat=new LineMaterial({vertexColors:true,linewidth:5});
+const line=new Line2(lineGeo,lineMat);line.renderOrder=2;scene.add(line);
+// faint second pass without depth test, so the route still reads where buildings hide it
+const ghostMat=new LineMaterial({vertexColors:true,linewidth:4,transparent:true,opacity:.35,depthTest:false});
+const ghost=new Line2(lineGeo,ghostMat);ghost.renderOrder=3;scene.add(ghost);
+
+const STOPS=[[37,99,235],[22,163,74],[234,179,8],[220,38,38]];
+const tmp=new THREE.Color();
+function colour(t){
+  t=Math.min(1,Math.max(0,t))*(STOPS.length-1);
+  const i=Math.min(STOPS.length-2,Math.floor(t)),f=t-i;
+  return tmp.setRGB(...STOPS[i].map((c,k)=>(c+(STOPS[i+1][k]-c)*f)/255),THREE.SRGBColorSpace);
+}
+// route line coloured by power, blue (low) to red (high), 5th–95th percentile
+{
+  const a=T.watt,s=[...a].sort((x,y)=>x-y),lo=s[Math.floor(N*0.05)],hi=s[Math.floor(N*0.95)];
+  const c=[];for(const i of keep){const k=colour((a[i]-lo)/((hi-lo)||1));c.push(k.r,k.g,k.b);}
+  lineGeo.setColors(c);
+}
+
+// ---- cyclist avatar (local frame: +z forward, y up, metres) + playback ----
+const UP=new THREE.Vector3(0,1,0);
+function setBar(m,a,b){            // stretch a unit cylinder from a to b
+  m.position.copy(a).add(b).multiplyScalar(.5);
+  const d=_v.copy(b).sub(a),len=d.length();
+  m.scale.set(1,len,1);
+  m.quaternion.setFromUnitVectors(UP,d.divideScalar(len||1));
+}
+const _v=new THREE.Vector3();
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+function bar(parent,a,b,r,color){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,10),new THREE.MeshLambertMaterial({color}));
+  setBar(m,a,b);parent.add(m);return m;
+}
+const rider=new THREE.Group(),bike=new THREE.Group(),body=new THREE.Group(),head=new THREE.Group();
+rider.add(bike,body,head);scene.add(rider);
+const WR=0.34,REAR=V(0,WR,-0.5),FRONT=V(0,WR,0.54),BB=V(0,0.29,-0.04),SEAT=V(0,0.96,-0.2),HEADT=V(0,0.93,0.38),STEM=V(0,1.02,0.42);
+const FRAME=0xb91c1c,DARK=0x26262a,SKIN=0xe8b48c,JERSEY=0xf97316,SHORTS=0x1f2937;
+for(const [a,b] of [[BB,SEAT],[SEAT,HEADT],[BB,HEADT],[BB,REAR],[SEAT,REAR],[HEADT,FRONT]])bar(bike,a,b,0.022,FRAME);
+bar(bike,HEADT,STEM,0.018,DARK);
+bar(bike,V(-0.22,1.02,0.42),V(0.22,1.02,0.42),0.016,DARK);           // handlebar
+bar(bike,V(-0.07,0.98,-0.26),V(0.07,0.98,-0.26),0.035,DARK).scale.z=3;  // saddle
+const wheels=[REAR,FRONT].map(c=>{
+  const w=new THREE.Group();w.position.copy(c);
+  const tyre=new THREE.Mesh(new THREE.TorusGeometry(WR-0.02,0.022,8,28),new THREE.MeshLambertMaterial({color:DARK}));
+  tyre.rotation.y=Math.PI/2;w.add(tyre);
+  for(let k=0;k<4;k++){const a=k*Math.PI/4;bar(w,V(0,Math.cos(a)*WR*.94,Math.sin(a)*WR*.94),V(0,-Math.cos(a)*WR*.94,-Math.sin(a)*WR*.94),0.004,0xb0b0b0);}
+  bike.add(w);return w;
+});
+// rider: torso, arms, two-bone legs driven by the crank angle
+const HIP=V(0,1.0,-0.18),SHOULDER=V(0,1.4,0.2);
+bar(body,HIP,SHOULDER,0.13,JERSEY);
+for(const s of [-1,1])bar(body,V(s*0.17,1.38,0.2),V(s*0.2,1.04,0.42),0.035,SKIN);
+const legs=[-1,1].map(s=>({s,thigh:bar(body,HIP,BB,0.06,SHORTS),shin:bar(body,HIP,BB,0.042,SKIN),
+  crank:bar(bike,BB,BB,0.012,0xb0b0b0)}));
+bar(head,V(0,1.4,0.2),V(0,1.5,0.27),0.045,SKIN);
+const skull=new THREE.Mesh(new THREE.SphereGeometry(0.105,16,12),new THREE.MeshLambertMaterial({color:SKIN}));
+skull.position.set(0,1.57,0.3);head.add(skull);
+const helmet=new THREE.Mesh(new THREE.SphereGeometry(0.125,16,10,0,Math.PI*2,0,Math.PI*0.55),new THREE.MeshLambertMaterial({color:0xfafafa}));
+helmet.position.set(0,1.585,0.295);helmet.rotation.x=0.25;head.add(helmet);
+const THIGH=0.43,SHIN=0.47,CRANK=0.17;
+const _h=new THREE.Vector3(),_f=new THREE.Vector3(),_k=new THREE.Vector3();
+function pedal(angle){
+  for(const L of legs){
+    const a=angle+(L.s>0?Math.PI:0);
+    _h.set(L.s*0.1,HIP.y,HIP.z);
+    _f.set(L.s*0.1,BB.y+Math.sin(a)*CRANK,BB.z+Math.cos(a)*CRANK);
+    // knee = intersection of the two bone circles in the y/z plane, the one pointing forward
+    const dy=_f.y-_h.y,dz=_f.z-_h.z,d=Math.min(THIGH+SHIN-0.001,Math.hypot(dy,dz));
+    const along=(THIGH*THIGH-SHIN*SHIN+d*d)/(2*d),off=Math.sqrt(Math.max(0,THIGH*THIGH-along*along));
+    _k.set(_h.x,_h.y+dy/d*along+dz/d*off,_h.z+dz/d*along-dy/d*off);
+    setBar(L.thigh,_h,_k);setBar(L.shin,_k,_f);
+    setBar(L.crank,_v2.set(L.s*0.1,BB.y,BB.z),_f);
+  }
+}
+const _v2=new THREE.Vector3();
+
+const scrub=document.getElementById('scrub'),playBtn=document.getElementById('play'),
+      followBox=document.getElementById('follow'),speedSel=document.getElementById('speed');
+scrub.max=N-1;
+let t=Math.min(N-1,+params.get('t')||0),playing=false;
+followBox.checked=params.has('follow');scrub.value=Math.round(t);
+
+// The export repeats each GPS fix for 2–3 s, so position comes from the (smooth) distance column
+// mapped onto the route polyline rather than from the per-second coordinates.
+const cum=[0];for(let i=1;i<keep.length;i++)cum.push(cum[i-1]+P[keep[i]].distanceTo(P[keep[i-1]]));
+const LEN=cum[cum.length-1],DSCALE=LEN/T.dist[N-1];
+function atDist(d,out){
+  d=Math.min(LEN,Math.max(0,d));
+  let lo=0,hi=cum.length-1;
+  while(hi-lo>1){const m=(lo+hi)>>1;if(cum[m]<=d)lo=m;else hi=m;}
+  out.lerpVectors(P[keep[lo]],P[keep[hi]],(d-cum[lo])/((cum[hi]-cum[lo])||1));
+  out.y=hAt(out.x,out.z);
+  return out;
+}
+function distAt(s){
+  s=Math.min(N-1,Math.max(0,s));
+  const i=Math.min(N-2,Math.floor(s));
+  return (T.dist[i]+(T.dist[i+1]-T.dist[i])*(s-i))*DSCALE;
+}
+// ---- profile strip (top left): tempo / power / pulse / elevation over distance, one row each ----
+const prof=document.getElementById('prof'),PW=prof.clientWidth,RH=46,PH=4*RH+16;
+const ROWS=[
+  {k:'kmh',label:'Tempo',unit:'km/h',color:'#38bdf8',d:1},
+  {k:'watt',label:'Leistung',unit:'W',color:'#fb923c',d:0},
+  {k:'hf',label:'Puls',unit:'bpm',color:'#f87171',d:0},
+  {k:'ele',label:'Höhe',unit:'m',color:'#a8b0bd',d:0,fill:true},
+];
+const pdpr=Math.min(devicePixelRatio,2),pbase=document.createElement('canvas'),TOTAL=T.dist[N-1]||1;
+let drawProf=()=>{};
+if(PW>0){                                   // hidden on narrow screens
+  prof.width=pbase.width=PW*pdpr;prof.height=pbase.height=PH*pdpr;prof.style.height=PH+'px';
+  const c=pbase.getContext('2d');c.scale(pdpr,pdpr);
+  ROWS.forEach((r,ri)=>{
+    // one value per pixel column (mean of the samples that fall into it) keeps the line calm
+    const a=T[r.k],sum=new Float64Array(PW),cnt=new Uint16Array(PW);
+    for(let i=0;i<N;i++){const x=Math.min(PW-1,Math.floor(T.dist[i]/TOTAL*PW));sum[x]+=a[i];cnt[x]++;}
+    const s=[...a].sort((x,y)=>x-y),lo=s[Math.floor(N*.01)],hi=s[Math.floor(N*.99)],top=ri*RH+19,h=RH-24;
+    const y=v=>top+h-Math.min(1,Math.max(0,(v-lo)/((hi-lo)||1)))*h;
+    c.beginPath();let prev=a[0];
+    for(let x=0;x<PW;x++){if(cnt[x])prev=sum[x]/cnt[x];x?c.lineTo(x+.5,y(prev)):c.moveTo(.5,y(prev));}
+    c.strokeStyle=r.color;c.lineWidth=1.5;c.lineJoin='round';c.stroke();
+    if(r.fill){c.lineTo(PW,top+h+3);c.lineTo(0,top+h+3);c.closePath();c.globalAlpha=.22;c.fillStyle=r.color;c.fill();c.globalAlpha=1;}
+    c.fillStyle='#2a2e35';c.fillRect(0,ri*RH+RH-1,PW,1);
+  });
+  c.fillStyle='#9aa1ad';c.font='10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  c.fillText('0 km',0,PH-3);c.textAlign='right';c.fillText(fmt(TOTAL/1000,1)+' km',PW,PH-3);
+  const pc=prof.getContext('2d'),FONT='-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  drawProf=()=>{
+    const i=Math.min(N-2,Math.floor(t)),f=t-i,v=k=>T[k][i]+(T[k][i+1]-T[k][i])*f;
+    pc.setTransform(1,0,0,1,0,0);pc.clearRect(0,0,prof.width,prof.height);pc.drawImage(pbase,0,0);
+    pc.setTransform(pdpr,0,0,pdpr,0,0);
+    const x=Math.round(v('dist')/TOTAL*PW)+.5;
+    pc.strokeStyle='#fff';pc.lineWidth=1;pc.beginPath();pc.moveTo(x,2);pc.lineTo(x,4*RH-2);pc.stroke();
+    ROWS.forEach((r,ri)=>{
+      pc.textAlign='left';pc.fillStyle=r.color;pc.font='600 10px '+FONT;pc.fillText(r.label.toUpperCase(),0,ri*RH+12);
+      pc.textAlign='right';pc.fillStyle='#fff';pc.font='700 13px '+FONT;pc.fillText(fmt(v(r.k),r.d)+' '+r.unit,PW,ri*RH+13);
+    });
+  };
+  // click or drag in the strip to jump there
+  const seek=e=>{
+    const d=Math.min(1,Math.max(0,(e.clientX-prof.getBoundingClientRect().left)/PW))*TOTAL;
+    let lo=0,hi=N-1;while(hi-lo>1){const m=(lo+hi)>>1;if(T.dist[m]<=d)lo=m;else hi=m;}
+    t=lo;scrub.value=lo;readout();
+  };
+  prof.addEventListener('pointerdown',e=>{prof.setPointerCapture(e.pointerId);seek(e);});
+  prof.addEventListener('pointermove',e=>{if(e.buttons)seek(e);});
+}
+
+// ---- cockpit: arc gauges with a rim needle and a big digital value ----
+function dial(id,{min,max,step,label,unit,color,d=0}){
+  const C=60,R=39,A0=135,SW=270,L=R*SW*Math.PI/180;
+  const pt=(deg,r)=>[(C+r*Math.cos(deg*Math.PI/180)).toFixed(2),(C+r*Math.sin(deg*Math.PI/180)).toFixed(2)];
+  const [sx,sy]=pt(A0,R),[ex,ey]=pt(A0+SW,R),arc=`M${sx} ${sy}A${R} ${R} 0 1 1 ${ex} ${ey}`;
+  let ticks='';
+  for(let v=min;v<=max;v+=step){const [x,y]=pt(A0+(v-min)/(max-min)*SW,R+11);ticks+=`<text x="${x}" y="${y}" class="tl">${v}</text>`;}
+  const host=document.getElementById(id);
+  host.innerHTML=`<svg viewBox="0 0 120 120" role="img" aria-label="${label}"><path d="${arc}" class="track"/>`+
+    `<path d="${arc}" class="val" stroke="${color}"/>${ticks}<line class="needle" x1="${C+R-8}" y1="${C}" x2="${C+R+5}" y2="${C}"/>`+
+    `<text x="60" y="67" class="num"></text><text x="60" y="79" class="unit">${unit}</text><text x="60" y="113" class="lab">${label}</text></svg>`;
+  const val=host.querySelector('.val'),needle=host.querySelector('.needle'),num=host.querySelector('.num');
+  return v=>{
+    const f=Math.min(1,Math.max(0,(v-min)/(max-min)));
+    val.setAttribute('stroke-dasharray',`${(f*L).toFixed(1)} ${L+20}`);
+    val.style.visibility=f>0?'visible':'hidden';
+    needle.setAttribute('transform',`rotate(${(A0+f*SW).toFixed(1)} ${C} ${C})`);
+    num.textContent=fmt(v,d);
+  };
+}
+const dials={
+  kmh:dial('d-kmh',{min:0,max:60,step:10,label:'Tempo',unit:'km/h',color:'#38bdf8',d:1}),
+  watt:dial('d-watt',{min:0,max:400,step:100,label:'Leistung',unit:'Watt',color:'#fb923c'}),
+  hf:dial('d-hf',{min:60,max:160,step:20,label:'Puls',unit:'bpm',color:'#f87171'}),
+  rpm:dial('d-rpm',{min:0,max:120,step:20,label:'Kadenz',unit:'rpm',color:'#a3e635'}),
+};
+function readout(){
+  const i=Math.min(N-2,Math.floor(t)),f=t-i,v=k=>T[k][i]+(T[k][i+1]-T[k][i])*f,s=Math.round(t);
+  for(const k in dials)dials[k](v(k));
+  document.getElementById('s-km').textContent=fmt(v('dist')/1000,2);
+  document.getElementById('s-time').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  document.getElementById('s-ele').textContent=fmt(v('ele'));
+  drawProf();
+}
+function setPlaying(p){playing=p;playBtn.textContent=p?'❚❚ Pause':'▶ Abspielen';}
+playBtn.onclick=()=>{if(!playing&&t>=N-1)t=0;setPlaying(!playing);};
+scrub.oninput=()=>{t=+scrub.value;readout();};
+readout();
+
+function resize(){
+  const w=innerWidth,h=innerHeight;
+  renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
+  for(const m of [lineMat,casingMat,ghostMat])m.resolution.set(w,h);
+}
+addEventListener('resize',resize);resize();
+
+// From road level the area texture (≈3 m per pixel) is mush, so the ground around the rider gets
+// tiles two zoom levels deeper, draped as small patches and fetched lazily as the ride progresses.
+const HF=4,patches=new Set();let inflight=0;
+function sharpen(p){
+  if(location.protocol==='file:')return;
+  const nx=D.tx*HF,ny=D.ty*HF,w=D.W/nx,h=D.D/ny;
+  const u=Math.floor((p.x/D.W+.5)*nx),v=Math.floor((p.z/D.D+.5)*ny);
+  for(let j=v-2;j<=v+2;j++)for(let i=u-2;i<=u+2;i++){
+    const key=i+'_'+j;
+    if(i<0||j<0||i>=nx||j>=ny||patches.has(key)||inflight>=8)continue;
+    patches.add(key);inflight++;
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onerror=()=>{inflight--;};
+    img.onload=()=>{
+      inflight--;
+      const tx=new THREE.Texture(img);tx.colorSpace=THREE.SRGBColorSpace;
+      tx.anisotropy=renderer.capabilities.getMaxAnisotropy();tx.needsUpdate=true;
+      const g=new THREE.PlaneGeometry(w,h,6,6);g.rotateX(-Math.PI/2);g.translate(-D.W/2+(i+.5)*w,0,-D.D/2+(j+.5)*h);
+      const a=g.attributes.position;
+      for(let k=0;k<a.count;k++)a.setY(k,hAt(a.getX(k),a.getZ(k))+0.12);
+      g.computeVertexNormals();
+      scene.add(new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})));
+    };
+    img.src=`https://tile.openstreetmap.org/${D.zt+2}/${D.x0*HF+i}/${D.y0*HF+j}.png`;
+  }
+}
+
+const povBox=document.getElementById('pov'),povCam=new THREE.PerspectiveCamera(72,1.6,0.3,camera.far);
+const pos=new THREE.Vector3(),a1=new THREE.Vector3(),a0=new THREE.Vector3(),
+      dir=new THREE.Vector3(0,0,-1),want=new THREE.Vector3(),eye=new THREE.Vector3(),look=new THREE.Vector3();
+let last=performance.now(),first=false,snapDir=true,crank=0,lastD=null;
+// "Mitfahren" = wide-angle chase camera 30 m behind and 5 m above the road, aimed a little ahead of the rider; otherwise free orbit camera
+function setFirstPerson(on){
+  first=on;controls.enabled=!on;
+  camera.near=on?0.3:5;camera.fov=on?78:45;camera.updateProjectionMatrix();
+  line.position.y=casing.position.y=on?-2.6:0;ghost.visible=!on;   // see-through pass would draw across the rider    // route line down to road level when seen from the saddle
+  if(!on){                                        // hand back to the orbit camera just behind the rider
+    controls.target.copy(pos);
+    camera.position.copy(pos).addScaledVector(dir,-60).setY(pos.y+30);
+  }
+}
+followBox.onchange=()=>setFirstPerson(followBox.checked);
+function tick(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(playing){
+    t+=dt*+speedSel.value;
+    if(t>=N-1){t=N-1;setPlaying(false);}
+    scrub.value=Math.round(t);readout();
+  }
+  const d=distAt(t);
+  atDist(d,pos);
+  // heading: smoothed direction of travel
+  atDist(d+10,a1).sub(atDist(d-4,a0)).setY(0);
+  if(a1.lengthSq()>.01){a1.normalize();dir.lerp(a1,snapDir?1:1-Math.exp(-dt*5)).normalize();snapDir=false;}
+  // wheels and legs turn with the distance covered (≈ 6 m per crank revolution)
+  if(lastD!==null){const dd=d-lastD;for(const w of wheels)w.rotation.x+=dd/WR;crank-=dd/6*Math.PI*2;}
+  lastD=d;pedal(crank);
+  // true size from the saddle or close up; enlarged so it stays visible in the overview
+  const rs=first?1:Math.max(1,camera.position.distanceTo(pos)/28);
+  rider.scale.setScalar(rs);
+  rider.position.copy(pos);
+  rider.lookAt(look.copy(pos).add(dir));
+  if(first){
+    sharpen(pos);
+    eye.copy(pos).addScaledVector(dir,-30);eye.y=Math.max(pos.y,hAt(eye.x,eye.z))+5;
+    camera.position.copy(eye);
+    camera.lookAt(look.copy(pos).addScaledVector(dir,15).setY(pos.y+1.5));
+  }else{
+    controls.update();
+    if(camera.position.distanceTo(controls.target)<1500)sharpen(controls.target);   // zoomed in: sharper ground there too
+  }
+  renderer.render(scene,camera);
+
+  // inset top right: the road from the rider's eyes (1.6 m up, looking ahead), drawn into the #pov frame
+  sharpen(pos);
+  const r=povBox.getBoundingClientRect(),vy=innerHeight-r.bottom;
+  eye.copy(pos).addScaledVector(dir,0.22).setY(pos.y+1.6);
+  povCam.position.copy(eye);
+  povCam.lookAt(look.copy(eye).addScaledVector(dir,10).setY(eye.y-1.6));
+  if(povCam.aspect!==r.width/r.height){povCam.aspect=r.width/r.height;povCam.updateProjectionMatrix();}
+  rider.visible=ghost.visible=false;                 // the avatar may be enlarged for the main view
+  line.position.y=casing.position.y=-2.6;            // route line at road level
+  for(const m of [lineMat,casingMat])m.resolution.set(r.width,r.height);
+  renderer.setViewport(r.left,vy,r.width,r.height);renderer.setScissor(r.left,vy,r.width,r.height);
+  renderer.setScissorTest(true);
+  renderer.render(scene,povCam);
+  renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
+  for(const m of [lineMat,casingMat])m.resolution.set(innerWidth,innerHeight);
+  line.position.y=casing.position.y=first?-2.6:0;
+  rider.visible=true;ghost.visible=!first;
+}
+if(followBox.checked)setFirstPerson(true);
+if(params.has('close')){   // debug: start the orbit camera next to the rider
+  atDist(distAt(t),pos);controls.target.copy(pos).setY(pos.y+1);
+  camera.position.set(pos.x+(+params.get('close')||6),pos.y+2.5,pos.z+4);
+}
+// ?rec hands the clock to scripts/record_video.py: no animation loop, window.__step(rideSeconds)
+// advances the ride, renders exactly one frame and reports whether the end is reached.
+if(params.has('rec')){
+  document.body.classList.add('rec');
+  let fake=0;last=0;tick(0);
+  window.__step=d=>{t=Math.min(N-1,t+d);readout();fake+=1000/30;tick(fake);return t>=N-1;};
+}else renderer.setAnimationLoop(tick);
+</script>
+</body>
+</html>

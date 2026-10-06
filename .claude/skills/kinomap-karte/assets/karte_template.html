@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karte</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#f5f5f2;--surface:#fff;--text:#1c1c1a;--muted:#6b6b66;--border:#deded8;--accent:#c2410c}
+@media (prefers-color-scheme: dark){:root{--bg:#161615;--surface:#222220;--text:#ececE6;--muted:#9a9a93;--border:#383835;--accent:#fb923c}}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:1100px;padding:20px 16px 32px;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+h1{font-size:22px;margin:0 0 2px}
+.sub{color:var(--muted);margin-bottom:16px}
+.sub a{color:var(--accent)}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.metric .l{font-size:12px;color:var(--muted)}
+.metric .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.metric .s{font-size:12px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.bar button{font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
+.bar button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.legend{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend i{display:block;width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#2563eb,#16a34a,#eab308,#dc2626)}
+#map{height:520px;border-radius:8px;z-index:0}
+.chartbox{position:relative;height:220px}
+#read{font-size:13px;color:var(--muted);min-height:20px;margin-top:6px;font-variant-numeric:tabular-nums}
+@media (max-width:600px){#map{height:380px}.legend{margin-left:0}}
+</style>
+</head>
+<body>
+<h1 id="title"></h1>
+<div class="sub" id="sub"></div>
+<div class="hero" id="hero"></div>
+
+<div class="card">
+  <div class="bar">
+    <span id="btns"></span>
+    <span class="legend"><span id="lmin"></span><i></i><span id="lmax"></span></span>
+  </div>
+  <div id="map"></div>
+</div>
+
+<div class="card">
+  <div class="chartbox"><canvas id="chart"></canvas></div>
+  <div id="read">Mit der Maus über das Profil fahren, um die Position auf der Karte zu sehen.</div>
+</div>
+
+<script>
+const D=/*__DATA__*/null;
+const TITLE_SUFFIX='',H1_SUFFIX='',OTHER={file:D.meta.file3d,label:'3D-Ansicht'};
+// D.meta comes from kinomap_karte.py: {title, sub, file2d, file3d}; set via textContent since the
+// route name is whatever the Kinomap export says.
+document.title=D.meta.title+TITLE_SUFFIX;
+document.getElementById('title').textContent=D.meta.title+H1_SUFFIX;
+{
+  const sub=document.getElementById('sub'),a=document.createElement('a');
+  a.href=OTHER.file;a.textContent=OTHER.label;
+  sub.append(D.meta.sub+' · ',a);
+}
+const N=D.lat.length;
+const METRICS={
+  watt:{label:'Leistung',unit:'W'},
+  hf:{label:'Herzfrequenz',unit:'bpm'},
+  rpm:{label:'Kadenz',unit:'rpm'},
+  kmh:{label:'Geschwindigkeit',unit:'km/h'},
+  ele:{label:'Höhe',unit:'m'},
+};
+const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+const fmt=(v,d=0)=>v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+// hero metrics, derived from the track itself
+const secs=N-1, km=D.dist[N-1]/1000;
+let climb=0;for(let i=1;i<N;i++){const d=D.ele[i]-D.ele[i-1];if(d>0)climb+=d;}
+const hero=[
+  ['Distanz',fmt(km,2)+' km',''],
+  ['Dauer',Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0'),''],
+  ['Leistung','Ø '+fmt(avg(D.watt))+' W','max '+Math.max(...D.watt)+' W'],
+  ['Herzfrequenz','Ø '+fmt(avg(D.hf))+' bpm','max '+Math.max(...D.hf)+' bpm'],
+  ['Kadenz','Ø '+fmt(avg(D.rpm))+' rpm','max '+Math.max(...D.rpm)+' rpm'],
+  ['Geschwindigkeit','Ø '+fmt(km/(secs/3600),1)+' km/h','max '+fmt(Math.max(...D.kmh),1)+' km/h'],
+  ['Höhe',fmt(Math.min(...D.ele))+'–'+fmt(Math.max(...D.ele))+' m','↑ '+fmt(climb)+' m'],
+];
+document.getElementById('hero').innerHTML=hero.map(([l,v,s])=>
+  `<div class="metric"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+
+// colour scale: 5th–95th percentile so start/stop outliers don't flatten it
+const STOPS=[[37,99,235],[22,163,74],[234,179,8],[220,38,38]];
+function colour(t){
+  t=Math.min(1,Math.max(0,t))*(STOPS.length-1);
+  const i=Math.min(STOPS.length-2,Math.floor(t)),f=t-i;
+  return 'rgb('+STOPS[i].map((c,k)=>Math.round(c+(STOPS[i+1][k]-c)*f)).join(',')+')';
+}
+function range(a){
+  const s=[...a].sort((x,y)=>x-y);
+  return [s[Math.floor(N*0.05)],s[Math.floor(N*0.95)]];
+}
+
+const map=L.map('map',{preferCanvas:true,scrollWheelZoom:false});
+// Must be served over http(s), like training.html: opened via file:// the browser sends no
+// Referer and tile.openstreetmap.org answers every tile with 403 "Access blocked".
+if(location.protocol==='file:')
+  document.getElementById('map').insertAdjacentHTML('beforebegin',
+    '<p style="color:var(--accent)">Kartenkacheln laden nur über HTTP: im Repo <code>python3 -m http.server 8756</code> starten und <code>http://localhost:8756/'+D.meta.file2d+'</code> öffnen.</p>');
+else L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19,
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende',
+}).addTo(map);
+const pts=D.lat.map((la,i)=>[la,D.lon[i]]);
+map.fitBounds(L.latLngBounds(pts),{padding:[24,24]});
+L.polyline(pts,{color:'#111',weight:8,opacity:.55}).addTo(map);   // casing
+const track=L.layerGroup().addTo(map);
+L.circleMarker(pts[0],{radius:7,color:'#fff',weight:2,fillColor:'#16a34a',fillOpacity:1})
+  .addTo(map).bindTooltip('Start / Ziel');
+const cursor=L.circleMarker(pts[0],{radius:7,color:'#fff',weight:3,fillColor:'#111',fillOpacity:1,opacity:0,fill:false});
+
+function drawTrack(key){
+  track.clearLayers();
+  const a=D[key],[lo,hi]=range(a);
+  // merge consecutive points of the same colour bucket into one polyline
+  const B=24,bucket=i=>Math.round(Math.min(1,Math.max(0,(a[i]-lo)/((hi-lo)||1)))*B);
+  let start=0,cur=bucket(1);
+  for(let i=2;i<=N;i++){
+    const b=i<N?bucket(i):-1;
+    if(b!==cur){
+      L.polyline(pts.slice(start,i),{color:colour(cur/B),weight:5,opacity:1,lineCap:'round'}).addTo(track);
+      start=i-1;cur=b;
+    }
+  }
+  const d=key==='kmh'||key==='ele'?1:0;
+  document.getElementById('lmin').textContent=fmt(lo,d);
+  document.getElementById('lmax').textContent=fmt(hi,d)+' '+METRICS[key].unit;
+}
+
+function show(i){
+  if(i==null){cursor.remove();return;}
+  cursor.setLatLng(pts[i]).setStyle({opacity:1,fill:true}).addTo(map);
+  const t=Math.floor(i/60)+':'+String(i%60).padStart(2,'0');
+  document.getElementById('read').textContent=
+    `km ${fmt(D.dist[i]/1000,2)} · ${t} · ${D.watt[i]} W · ${D.hf[i]} bpm · ${D.rpm[i]} rpm · ${fmt(D.kmh[i],1)} km/h · ${fmt(D.ele[i],1)} m`;
+}
+
+const text=css('--muted'),grid=isDark?'rgba(255,255,255,.08)':'rgba(0,0,0,.07)';
+const chart=new Chart(document.getElementById('chart'),{
+  type:'line',
+  data:{datasets:[
+    {label:'',data:[],yAxisID:'y',borderColor:css('--accent'),borderWidth:1.5,pointRadius:0,tension:.2},
+    {label:'Höhe',data:D.dist.map((d,i)=>({x:d/1000,y:D.ele[i]})),yAxisID:'e',borderWidth:0,pointRadius:0,
+     fill:true,backgroundColor:isDark?'rgba(255,255,255,.10)':'rgba(0,0,0,.08)'},
+  ]},
+  options:{
+    animation:false,responsive:true,maintainAspectRatio:false,parsing:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:text,boxWidth:12}},tooltip:{enabled:false}},
+    scales:{
+      x:{type:'linear',min:0,max:km,ticks:{color:text,callback:v=>fmt(v)+' km'},grid:{color:grid}},
+      y:{position:'left',ticks:{color:text},grid:{color:grid}},
+      e:{position:'right',ticks:{color:text,callback:v=>v+' m'},grid:{display:false},
+         suggestedMin:Math.min(...D.ele)-5,suggestedMax:Math.max(...D.ele)+25},
+    },
+    onHover:(e,els)=>show(els.length?els[0].index:null),
+  },
+});
+document.getElementById('chart').addEventListener('mouseleave',()=>show(null));
+
+function select(key){
+  drawTrack(key);
+  const m=METRICS[key];
+  chart.data.datasets[0].label=m.label+' ('+m.unit+')';
+  chart.data.datasets[0].data=D.dist.map((d,i)=>({x:d/1000,y:D[key][i]}));
+  chart.data.datasets[0].hidden=key==='ele';
+  chart.update();
+  document.querySelectorAll('#btns button').forEach(b=>b.classList.toggle('on',b.dataset.k===key));
+}
+document.getElementById('btns').innerHTML=Object.entries(METRICS).map(([k,m])=>
+  `<button data-k="${k}">${m.label}</button>`).join(' ');
+document.getElementById('btns').addEventListener('click',e=>{if(e.target.dataset.k)select(e.target.dataset.k);});
+select('watt');
+</script>
+</body>
+</html>
