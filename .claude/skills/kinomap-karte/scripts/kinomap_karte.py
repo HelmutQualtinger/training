@@ -32,6 +32,7 @@ Flags:
                    else in ~/Downloads)
     --out-dir DIR  where to write the pages (default: repo root)
     --radius M     keep buildings within M metres of the route (default: 800)
+    --cached-buildings  don't query Overpass; use only building chunks already cached
     --no-3d        skip the 3D page (and all downloads)
 
 Needs numpy and Pillow (to decode the elevation PNGs) for the 3D page.
@@ -176,7 +177,7 @@ def tile_xy(lat, lon, z):
     return (lon + 180) / 360 * n, (1 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2 * n
 
 
-def build_3d(rows, radius: float, cache: Path) -> dict:
+def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> dict:
     try:
         import numpy as np
         from PIL import Image
@@ -253,13 +254,15 @@ def build_3d(rows, radius: float, cache: Path) -> dict:
             q = '[out:json][timeout:60];way["building"](%.5f,%.5f,%.5f,%.5f);out geom;' % box
             fn = cache / ("osm_" + hashlib.sha1(q.encode()).hexdigest()[:16] + ".json")
             got = None
-            for attempt in range(6):
+            for attempt in range(6 if fetch_buildings else 1):
                 if fn.exists():
                     try:
                         got = json.loads(fn.read_text(encoding="utf-8"))["elements"]
                         break
                     except (ValueError, KeyError):
                         fn.unlink()        # an HTML error page, not JSON
+                if not fetch_buildings:
+                    break
                 host = OVERPASS[attempt % len(OVERPASS)]
                 if not curl(f"https://{host}/api/interpreter", fn, ("--data-urlencode", "data=" + q)):
                     time.sleep(4)
@@ -318,6 +321,8 @@ def main() -> None:
     ap.add_argument("--out-dir", help="Zielordner (default: Repo-Root)")
     ap.add_argument("--radius", type=float, default=800, help="Gebäude im Umkreis der Strecke, Meter (default: 800)")
     ap.add_argument("--no-3d", action="store_true", help="nur die 2D-Karte erzeugen, keine Downloads")
+    ap.add_argument("--cached-buildings", action="store_true",
+                    help="Overpass nicht abfragen, nur schon gecachte Gebäude-Kacheln verwenden")
     args = ap.parse_args()
 
     zpath = Path(args.zip).expanduser() if args.zip else newest_zip()
@@ -354,7 +359,7 @@ def main() -> None:
     if not args.no_3d:
         cache = Path(tempfile.gettempdir()) / "kinomap_karte_cache"
         cache.mkdir(exist_ok=True)
-        d3 = build_3d(rows, args.radius, cache)
+        d3 = build_3d(rows, args.radius, cache, not args.cached_buildings)
         hmax, missing, chunks = d3.pop("_hmax"), d3.pop("_missing"), d3.pop("_chunks")
         d3["meta"] = meta
         render("karte3d_template.html", d3, out_dir / file3d)

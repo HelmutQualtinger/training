@@ -41,7 +41,7 @@ Don't ask unless the user's reference matches several files.
 
 ```bash
 python3 .claude/skills/kinomap-karte/scripts/kinomap_karte.py \
-  [ZIP] [--out-dir DIR] [--radius M] [--no-3d]
+  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings]
 ```
 
 All arguments are optional. `--radius` is how far from the route buildings
@@ -49,7 +49,11 @@ are kept (default 800 m). `--no-3d` writes only the 2D page and needs no
 network. The first 3D run for a ride takes a few minutes (Overpass is slow
 and often answers 504 — the script retries across mirrors); reruns are fast
 because elevation tiles and building data are cached in the system temp dir.
-Give the command a generous timeout (10 min).
+Give the command a generous timeout (10 min). If Overpass is
+down or the user doesn't want to wait, `--cached-buildings` skips the queries
+and builds the 3D page right away from whatever building chunks are already
+cached (possibly none) — the result then carries the `warnung`; rerun without
+the flag later to fill the gaps.
 
 ## Step 3 — read the result
 
