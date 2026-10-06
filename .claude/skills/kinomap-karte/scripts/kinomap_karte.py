@@ -231,9 +231,6 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
     fx, fy = px - ix, (py - iy)[:, None]
     g = lambda r, c: dem[np.ix_(r, c)]
     H = (g(iy, ix) * (1 - fx) + g(iy, ix + 1) * fx) * (1 - fy) + (g(iy + 1, ix) * (1 - fx) + g(iy + 1, ix + 1) * fx) * fy
-    hmin = float(H.min())
-    h_b64 = base64.b64encode(np.round((H - hmin) * 10).astype("<u2").tobytes()).decode()
-
     # --- track
     xz = [proj(r["lat"], r["lon"]) for r in rows]
     T = np.array(xz)
@@ -254,7 +251,17 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
     v = np.clip((rz / D + 0.5) * (ny - 1), 0, ny - 1.001)
     iu, iv = u.astype(int), v.astype(int)
     fu, fv = u - iu, v - iv
-    ele = (H[iv, iu] * (1 - fu) + H[iv, iu + 1] * fu) * (1 - fv) + (H[iv + 1, iu] * (1 - fu) + H[iv + 1, iu + 1] * fu) * fv
+    at = lambda H: (H[iv, iu] * (1 - fu) + H[iv, iu + 1] * fu) * (1 - fv) + (H[iv + 1, iu] * (1 - fu) + H[iv + 1, iu + 1] * fu) * fv
+
+    # --- the terrarium tiles carry the sea floor too (and the odd -5000 m glitch pixel): on an island
+    # that drops the scene's zero level kilometres below the route, and a coast road dips into the sea
+    # wherever a pixel is half water. Water is drawn flat at sea level — unless the route itself lies
+    # below it (a depression), then the heights stay as they are.
+    if np.median(at(H)) >= 0:
+        H = np.maximum(H, 0.0)
+    ele = at(H)
+    hmin = float(H.min())
+    h_b64 = base64.b64encode(np.round((H - hmin) * 10).astype("<u2").tobytes()).decode()
 
     track = dict(
         x=[round(p[0], 1) for p in xz], z=[round(p[1], 1) for p in xz],
