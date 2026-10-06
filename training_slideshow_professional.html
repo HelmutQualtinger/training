@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trainingsprotokoll — Übersicht</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#eeecea;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;c
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.06);
+  --C1:#185FA5;--C2:#1D9E75;--C3:#BA7517;--C4:#533AB7;
+  --C5:#A32D2D;--C6:#6B21A8;--C7:#0F766E;
+  --radius:10px;--radius-lg:14px;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#1a1a18;--surface:#242421;--surface2:#2e2e2b;
+  --text:#f0efe9;--text2:#a8a79f;--text3:#6b6a65;
+  --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.06);
+}}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);
+  font-size:14px;line-height:1.5;
+}
+@media (prefers-reduced-motion: reduce){*{transition-duration:0.01ms !important}}
+
+.deck{position:relative;width:100vw;height:100vh}
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:5vh 7vw 12vh;max-width:1040px;margin:0 auto;
+  opacity:0;visibility:hidden;transform:translateY(10px);
+  transition:opacity .35s ease,transform .35s ease,visibility 0s linear .35s;
+  overflow-y:auto;
+}
+.slide.active{
+  opacity:1;visibility:visible;transform:translateY(0);
+  transition:opacity .35s ease,transform .35s ease,visibility 0s;
+}
+
+.eyebrow{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+h1{font-size:clamp(22px,3vw,32px);font-weight:600;margin-bottom:6px;letter-spacing:-0.01em}
+.sub{font-size:13px;color:var(--text2);max-width:70ch;margin-bottom:20px}
+
+/* metric tiles */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px;max-width:900px}
+.metric{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 16px}
+.metric-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.metric-val{font-size:26px;font-weight:600}
+.metric-val span{font-size:13px;font-weight:400;color:var(--text3);margin-left:3px}
+
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 16px 12px;margin-top:16px;max-width:960px;width:100%}
+.section-lbl{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
+.dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;width:100%}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:8px 6px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+th.r,td.r{text-align:right}
+td{padding:8px 6px;border-bottom:0.5px solid var(--border2);color:var(--text)}
+
+.note{background:var(--surface2);border-left:3px solid var(--C3);border-radius:0 var(--radius) var(--radius) 0;padding:11px 14px;font-size:13px;color:var(--text2);margin-top:16px;max-width:760px}
+.note strong{color:var(--text)}
+
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:18px;max-width:760px}
+.status-cell{background:var(--surface);border:0.5px solid var(--border);border-left:3px solid var(--border);border-radius:0 var(--radius) var(--radius) 0;padding:12px 14px}
+.status-cell.ok{border-left-color:var(--C2)}
+.status-cell.below{border-left-color:var(--C3)}
+.status-week{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px}
+.status-val{font-size:18px;font-weight:600;margin-top:4px}
+.status-tag{font-size:11px;margin-top:4px;color:var(--text2)}
+
+/* nav */
+.nav{position:fixed;bottom:26px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;z-index:10}
+.dot-nav{width:6px;height:6px;border-radius:50%;background:var(--border);border:none;cursor:pointer;transition:background .2s ease,width .2s ease}
+.dot-nav.active{background:var(--text3);width:18px;border-radius:3px}
+
+.arrow{
+  position:fixed;top:50%;transform:translateY(-50%);
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface);border:0.5px solid var(--border);
+  color:var(--text2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:10;
+}
+.arrow:hover{border-color:var(--text3);color:var(--text)}
+.arrow.prev{left:20px}
+.arrow.next{right:20px}
+.arrow svg{width:16px;height:16px}
+
+.progress-track{position:fixed;bottom:0;left:0;right:0;height:2px;background:var(--border);z-index:10}
+.progress-fill{height:100%;background:var(--text3);width:0;transition:width .35s ease}
+
+.slide-idx{position:fixed;top:22px;right:7vw;font-size:12px;color:var(--text3);z-index:10}
+.slide-idx b{color:var(--text)}
+.kicker{position:fixed;top:22px;left:7vw;font-size:12px;color:var(--text3);letter-spacing:0.3px;z-index:10}
+
+@media (max-width:720px){
+  .arrow{display:none}
+  .slide{padding:4vh 6vw 12vh}
+}
+</style>
+</head>
+<body>
+
+<div class="kicker">Trainingsprotokoll</div>
+<div class="slide-idx"><b id="idxCur">1</b> / <span id="idxTotal">7</span></div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 0: COVER -->
+  <section class="slide active" id="s0">
+    <div class="eyebrow">Ergometer-Training · Christopeit AX 4000 + Kinomap</div>
+    <h1 id="coverTitle">Trainingsprotokoll</h1>
+    <p class="sub" id="coverSub">…</p>
+    <p class="sub" style="margin-top:-8px">65 Jahre · 110 kg · Bisoprolol, Candesartan, Lercanidipine · Steuerung über Watt und Borg-Skala, nicht über Herzfrequenz.</p>
+  </section>
+
+  <!-- SLIDE 1: SUMMARY -->
+  <section class="slide" id="s1">
+    <div class="eyebrow">Zusammenfassung</div>
+    <h1>Gesamtwerte über den erfassten Zeitraum</h1>
+    <div class="metrics" id="summaryMetrics"></div>
+  </section>
+
+  <!-- SLIDE 2: WEEKLY WATT -->
+  <section class="slide" id="s2">
+    <div class="eyebrow">Wochenverlauf</div>
+    <h1>Durchschnittliche Leistung pro Woche</h1>
+    <p class="sub">Wochenmittel der geschätzten Watt-Leistung, berechnet aus kcal/min gemäß Formel in CLAUDE.md.</p>
+    <div class="card">
+      <div class="chart-wrap" style="height:280px"><canvas id="cWeekWatt"></canvas></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: WEEKLY KCAL/MIN -->
+  <section class="slide" id="s3">
+    <div class="eyebrow">Wochenverlauf</div>
+    <h1>Kalorien und Trainingsdauer pro Woche</h1>
+    <div class="card">
+      <div class="legend" id="wkLegend"></div>
+      <div class="chart-wrap" style="height:280px"><canvas id="cWeekKcal"></canvas></div>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: RECORDS TABLE -->
+  <section class="slide" id="s4">
+    <div class="eyebrow">Bestwerte</div>
+    <h1>Höchste registrierte Watt-Spitzenwerte</h1>
+    <p class="sub">Maximalwerte aus Kinomap-Sessions (Feld Watt_Max), absteigend sortiert.</p>
+    <div class="card">
+      <table>
+        <thead><tr><th>#</th><th class="r">Watt max.</th><th>Strecke</th><th class="r">Datum</th><th>Anmerkung</th></tr></thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: BLOOD PRESSURE -->
+  <section class="slide" id="s5">
+    <div class="eyebrow">Herz &amp; Kreislauf</div>
+    <h1>Blutdruck: Ruhe / nach Training / abends</h1>
+    <div class="card">
+      <div class="legend">
+        <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe</div>
+        <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
+        <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
+        <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
+      </div>
+      <div class="chart-wrap" style="height:280px"><canvas id="cBP"></canvas></div>
+    </div>
+    <p class="sub" id="bpNote" style="margin-top:10px"></p>
+  </section>
+
+  <!-- SLIDE 6: STATUS VS TARGET -->
+  <section class="slide" id="s6">
+    <div class="eyebrow">Zielabgleich</div>
+    <h1>Aktueller Stand gegenüber Zielwert 200 Watt</h1>
+    <div class="status-grid" id="statusGrid"></div>
+    <div class="note" id="statusNote"></div>
+  </section>
+
+</div>
+
+<div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+<div class="arrow prev" id="prevBtn" aria-label="Vorherige Folie">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+</div>
+<div class="arrow next" id="nextBtn" aria-label="Nächste Folie">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+</div>
+<div class="nav" id="navDots"></div>
+
+<script>
+const C1='#185FA5',C2='#1D9E75',C3='#BA7517',C4='#533AB7',C5='#A32D2D',C6='#6B21A8',C7='#0F766E';
+const weekPalette=[C1,C2,C3,C4,C5,C6,C7,'#DB2777','#0891B2','#65A30D','#EA580C','#7C3AED','#0D9488','#CA8A04','#0369A1','#059669','#B45309','#4338CA','#BE123C','#0E7490'];
+function weekColor(w){ return weekPalette[(w-1)%weekPalette.length]; }
+
+function parseCSV(text){
+  const rows=[]; let row=[], field='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c==='\r'){/*skip*/}
+      else field+=c;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.length>1||r[0]!=='');
+}
+function parseDate(s){const[d,m]=s.split('.');return new Date(2026,parseInt(m)-1,parseInt(d));}
+function getWeek(s){const d=parseDate(s);return Math.floor((d-parseDate('25.5'))/86400000/7)+1;}
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function formatGerman(dt){return `${dt.getDate()}. ${MONATE[dt.getMonth()]}`;}
+
+async function loadSessions(){
+  const text = await (await fetch('training_log.csv')).text();
+  const table = parseCSV(text);
+  const header = table[0];
+  const idx = Object.fromEntries(header.map((h,i)=>[h,i]));
+  const num = v => (v===''||v==null) ? null : +v;
+  const sessions = table.slice(1).map(r=>{
+    const g = h => r[idx[h]];
+    return {
+      dat: g('Datum'), n: g('Nr'),
+      durSec: num(g('Dauer_sek')), k: num(g('Kcal')), watt: num(g('Watt')), hf: num(g('MaxHF')),
+      rr_ruhe: g('RR_ruhe')||null, rr: g('RR_training')||null, rr_abend: g('RR_abend')||null,
+      kinomap: g('Kinomap')==='1',
+      strecke: g('Strecke'), distanzKm: g('Distanz_km'),
+      wattMax: num(g('Watt_Max')), wattMaxPR: g('Watt_Max_PR')==='1',
+      hoehenmeter: g('Hoehenmeter'), temperaturC: g('Temperatur_C'),
+    };
+  });
+  sessions.forEach(s=>{ s.w=getWeek(s.dat); });
+  return sessions;
+}
+
+loadSessions().then(render);
+
+function render(sessions){
+  const maxWeek=Math.max(...sessions.map(s=>s.w));
+  const startDate=parseDate('25.5');
+  const endDate=sessions.reduce((mx,s)=>{const d=parseDate(s.dat);return d>mx?d:mx;},startDate);
+
+  document.getElementById('coverSub').textContent=`${formatGerman(startDate)} – ${formatGerman(endDate)} 2026 · Woche 1–${maxWeek}`;
+
+  // ---- SUMMARY ----
+  const real=sessions.filter(s=>s.k!=null);
+  const einheiten=real.length;
+  const totalKcal=real.reduce((a,s)=>a+s.k,0);
+  const totalMin=real.reduce((a,s)=>a+Math.floor((s.durSec||0)/60),0);
+  const kcalPerMin=(totalKcal/totalMin).toFixed(1);
+  const watts=real.map(s=>s.watt).filter(v=>v!=null);
+  const avgWatt=Math.round(watts.reduce((a,b)=>a+b,0)/watts.length);
+  const maxWattMax=Math.max(...sessions.map(s=>s.wattMax).filter(v=>v!=null));
+
+  document.getElementById('summaryMetrics').innerHTML=`
+    <div class="metric"><div class="metric-lbl">Einheiten</div><div class="metric-val">${einheiten}</div></div>
+    <div class="metric"><div class="metric-lbl">Kalorien gesamt</div><div class="metric-val">${totalKcal.toLocaleString('de-DE')}<span>kcal</span></div></div>
+    <div class="metric"><div class="metric-lbl">Dauer gesamt</div><div class="metric-val">${totalMin.toLocaleString('de-DE')}<span>min</span></div></div>
+    <div class="metric"><div class="metric-lbl">Ø kcal/min</div><div class="metric-val">${kcalPerMin}</div></div>
+    <div class="metric"><div class="metric-lbl">Ø Watt (gesamt)</div><div class="metric-val">~${avgWatt}<span>W</span></div></div>
+    <div class="metric"><div class="metric-lbl">Watt-Spitzenwert</div><div class="metric-val">${maxWattMax}<span>W</span></div></div>
+  `;
+
+  // ---- WEEKLY ROLLUPS ----
+  const wkKcal=[],wkMin=[],wkWatt=[],wkLabels=[],wkColArr=[];
+  for(let w=1;w<=maxWeek;w++){
+    const inWeek=sessions.filter(s=>s.w===w && s.k!=null);
+    const kcal=inWeek.reduce((a,s)=>a+s.k,0);
+    const min=inWeek.reduce((a,s)=>a+Math.floor((s.durSec||0)/60),0);
+    const wattsWk=inWeek.map(s=>s.watt).filter(v=>v!=null);
+    const avgW=wattsWk.length?Math.round(wattsWk.reduce((a,b)=>a+b,0)/wattsWk.length):null;
+    wkKcal.push(kcal); wkMin.push(min); wkWatt.push(avgW);
+    wkColArr.push(weekColor(w));
+    wkLabels.push(`W${w}`);
+  }
+
+  document.getElementById('wkLegend').innerHTML=wkLabels.map((l,i)=>
+    `<div class="li"><div class="dot" style="background:${wkColArr[i]}"></div>${l} · ${wkKcal[i]} kcal · ${wkMin[i]} min</div>`).join('');
+
+  const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+  const gc=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  const tc=isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.45)';
+  const bx={ticks:{color:tc,autoSkip:false,font:{size:11}},grid:{color:gc}};
+  const by=(lbl,mn,mx)=>({min:mn,max:mx,title:{display:true,text:lbl,font:{size:11},color:tc},ticks:{color:tc,font:{size:11}},grid:{color:gc}});
+  const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}}};
+  function scaleMax(vals,step,headroom=1.08){ const m=Math.max(...vals.filter(v=>v!=null)); return Math.ceil(m*headroom/step)*step; }
+  function scaleMin(vals,step,floor=0.92){ const m=Math.min(...vals.filter(v=>v!=null)); return Math.max(0,Math.floor(m*floor/step)*step); }
+
+  new Chart(document.getElementById('cWeekWatt'),{type:'bar',data:{
+    labels:wkLabels,
+    datasets:[
+      {data:wkWatt,backgroundColor:wkColArr,borderRadius:5},
+      {label:'Ziel 200W',data:Array(maxWeek).fill(200),type:'line',borderColor:'rgba(163,45,45,0.55)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false}
+    ]
+  },options:{...baseOpts,scales:{x:bx,y:by('Ø Watt',scaleMin(wkWatt,10),Math.max(scaleMax(wkWatt,10),210))}}});
+
+  new Chart(document.getElementById('cWeekKcal'),{type:'bar',data:{
+    labels:wkLabels,
+    datasets:[
+      {label:'kcal',data:wkKcal,backgroundColor:wkColArr,borderRadius:5,yAxisID:'y'},
+      {label:'min',data:wkMin,backgroundColor:wkColArr.map(c=>c+'44'),borderRadius:5,yAxisID:'y1'}
+    ]
+  },options:{...baseOpts,scales:{
+    x:bx,
+    y:{position:'left',title:{display:true,text:'kcal',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}},
+    y1:{position:'right',title:{display:true,text:'min',font:{size:11},color:tc},ticks:{color:tc},grid:{drawOnChartArea:false}}
+  }}});
+
+  // ---- RECORDS ----
+  const recordRows=sessions.filter(s=>s.wattMax!=null).sort((a,b)=>b.wattMax-a.wattMax).slice(0,5);
+  document.getElementById('recordsBody').innerHTML=recordRows.map((r,i)=>{
+    const meta=[r.hoehenmeter?`${r.hoehenmeter} Hm`:null, r.temperaturC?`${r.temperaturC}°C`:null].filter(Boolean).join(' · ');
+    return `<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td class="r" style="font-weight:600">${r.wattMax} W</td>
+      <td>${r.strecke||''}</td>
+      <td class="r" style="color:var(--text2)">${r.dat}</td>
+      <td style="font-size:11.5px;color:var(--text3)">${meta}${r.wattMaxPR?(meta?' · ':'')+'PR bei Aufzeichnung':''}</td>
+    </tr>`;
+  }).join('');
+
+  // ---- BLOOD PRESSURE ----
+  const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;};
+  const isExcess=v=>v&&(v[1]>140||v[0]>90);
+  const bpRows=sessions.filter(r=>r.rr_ruhe||r.rr||r.rr_abend);
+  const bpLabels=bpRows.map(r=>r.dat);
+  const bpBefore=bpRows.map(r=>parseRR(r.rr_ruhe));
+  const bpAfter=bpRows.map(r=>parseRR(r.rr));
+  const bpEvening=bpRows.map(r=>parseRR(r.rr_abend));
+  const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
+    const{ctx,chartArea:{left,right},scales:{y}}=chart;
+    ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
+    [[80,90],[120,140]].forEach(([lo,hi])=>{
+      const yTop=y.getPixelForValue(hi),yBot=y.getPixelForValue(lo);
+      ctx.fillRect(left,yTop,right-left,yBot-yTop);
+    });
+    ctx.restore();
+  }};
+  const excessMark=arr=>arr.map(v=>isExcess(v)?Math.max(v[1],v[0])+6:null);
+  new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datasets:[
+    {label:'Ruhe',data:bpBefore,backgroundColor:'#185FA5',borderRadius:3},
+    {label:'Nach dem Training',data:bpAfter,backgroundColor:'#BA7517',borderRadius:3},
+    {label:'Abends',data:bpEvening,backgroundColor:'#7C3AED',borderRadius:3},
+    {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpBefore),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1},
+    {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpAfter),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1},
+    {label:'außerhalb Zielband',type:'line',showLine:false,data:excessMark(bpEvening),pointStyle:'triangle',pointRadius:6,pointBackgroundColor:'#F5B400',pointBorderColor:'#B8860B',pointBorderWidth:1}
+  ]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)}},plugins:[bpBandPlugin]});
+
+  const allReadings=[...bpBefore,...bpAfter,...bpEvening].filter(Boolean);
+  const excessCount=allReadings.filter(isExcess).length;
+  document.getElementById('bpNote').textContent=
+    `${allReadings.length} protokollierte Blutdruckwerte, davon ${excessCount} außerhalb des Zielbands (systolisch > 140 oder diastolisch > 90).`;
+
+  // ---- STATUS VS TARGET ----
+  const target=200;
+  const last3=wkWatt.slice(-3).map((v,i)=>({w:maxWeek-2+i,v}));
+  document.getElementById('statusGrid').innerHTML=last3.map(({w,v})=>{
+    if(v==null) return `<div class="status-cell"><div class="status-week">Woche ${w}</div><div class="status-val">–</div></div>`;
+    const ok=v>=target;
+    return `<div class="status-cell ${ok?'ok':'below'}">
+      <div class="status-week">Woche ${w}</div>
+      <div class="status-val">${v} W</div>
+      <div class="status-tag">${ok?'≥ Zielwert':`${target-v} W unter Ziel`}</div>
+    </div>`;
+  }).join('');
+
+  const lastWeekWatt=wkWatt[wkWatt.length-1];
+  document.getElementById('statusNote').innerHTML=
+    `<strong>Zielwert:</strong> 200 W Wochenmittel über 30–40 Minuten. Letzte erfasste Woche (W${maxWeek}): `+
+    (lastWeekWatt!=null ? `~${lastWeekWatt} W Ø` : 'keine vollständige Woche')+
+    `. Höchster je registrierter Einzelwert: ${maxWattMax} W (Watt_Max, Kinomap).`;
+}
+
+// ---- SLIDESHOW NAV ----
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total = slides.length;
+let current = 0;
+const navDots = document.getElementById('navDots');
+slides.forEach((_, i) => {
+  const d = document.createElement('button');
+  d.className = 'dot-nav' + (i === 0 ? ' active' : '');
+  d.addEventListener('click', () => goTo(i));
+  navDots.appendChild(d);
+});
+document.getElementById('idxTotal').textContent = total;
+
+function updateChrome(){
+  document.querySelectorAll('.dot-nav').forEach((d,i)=>d.classList.toggle('active', i===current));
+  document.getElementById('idxCur').textContent = current+1;
+  document.getElementById('progFill').style.width = ((current+1)/total*100)+'%';
+}
+function goTo(i){
+  if(i<0 || i>=total || i===current) return;
+  slides[current].classList.remove('active');
+  slides[i].classList.add('active');
+  current = i;
+  updateChrome();
+}
+document.getElementById('nextBtn').addEventListener('click', ()=>goTo(current+1));
+document.getElementById('prevBtn').addEventListener('click', ()=>goTo(current-1));
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight' || e.key===' ') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+let touchX=null;
+document.addEventListener('touchstart', e=>touchX=e.touches[0].clientX);
+document.addEventListener('touchend', e=>{
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(dx<-50) goTo(current+1);
+  if(dx>50) goTo(current-1);
+  touchX=null;
+});
+updateChrome();
+</script>
+</body>
+</html>
