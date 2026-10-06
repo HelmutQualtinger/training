@@ -29,7 +29,7 @@ The ride replayed in a 3D scene of the real landscape:
 - **Route** — a line coloured by power, blue (low) to red (high)
 - **Cyclist** — a figure on a road bike that pedals and follows the route
 - **Playback** — play/pause, time-lapse at 10×, 30× or 90×, and a slider for the position
-- **Camera** — free to rotate and zoom, or a follow mode with a chase camera just behind the rider
+- **Camera** — free to rotate and zoom, or a follow mode: a chase camera locked onto the rider that you can drag around them in a circle and zoom in and out, or let circle automatically
 - **Rider's view** — a small picture top right showing the road through the rider's eyes
 - **Profile** — top left: speed, power, pulse and elevation over the distance; click or drag to jump there
 - **Cockpit** — a bike computer with four dials (speed, power, pulse, cadence) plus distance, time and elevation

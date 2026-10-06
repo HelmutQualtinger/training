@@ -81,6 +81,7 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
     <button id="play">▶ Abspielen</button>
     <select id="speed" aria-label="Tempo"><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
     <label><input type="checkbox" id="follow"> Mitfahren</label>
+    <label><input type="checkbox" id="spin"> Drehen</label>
     <label><input type="checkbox" id="sound" checked> Ton</label>
     <input type="range" id="scrub" min="0" value="0" step="1" aria-label="Position auf der Strecke">
   </div>
@@ -515,10 +516,13 @@ function sharpen(p){
 const povBox=document.getElementById('pov'),povCam=new THREE.PerspectiveCamera(72,1.6,0.3,camera.far);
 const pos=new THREE.Vector3(),a1=new THREE.Vector3(),a0=new THREE.Vector3(),
       dir=new THREE.Vector3(0,0,-1),want=new THREE.Vector3(),eye=new THREE.Vector3(),look=new THREE.Vector3();
-let last=performance.now(),first=false,snapDir=true,crank=0,lastD=null;
-// "Mitfahren" = wide-angle chase camera 30 m behind and 5 m above the road, aimed a little ahead of the rider; otherwise free orbit camera
+let last=performance.now(),first=false,snapDir=true,crank=0,lastD=null,chaseReset=false;
+const FREE_MAX=controls.maxDistance,_up=new THREE.Vector3(0,1,0),_off=new THREE.Vector3(),_tgt=new THREE.Vector3();
+// "Mitfahren" = wide-angle chase camera that starts 30 m behind and 5 m above the rider and stays locked
+// onto them: drag to circle around the rider, wheel/pinch to zoom, no panning. Otherwise free orbit camera.
 function setFirstPerson(on){
-  first=on;controls.enabled=!on;
+  first=on;chaseReset=on;
+  controls.enablePan=!on;controls.minDistance=on?2.5:4;controls.maxDistance=on?600:FREE_MAX;
   camera.near=on?0.3:5;camera.fov=on?78:45;camera.updateProjectionMatrix();
   line.position.y=casing.position.y=on?-2.6:0;ghost.visible=!on;   // see-through pass would draw across the rider    // route line down to road level when seen from the saddle
   if(!on){                                        // hand back to the orbit camera just behind the rider
@@ -527,6 +531,12 @@ function setFirstPerson(on){
   }
 }
 followBox.onchange=()=>setFirstPerson(followBox.checked);
+// "Drehen": the camera circles on its own — around the rider in Mitfahren, around the view centre otherwise.
+// One lap takes about 40 s; dragging and zooming still work while it turns.
+const spinBox=document.getElementById('spin');
+controls.autoRotateSpeed=1.5;
+spinBox.onchange=()=>{controls.autoRotate=spinBox.checked;};
+spinBox.checked=controls.autoRotate=params.has('spin');
 function tick(now){
   const dt=Math.min(.1,(now-last)/1000);last=now;
   if(playing){
@@ -538,23 +548,35 @@ function tick(now){
   const d=distAt(t);
   atDist(d,pos);
   // heading: smoothed direction of travel
+  const yaw0=Math.atan2(dir.x,dir.z);
   atDist(d+10,a1).sub(atDist(d-4,a0)).setY(0);
   if(a1.lengthSq()>.01){a1.normalize();dir.lerp(a1,snapDir?1:1-Math.exp(-dt*5)).normalize();snapDir=false;}
   // wheels and legs turn with the distance covered (≈ 6 m per crank revolution)
   if(lastD!==null){const dd=d-lastD;for(const w of wheels)w.rotation.x+=dd/WR;crank-=dd/6*Math.PI*2;}
   lastD=d;pedal(crank);
-  // true size from the saddle or close up; enlarged so it stays visible in the overview
-  const rs=first?1:Math.max(1,camera.position.distanceTo(pos)/28);
+  // true size close up (as in Mitfahren at its starting distance); enlarged so it stays visible from afar
+  const rs=Math.max(1,camera.position.distanceTo(pos)/(first?34:28));
   rider.scale.setScalar(rs);
   rider.position.copy(pos);
   rider.lookAt(look.copy(pos).add(dir));
   if(first){
     sharpen(pos);
-    eye.copy(pos).addScaledVector(dir,-30);eye.y=Math.max(pos.y,hAt(eye.x,eye.z))+5;
-    camera.position.copy(eye);
-    camera.lookAt(look.copy(pos).addScaledVector(dir,15).setY(pos.y+1.5));
+    _tgt.copy(pos).setY(pos.y+1.2);
+    if(chaseReset){                                 // (re)start behind the rider
+      chaseReset=false;
+      camera.position.copy(pos).addScaledVector(dir,-30).setY(pos.y+5);
+    }else{
+      // carry the camera along with the rider and turn it with the road, so whatever angle and
+      // distance the user has dragged/zoomed to is kept relative to the direction of travel
+      _off.subVectors(camera.position,controls.target).applyAxisAngle(_up,Math.atan2(dir.x,dir.z)-yaw0);
+      camera.position.copy(_tgt).add(_off);
+    }
+    controls.target.copy(_tgt);
+    controls.update(dt);
+    const floor=hAt(camera.position.x,camera.position.z)+1;      // never dip into a hillside
+    if(camera.position.y<floor){camera.position.y=floor;camera.lookAt(_tgt);}
   }else{
-    controls.update();
+    controls.update(dt);
     if(camera.position.distanceTo(controls.target)<1500)sharpen(controls.target);   // zoomed in: sharper ground there too
   }
   renderer.render(scene,camera);
