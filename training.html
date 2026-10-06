@@ -3,7 +3,7 @@
 <html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Training Dashboard W1–W14</title>
+<title>Training Dashboard</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#185FA5">
 <link rel="icon" href="icon-192.png">
@@ -339,7 +339,10 @@ function parseCSV(text){
 
 function parseDate(s){const[d,m]=s.split('.');return new Date(2026,parseInt(m)-1,parseInt(d));}
 function formatDate(dt){return `${dt.getDate()}.${dt.getMonth()+1}`;}
-function getWeek(s){const d=parseDate(s);return Math.floor((d-parseDate('25.5'))/86400000/7)+1;}
+// Week 1 starts on the date of the CSV's first row (set in loadSessions) — fixed 7-day blocks from there,
+// not ISO weeks. Math.round on the day count keeps a daylight-saving hour from shifting a week boundary.
+let startDate=null;
+function getWeek(s){return Math.floor(Math.round((parseDate(s)-startDate)/86400000)/7)+1;}
 const TAGE=['So','Mo','Di','Mi','Do','Fr','Sa'];
 function getTag(s){return TAGE[parseDate(s).getDay()];}
 const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
@@ -368,6 +371,7 @@ async function loadSessions(){
       kommentar: g('Kommentar'),
     };
   });
+  startDate=sessions.reduce((mn,s)=>{const d=parseDate(s.dat);return mn===null||d<mn?d:mn;},null);
   sessions.forEach(s=>{ s.w=getWeek(s.dat); s.tag=getTag(s.dat); });
   let kum=0;
   sessions.forEach(s=>{ kum += s.k||0; s.kum=kum; });
@@ -395,7 +399,6 @@ loadSessions().then(render);
 
 function render(sessions){
 const maxWeek=Math.max(...sessions.map(s=>s.w));
-const startDate=parseDate('25.5');
 const endDate=sessions.reduce((mx,s)=>{const d=parseDate(s.dat);return d>mx?d:mx;},startDate);
 
 document.title=`Training Dashboard W1–W${maxWeek}`;
