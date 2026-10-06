@@ -88,7 +88,7 @@ Pitfalls already fixed in training.html — don't reintroduce them:
 
 ## Map pages (2D and 3D)
 
-Both pages are the same per-second track (`lat`/`lon`, `dist`, `ele`, `watt`, `hf`, `rpm`, `kmh`) rendered two ways. The script only swaps the `/*__DATA__*/null` placeholder in a template for the ride's JSON; every feature below lives in the template.
+Both pages are the same per-second track (`lat`/`lon`, `dist`, `ele`, `watt`, `hf`, `rpm`, `kmh`) rendered two ways. `ele` is not the export's `Altitude` column: the script reads it off the AWS heightmap at the rider's position, so profile, cockpit and 2D figures agree with the terrain drawn in 3D (only `--no-3d`, which fetches no heightmap, falls back to the export's altitude). The terrain model wobbles by a metre or two even on flat road, so the 2D page's total climb counts a rise only once it reaches 3 m. The script only swaps the `/*__DATA__*/null` placeholder in a template for the ride's JSON; every feature below lives in the template.
 
 **2D — `assets/karte_template.html` (Leaflet + Chart.js, both from a CDN):**
 
@@ -102,6 +102,7 @@ Both pages are the same per-second track (`lat`/`lon`, `dist`, `ele`, `watt`, `h
 - Terrain mesh from a heightmap the script bakes in (Mapzen terrarium elevation tiles from AWS), textured with OSM tiles fetched live; near the rider (or the orbit target when zoomed in) patches two zoom levels deeper are loaded lazily.
 - Buildings within `--radius` of the route (default 800 m) from Overpass, merged into one mesh. Heights come from OSM `height`/`building:levels` where tagged and are otherwise guessed from type and footprint.
 - Route line coloured by power, blue to red over the 5th–95th percentile, plus a faint see-through pass so it still reads behind buildings.
+- Ground height (`hAt()`) is the terrain exactly as drawn — each grid cell as two flat triangles, not a smooth bilinear value, which sat up to 0.6 m under the rendered ground and let the rider sink into it. The bike is pitched along the slope between its two wheel contact points and lifted 0.15 m, clear of the sharper-ground patches (0.12 m above the terrain). Don't switch `hAt()` back to bilinear.
 - Cyclist avatar with turning wheels and two-bone legs. It is moved by the `dist` column along the route polyline, not by the raw coordinates — the export repeats each GPS fix for 2–3 s. In the overview it is scaled up to stay visible; true size in follow mode.
 - Playback: play/pause, 10×/30×/90×, scrub slider. Camera is a free orbit camera, or in follow mode (the "Mitfahren" checkbox) a chase camera that starts 30 m behind and 5 m above the rider and stays locked onto them: dragging circles around the rider, wheel or pinch zooms (2.5–600 m), panning is off. The chosen angle and distance are kept relative to the direction of travel, so the camera turns with the road; unticking and re-ticking the checkbox puts it back behind the rider. A second checkbox, "Drehen" (rotate), makes the camera circle on its own, one lap in about 40 s — around the rider in follow mode, around the view centre otherwise.
 - Rider's-eye inset top right: a second viewport on the same WebGL canvas, rendered from the rider's eyes.

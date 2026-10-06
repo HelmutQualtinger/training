@@ -109,6 +109,11 @@ goes through cv2/AVFoundation, not ffmpeg).
 - Never download OSM map tiles from a script to embed them — that gets
   blocked ("Access blocked" tiles). Only elevation tiles (AWS open data) and
   building footprints (Overpass) are fetched by the script.
+- Track elevation (profile, cockpit, 2D hero) is read off the AWS heightmap at
+  the rider's position, not taken from the export's `Altitude` column, so it
+  matches the terrain drawn in 3D. Only with `--no-3d` (no heightmap) the 2D
+  page falls back to the export's altitude. The 2D page's total climb counts
+  a rise only once it reaches 3 m, because the terrain model is noisy.
 - The export repeats each GPS fix for 2–3 seconds, so the 3D page moves the
   rider by the distance column along the route, not by the raw coordinates.
 - A visible gap between the route's end and its start is real data (Kinomap

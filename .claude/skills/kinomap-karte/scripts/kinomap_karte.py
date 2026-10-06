@@ -236,11 +236,30 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
 
     # --- track
     xz = [proj(r["lat"], r["lon"]) for r in rows]
+    T = np.array(xz)
+
+    # --- track elevation: read off the heightmap, not taken from the export's Altitude column, so the
+    # numbers agree with the terrain the rider is drawn on. Sampled where the 3D page puts the rider:
+    # the distance column mapped onto the route polyline (the export repeats each GPS fix for 2-3 s).
+    keep = [0]
+    for i in range(1, len(T)):
+        if np.hypot(*(T[i] - T[keep[-1]])) > 0.1:
+            keep.append(i)
+    R = T[keep]
+    cum = np.concatenate([[0], np.cumsum(np.hypot(*np.diff(R, axis=0).T))])
+    dist = np.array([r["dist"] for r in rows])
+    along = dist * (cum[-1] / dist[-1]) if dist[-1] > 0 and cum[-1] > 0 else np.zeros(len(rows))
+    rx, rz = np.interp(along, cum, R[:, 0]), np.interp(along, cum, R[:, 1])
+    u = np.clip((rx / W + 0.5) * (nx - 1), 0, nx - 1.001)
+    v = np.clip((rz / D + 0.5) * (ny - 1), 0, ny - 1.001)
+    iu, iv = u.astype(int), v.astype(int)
+    fu, fv = u - iu, v - iv
+    ele = (H[iv, iu] * (1 - fu) + H[iv, iu + 1] * fu) * (1 - fv) + (H[iv + 1, iu] * (1 - fu) + H[iv + 1, iu + 1] * fu) * fv
+
     track = dict(
         x=[round(p[0], 1) for p in xz], z=[round(p[1], 1) for p in xz],
-        ele=[r["ele"] for r in rows], dist=[round(r["dist"]) for r in rows], kmh=[r["kmh"] for r in rows],
+        ele=[round(float(e), 1) for e in ele], dist=[round(r["dist"]) for r in rows], kmh=[r["kmh"] for r in rows],
         hf=[round(r["hf"]) for r in rows], watt=[round(r["watt"]) for r in rows], rpm=[round(r["rpm"]) for r in rows])
-    T = np.array(xz)
 
     # --- buildings: Overpass in small chunks (large boxes time out), cached per chunk
     pad_lat, pad_lon = (radius + 200) / 1000 * dlat, (radius + 200) / 1000 * dlon
@@ -343,25 +362,20 @@ def main() -> None:
         sub = f"Einheit {nr} · " + sub
     meta = dict(title=name.replace(" - ", " – "), sub=sub, file2d=file2d, file3d=file3d)
 
-    render("karte_template.html", dict(
-        meta=meta,
-        lat=[round(r["lat"], 6) for r in rows], lon=[round(r["lon"], 6) for r in rows],
-        ele=[r["ele"] for r in rows], dist=[round(r["dist"]) for r in rows], kmh=[r["kmh"] for r in rows],
-        hf=[round(r["hf"]) for r in rows], watt=[round(r["watt"]) for r in rows], rpm=[round(r["rpm"]) for r in rows],
-    ), out_dir / file2d)
-
     result = {
         "zip": str(zpath), "strecke": meta["title"], "datum": date_dm, "einheit": nr,
         "km": round(rows[-1]["dist"] / 1000, 2), "dauer": f"{seconds // 60}:{seconds % 60:02d}",
         "avg_watt": round(sum(r["watt"] for r in rows) / len(rows)),
         "karte_2d": str(out_dir / file2d),
     }
+    ele = [r["ele"] for r in rows]             # --no-3d has no heightmap: fall back to the export's altitude
     if not args.no_3d:
         cache = Path(tempfile.gettempdir()) / "kinomap_karte_cache"
         cache.mkdir(exist_ok=True)
         d3 = build_3d(rows, args.radius, cache, not args.cached_buildings)
         hmax, missing, chunks = d3.pop("_hmax"), d3.pop("_missing"), d3.pop("_chunks")
         d3["meta"] = meta
+        ele = d3["track"]["ele"]
         render("karte3d_template.html", d3, out_dir / file3d)
         result.update({
             "karte_3d": str(out_dir / file3d),
@@ -372,6 +386,12 @@ def main() -> None:
         if missing:
             result["warnung"] = (f"Gebäudedaten unvollständig: {missing} von {chunks} Overpass-Abfragen "
                                  "fehlgeschlagen — später erneut ausführen (bereits Geladenes ist gecacht).")
+    render("karte_template.html", dict(
+        meta=meta,
+        lat=[round(r["lat"], 6) for r in rows], lon=[round(r["lon"], 6) for r in rows],
+        ele=ele, dist=[round(r["dist"]) for r in rows], kmh=[r["kmh"] for r in rows],
+        hf=[round(r["hf"]) for r in rows], watt=[round(r["watt"]) for r in rows], rpm=[round(r["rpm"]) for r in rows],
+    ), out_dir / file2d)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 

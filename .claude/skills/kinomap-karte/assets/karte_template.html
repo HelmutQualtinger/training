@@ -77,7 +77,9 @@ const fmt=(v,d=0)=>v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFrac
 
 // hero metrics, derived from the track itself
 const secs=N-1, km=D.dist[N-1]/1000;
-let climb=0;for(let i=1;i<N;i++){const d=D.ele[i]-D.ele[i-1];if(d>0)climb+=d;}
+// Elevation is read off the terrain model, which wobbles by a metre or two even on flat road, so a
+// rise only counts once it adds up to 3 m — summing every little step would triple the climb.
+let climb=0;for(let i=1,ref=D.ele[0];i<N;i++){const v=D.ele[i];if(v-ref>=3){climb+=v-ref;ref=v;}else if(v<ref)ref=v;}
 const hero=[
   ['Distanz',fmt(km,2)+' km',''],
   ['Dauer',Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0'),''],
