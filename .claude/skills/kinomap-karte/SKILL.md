@@ -123,4 +123,7 @@ goes through cv2/AVFoundation, not ffmpeg).
   (`--headless=new --enable-unsafe-swiftshader --virtual-time-budget=20000`).
 - Building heights come from OSM `height`/`building:levels` where tagged and
   are otherwise guessed from building type and footprint.
+- Social-media preview: if the index thumbnail `karte_<D.M>_<slug>_3d.jpg` exists next to the
+  page, the script derives `..._3d_og.jpg` (1200x630) from it and writes Open Graph / Twitter
+  tags into the 3D page. For a new ride, put the thumbnail in place first, then rerun.
 - The 3D page needs numpy and Pillow at build time (elevation PNG decoding).

@@ -42,6 +42,7 @@ import base64
 import csv
 import datetime
 import hashlib
+import html as html_lib
 import io
 import json
 import math
@@ -54,8 +55,12 @@ import unicodedata
 import zipfile
 from pathlib import Path
 from typing import NoReturn
+from urllib.parse import quote as urlquote
 
 PLACEHOLDER = "/*__DATA__*/null"
+SOCIAL_PLACEHOLDER = "<!--__SOCIAL__-->"
+SITE_URL = "https://helmutqualtinger.github.io/training/"   # GitHub Pages; previews need absolute URLs
+OG_SIZE = (1200, 630)
 UA = "training-log-map/1.0 (personal training log)"
 EARTH = 40075016.686          # equatorial circumference, metres
 PAD_KM = 2.5                  # terrain shown around the route's bounding box
@@ -155,10 +160,44 @@ def session_nr(date_dm: str, seconds: int):
     return best[1] if best else None
 
 
-def render(template: str, data: dict, out: Path) -> None:
+def social_preview(out_dir: Path, base: str, title: str, desc: str) -> str:
+    """Open Graph / Twitter tags for the 3D page, or "" if the ride has no thumbnail.
+
+    The preview picture <base>_3d_og.jpg (1200x630, what the networks expect) is derived from
+    the hand-made index thumbnail <base>_3d.jpg: cropped to fill, or — for a portrait picture
+    such as a poster — shown whole on a blurred copy of itself. Crawlers don't run scripts, so
+    the tags have to be in the static HTML rather than set from the ride data at load time.
+    """
+    thumb = out_dir / f"{base}_3d.jpg"
+    if not thumb.is_file():
+        return ""
+    from PIL import Image, ImageFilter, ImageOps
+    src = Image.open(thumb).convert("RGB")
+    if src.width / src.height >= 1.3:
+        og = ImageOps.fit(src, OG_SIZE, Image.LANCZOS)
+    else:
+        og = ImageOps.fit(src, OG_SIZE, Image.LANCZOS).filter(ImageFilter.GaussianBlur(24))
+        og = og.point(lambda v: v * 0.6)
+        fg = ImageOps.contain(src, OG_SIZE, Image.LANCZOS)
+        og.paste(fg, ((OG_SIZE[0] - fg.width) // 2, (OG_SIZE[1] - fg.height) // 2))
+    og.save(out_dir / f"{base}_3d_og.jpg", quality=88)
+    e = html_lib.escape
+    page, img = SITE_URL + urlquote(f"{base}_3d.html"), SITE_URL + urlquote(f"{base}_3d_og.jpg")
+    tags = [("property", "og:type", "website"), ("property", "og:site_name", "Ergometer Training Log"),
+            ("property", "og:title", title), ("property", "og:description", desc),
+            ("property", "og:url", page), ("property", "og:image", img),
+            ("property", "og:image:width", str(OG_SIZE[0])), ("property", "og:image:height", str(OG_SIZE[1])),
+            ("name", "twitter:card", "summary_large_image"), ("name", "twitter:title", title),
+            ("name", "twitter:description", desc), ("name", "twitter:image", img),
+            ("name", "description", desc)]
+    return "\n".join(f'<meta {k}="{n}" content="{e(v)}">' for k, n, v in tags)
+
+
+def render(template: str, data: dict, out: Path, social: str = "") -> None:
     html = (Path(__file__).resolve().parents[1] / "assets" / template).read_text(encoding="utf-8")
     if PLACEHOLDER not in html:
         fail(f"Platzhalter {PLACEHOLDER} fehlt in {template}.")
+    html = html.replace(SOCIAL_PLACEHOLDER, social)
     # "<" escaped so nothing in the data can close the surrounding <script> block
     blob = json.dumps(data, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
     out.write_text(html.replace(PLACEHOLDER, blob), encoding="utf-8")
@@ -170,6 +209,23 @@ def curl(url: str, out: Path, extra=()) -> bool:
     r = subprocess.run(["curl", "-sS", "-f", "-m", "90", "-H", "User-Agent: " + UA, *extra, "-o", str(out), url],
                        capture_output=True, text=True)
     return r.returncode == 0 and out.exists() and out.stat().st_size > 0
+
+
+def overpass(q: str, cache: Path, fetch: bool = True):
+    """Elements of an Overpass query, cached per query; None if no mirror answered."""
+    fn = cache / ("osm_" + hashlib.sha1(q.encode()).hexdigest()[:16] + ".json")
+    for attempt in range(6 if fetch else 1):
+        if fn.exists():
+            try:
+                return json.loads(fn.read_text(encoding="utf-8"))["elements"]
+            except (ValueError, KeyError):
+                fn.unlink()        # an HTML error page, not JSON
+        if not fetch:
+            break
+        host = OVERPASS[attempt % len(OVERPASS)]
+        if not curl(f"https://{host}/api/interpreter", fn, ("--data-urlencode", "data=" + q)):
+            time.sleep(4)
+    return None
 
 
 def tile_xy(lat, lon, z):
@@ -259,6 +315,49 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
     # below it (a depression), then the heights stay as they are.
     if np.median(at(H)) >= 0:
         H = np.maximum(H, 0.0)
+        # The elevation model is coarse (≈30 m) and its shoreline doesn't match the map's: where it
+        # runs further out than the OSM coast, the water of the ground texture is draped over rising
+        # ground and the sea seems to climb the shore. So everything seaward of the OSM coastline is
+        # flattened to 0 as well. The coastline ways are drawn as a barrier into a raster of half a
+        # grid cell, the areas between them flood-filled, and each area is sea or land by majority
+        # vote of its shore: OSM coastlines have the land on their left and the water on their right.
+        pad = 360 / 2 ** zt
+        coast = overpass('[out:json][timeout:60];way["natural"="coastline"](%.5f,%.5f,%.5f,%.5f);out geom;'
+                         % (s_ - pad, w_ - pad, n_ + pad, e_ + pad), cache)
+        if coast is None:
+            print("Küstenlinie nicht ladbar — Meer nur nach Höhenmodell.", file=sys.stderr)
+        elif coast:
+            from PIL import ImageDraw
+            res = step / 2
+            mw, mh = math.ceil(W / res), math.ceil(D / res)
+            img = Image.new("I", (mw, mh), 0)
+            draw = ImageDraw.Draw(img)
+            ways = [[((x + W / 2) / res, (z + D / 2) / res) for x, z in (proj(p["lat"], p["lon"]) for p in e["geometry"])]
+                    for e in coast if "geometry" in e]
+            for w in ways:
+                draw.line(w, fill=1)
+            votes = {}
+            for w in ways:
+                for (ax, ay), (bx, by) in zip(w, w[1:]):
+                    ln = math.hypot(bx - ax, by - ay)
+                    if ln < 1e-6:
+                        continue
+                    rx_, ry_ = -(by - ay) / ln * 1.5, (bx - ax) / ln * 1.5      # 1.5 px to the right (z points south)
+                    for side, v in ((1, 1), (-1, -1)):
+                        sx, sy = int((ax + bx) / 2 + side * rx_), int((ay + by) / 2 + side * ry_)
+                        if not (0 <= sx < mw and 0 <= sy < mh):
+                            continue
+                        lab = img.getpixel((sx, sy))
+                        if lab == 0:
+                            lab = len(votes) + 2
+                            ImageDraw.floodfill(img, (sx, sy), lab)
+                            votes[lab] = 0
+                        if lab > 1:
+                            votes[lab] += v
+            sea = np.isin(np.asarray(img), [lab for lab, v in votes.items() if v > 0])
+            mx = np.minimum((np.linspace(0, W, nx) / res).astype(int), mw - 1)
+            my = np.minimum((np.linspace(0, D, ny) / res).astype(int), mh - 1)
+            H[sea[np.ix_(my, mx)]] = 0.0
     ele = at(H)
     hmin = float(H.min())
     h_b64 = base64.b64encode(np.round((H - hmin) * 10).astype("<u2").tobytes()).decode()
@@ -278,20 +377,7 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
             box = (b_s + (b_n - b_s) * i / n_lat, b_w + (b_e - b_w) * j / n_lon,
                    b_s + (b_n - b_s) * (i + 1) / n_lat, b_w + (b_e - b_w) * (j + 1) / n_lon)
             q = '[out:json][timeout:60];way["building"](%.5f,%.5f,%.5f,%.5f);out geom;' % box
-            fn = cache / ("osm_" + hashlib.sha1(q.encode()).hexdigest()[:16] + ".json")
-            got = None
-            for attempt in range(6 if fetch_buildings else 1):
-                if fn.exists():
-                    try:
-                        got = json.loads(fn.read_text(encoding="utf-8"))["elements"]
-                        break
-                    except (ValueError, KeyError):
-                        fn.unlink()        # an HTML error page, not JSON
-                if not fetch_buildings:
-                    break
-                host = OVERPASS[attempt % len(OVERPASS)]
-                if not curl(f"https://{host}/api/interpreter", fn, ("--data-urlencode", "data=" + q)):
-                    time.sleep(4)
+            got = overpass(q, cache, fetch_buildings)
             if got is None:
                 missing += 1
             else:
@@ -383,7 +469,11 @@ def main() -> None:
         hmax, missing, chunks = d3.pop("_hmax"), d3.pop("_missing"), d3.pop("_chunks")
         d3["meta"] = meta
         ele = d3["track"]["ele"]
-        render("karte3d_template.html", d3, out_dir / file3d)
+        km = f"{rows[-1]['dist'] / 1000:.1f}".replace(".", ",")
+        desc = (f"{km} km · {seconds // 60}:{seconds % 60:02d} min · Ø {result['avg_watt']} W — "
+                f"die Ergometer-Fahrt vom {date_dm}.{start.year} in 3D mitfahren.")
+        render("karte3d_template.html", d3, out_dir / file3d,
+               social_preview(out_dir, base, meta["title"] + " in 3D", desc))
         result.update({
             "karte_3d": str(out_dir / file3d),
             "gebiet_km": [round(d3["W"] / 1000, 1), round(d3["D"] / 1000, 1)],
