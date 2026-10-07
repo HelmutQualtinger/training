@@ -47,12 +47,15 @@ import io
 import json
 import math
 import re
+import os
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unicodedata
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import NoReturn
 from urllib.parse import quote as urlquote
@@ -61,6 +64,7 @@ PLACEHOLDER = "/*__DATA__*/null"
 SOCIAL_PLACEHOLDER = "<!--__SOCIAL__-->"
 SITE_URL = "https://helmutqualtinger.github.io/training/"   # GitHub Pages; previews need absolute URLs
 OG_SIZE = (1200, 630)
+PROTOMAPS = "https://build.protomaps.com/"   # daily planet builds of the Protomaps basemap, one <YYYYMMDD>.pmtiles each
 UA = "training-log-map/1.0 (personal training log)"
 EARTH = 40075016.686          # equatorial circumference, metres
 PAD_KM = 2.5                  # terrain shown around the route's bounding box
@@ -158,6 +162,85 @@ def session_nr(date_dm: str, seconds: int):
             if d <= 5 and (best is None or d < best[0]):
                 best = (d, r.get("Nr"))
     return best[1] if best else None
+
+
+def vector_tiles(out: Path, d3: dict, rows) -> dict:
+    """Cut the ride's area out of the Protomaps planet build into a small .pmtiles file next to the page.
+
+    The 3D page then draws its ground from these vector tiles itself instead of loading OSM raster
+    tiles. Two zoom levels go in: the ground-texture zoom for the whole area, and one level deeper
+    (the planet's maximum is 15) for a corridor along the route, where the rider sees the ground
+    from road level. Only byte ranges of the planet file are requested, never the 130 GB file.
+    """
+    try:
+        from pmtiles.reader import Reader
+        from pmtiles.tile import Compression, zxy_to_tileid
+        from pmtiles.writer import Writer
+    except ImportError:
+        fail("--vector braucht das Paket pmtiles (pip install pmtiles).")
+    url = None
+    for back in range(0, 15):               # newest build that is already published
+        day = datetime.date.today() - datetime.timedelta(days=back)
+        cand = f"{PROTOMAPS}{day:%Y%m%d}.pmtiles"
+        r = subprocess.run(["curl", "-sS", "-m", "30", "-I", "-o", os.devnull, "-w", "%{http_code}", "-H", "User-Agent: " + UA, cand],
+                           capture_output=True, text=True)
+        if r.stdout.strip() == "200":
+            url = cand
+            break
+    if not url:
+        fail("Kein aktueller Protomaps-Build erreichbar (build.protomaps.com).")
+
+    mem, lock = {}, threading.Lock()
+    def get_bytes(off, ln):                 # header and directories are asked for again for every tile: keep them
+        with lock:
+            hit = mem.get((off, ln))
+        if hit is None:
+            for _ in range(3):
+                r = subprocess.run(["curl", "-sS", "-f", "-m", "90", "-H", "User-Agent: " + UA,
+                                    "-r", f"{off}-{off + ln - 1}", url], capture_output=True)
+                if r.returncode == 0 and len(r.stdout) == ln:
+                    break
+                time.sleep(2)
+            else:
+                fail(f"Protomaps-Download fehlgeschlagen ({url}, Bytes {off}–{off + ln - 1}).")
+            hit = r.stdout
+            with lock:
+                mem[(off, ln)] = hit
+        return hit
+
+    reader = Reader(get_bytes)
+    head = reader.header()
+    zt, zd = d3["zt"], min(d3["zt"] + 1, head["max_zoom"])
+    want = {(zt, d3["x0"] + i, d3["y0"] + j) for i in range(d3["tx"]) for j in range(d3["ty"])}
+    if zd > zt:
+        f = 2 ** (zd - zt)
+        lim = (d3["x0"] * f, d3["y0"] * f, (d3["x0"] + d3["tx"]) * f - 1, (d3["y0"] + d3["ty"]) * f - 1)
+        for r in rows:
+            x, y = (math.floor(v) for v in tile_xy(r["lat"], r["lon"], zd))
+            want |= {(zd, i, j) for i in range(max(lim[0], x - 1), min(lim[2], x + 1) + 1)
+                     for j in range(max(lim[1], y - 1), min(lim[3], y + 1) + 1)}
+    reader.get(*next(iter(want)))           # warms header and root directory before the threads start
+    with ThreadPoolExecutor(8) as pool:
+        tiles = dict(zip(want, pool.map(lambda t: reader.get(*t), want)))
+    tiles = {zxy_to_tileid(*k): v for k, v in tiles.items() if v}
+    if not tiles:
+        fail("Der Protomaps-Build enthält keine Kacheln für dieses Gebiet.")
+    with out.open("wb") as fh:
+        w = Writer(fh)
+        for tid in sorted(tiles):
+            w.write_tile(tid, tiles[tid])
+        n = 2 ** zt
+        lon = lambda x: x / n * 360 - 180
+        lat = lambda y: math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+        e7 = lambda v: round(v * 1e7)
+        w.finalize({
+            "tile_type": head["tile_type"], "tile_compression": Compression.GZIP,
+            "min_lon_e7": e7(lon(d3["x0"])), "max_lon_e7": e7(lon(d3["x0"] + d3["tx"])),
+            "max_lat_e7": e7(lat(d3["y0"])), "min_lat_e7": e7(lat(d3["y0"] + d3["ty"])),
+            "center_zoom": zt, "center_lon_e7": e7(lon(d3["x0"] + d3["tx"] / 2)),
+            "center_lat_e7": e7(lat(d3["y0"] + d3["ty"] / 2)),
+        }, {**reader.metadata(), "description": f"Ausschnitt aus {url}"})
+    return {"kacheln": len(tiles), "mb": round(out.stat().st_size / 1e6, 1), "quelle": url}
 
 
 def social_preview(out_dir: Path, base: str, title: str, desc: str) -> str:
@@ -433,6 +516,9 @@ def main() -> None:
     ap.add_argument("--no-3d", action="store_true", help="nur die 2D-Karte erzeugen, keine Downloads")
     ap.add_argument("--cached-buildings", action="store_true",
                     help="Overpass nicht abfragen, nur schon gecachte Gebäude-Kacheln verwenden")
+    ap.add_argument("--vector", action="store_true",
+                    help="Boden der 3D-Seite aus Vektorkacheln (Protomaps) statt OSM-Rasterkacheln: schneidet "
+                         "<karte>.pmtiles neu aus; liegt die Datei schon da, wird sie auch ohne die Option benutzt")
     args = ap.parse_args()
 
     zpath = Path(args.zip).expanduser() if args.zip else newest_zip()
@@ -466,6 +552,14 @@ def main() -> None:
         d3 = build_3d(rows, args.radius, cache, not args.cached_buildings)
         hmax, missing, chunks = d3.pop("_hmax"), d3.pop("_missing"), d3.pop("_chunks")
         d3["meta"] = meta
+        # vector ground: opted into per ride with --vector, and it sticks — a later plain rerun finds the
+        # .pmtiles next to the page and keeps using it (delete the file to go back to raster tiles)
+        pm = out_dir / f"{base}.pmtiles"
+        if args.vector:
+            result["vektorkacheln"] = vector_tiles(pm, d3, rows)
+        if pm.is_file():
+            d3["vt"] = {"file": pm.name}
+            result["vektor"] = pm.name
         ele = d3["track"]["ele"]
         km = f"{rows[-1]['dist'] / 1000:.1f}".replace(".", ",")
         desc = (f"{km} km · {seconds // 60}:{seconds % 60:02d} min · Ø {result['avg_watt']} W — "
