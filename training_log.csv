@@ -146,3 +146,5 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 6.10,127,1868,376,210,127,,,109/73/94,,1,Widnau - Widnau,17.30,80,301,,30,23,41.3,ans limit gegangen
 6.10,128,1620,281,182,119,,,125/77/80,,1,BoraBoraTourist Ride - Matira to Vaitape and back,14.22,75,269,,33,22,42.3,
 7.10,129,1994,384,202,129,,,127/82/90,,1,Golden Autumn on Vienna's Donauinsel,18.14,80,339,,95,22,50.1,
+7.10,130,1800,204,118,117,,,134/88/80,,,,,,,,,,,"HIT 10x(30:60) 260W/90W, ohne Kinomap, temp 23"
+8.10,131,1140,188,169,129,,,,,,,,,,,,,,"Stufentest 100-250W (+25W/3min), Abbruch in 250W nach 1:23, Pmax 236W, ohne Kinomap"
