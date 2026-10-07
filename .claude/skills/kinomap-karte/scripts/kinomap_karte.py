@@ -164,22 +164,20 @@ def social_preview(out_dir: Path, base: str, title: str, desc: str) -> str:
     """Open Graph / Twitter tags for the 3D page, or "" if the ride has no thumbnail.
 
     The preview picture <base>_3d_og.jpg (1200x630, what the networks expect) is derived from
-    the hand-made index thumbnail <base>_3d.jpg: cropped to fill, or — for a portrait picture
-    such as a poster — shown whole on a blurred copy of itself. Crawlers don't run scripts, so
-    the tags have to be in the static HTML rather than set from the ride data at load time.
+    the hand-made index thumbnail <base>_3d.jpg, shown whole on a blurred copy of itself —
+    never cropped, because the thumbnails are often posters with lettering right up to the
+    edge. Crawlers don't run scripts, so the tags have to be in the static HTML rather than
+    set from the ride data at load time.
     """
     thumb = out_dir / f"{base}_3d.jpg"
     if not thumb.is_file():
         return ""
     from PIL import Image, ImageFilter, ImageOps
     src = Image.open(thumb).convert("RGB")
-    if src.width / src.height >= 1.3:
-        og = ImageOps.fit(src, OG_SIZE, Image.LANCZOS)
-    else:
-        og = ImageOps.fit(src, OG_SIZE, Image.LANCZOS).filter(ImageFilter.GaussianBlur(24))
-        og = og.point(lambda v: v * 0.6)
-        fg = ImageOps.contain(src, OG_SIZE, Image.LANCZOS)
-        og.paste(fg, ((OG_SIZE[0] - fg.width) // 2, (OG_SIZE[1] - fg.height) // 2))
+    og = ImageOps.fit(src, OG_SIZE, Image.LANCZOS).filter(ImageFilter.GaussianBlur(24))
+    og = og.point(lambda v: v * 0.6)
+    fg = ImageOps.contain(src, OG_SIZE, Image.LANCZOS)
+    og.paste(fg, ((OG_SIZE[0] - fg.width) // 2, (OG_SIZE[1] - fg.height) // 2))
     og.save(out_dir / f"{base}_3d_og.jpg", quality=88)
     e = html_lib.escape
     page, img = SITE_URL + urlquote(f"{base}_3d.html"), SITE_URL + urlquote(f"{base}_3d_og.jpg")
