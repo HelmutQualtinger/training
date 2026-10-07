@@ -52,13 +52,41 @@ button,select{font:inherit;font-size:13px;padding:4px 11px;border-radius:999px;b
 label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
 #left{position:fixed;top:12px;left:12px;width:430px;max-width:calc(100% - 24px);display:flex;flex-direction:column;gap:10px}
 #left .panel{position:static;max-width:none}
+#left{align-items:flex-start;pointer-events:none}
+#left>*{pointer-events:auto;width:100%}
 /* profile strip: dark like the cockpit, same series colours as its dials */
 #profbox{background:#0d0f12;border:1px solid #2a2e35;border-radius:12px;padding:8px 10px}
 #prof{display:block;width:100%;cursor:crosshair;touch-action:none}
 @media (max-width:760px){#profbox{display:none}}
 /* frame for the rider's-eye inset; the picture itself is a second viewport on the WebGL canvas */
 #pov{position:fixed;top:12px;right:12px;width:min(400px,34vw);aspect-ratio:16/10;border:2px solid #0d0f12;border-radius:4px;box-shadow:0 0 0 1px rgba(255,255,255,.5);pointer-events:none}
-#pov span{position:absolute;left:6px;top:6px;background:rgba(13,15,18,.78);color:#f4f4f5;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+/* Every overlay panel gets a .bar from the script (label + minimise button). A panel is dragged by its bar or
+   by any spot that isn't a control; "–" shrinks it to the bar alone. */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.bar .nm{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.mn{flex:none;width:18px;height:18px;padding:0;line-height:1;font-size:13px;border-radius:5px;color:inherit;border-color:currentColor;opacity:.6}
+.mn:hover,.mn:focus-visible{opacity:1}
+.float{cursor:grab}
+#top,#cockpit{touch-action:none}
+.min{width:auto!important;padding:5px 8px!important}
+.min>:not(.bar){display:none!important}
+.min .bar{margin:0}
+#profbox{color:#f4f4f5}
+/* title and controls: no label row while open, just the button at the right edge */
+#top .bar{float:right;margin:0 0 0 10px}
+#top.min .bar{float:none;margin:0}
+#top:not(.min) .nm,#bottom:not(.min) .nm{display:none}
+#bottom:not(.min){display:flex;align-items:center;gap:10px}
+#bottom:not(.min) .row{flex:1;order:-1}
+#bottom .bar{margin:0}
+#bottom.min{right:auto}
+#cockpit.min{left:auto}
+#pov .bar{position:absolute;left:6px;right:6px;top:6px;margin:0;pointer-events:auto;color:#f4f4f5}
+#pov .nm{background:rgba(13,15,18,.78);font-size:11px;font-weight:400;letter-spacing:.06em;padding:2px 7px;border-radius:999px;opacity:1}
+#pov .mn{background:rgba(13,15,18,.78);opacity:1}
+#pov.min{aspect-ratio:auto;border:0;box-shadow:none;padding:0!important}
+#pov.min .bar{position:static}
+body.rec .mn{display:none}
 @media (max-width:760px){#pov{top:150px;width:46vw}}
 body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback controls */
 #attr{position:fixed;right:12px;bottom:6px;font-size:11px;color:#333;text-shadow:0 0 3px #fff}
@@ -77,7 +105,7 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
 <div id="profbox"><canvas id="prof" aria-label="Verlauf von Tempo, Leistung, Puls und Höhe"></canvas></div>
 </div>
 
-<div id="pov"><span>Fahrersicht</span></div>
+<div id="pov"></div>
 
 <div class="panel" id="bottom">
   <div class="row">
@@ -537,6 +565,39 @@ playBtn.onclick=()=>{if(!playing&&t>=N-1)t=0;setPlaying(!playing);if(playing&&so
 scrub.oninput=()=>{t=+scrub.value;readout();};
 readout();
 
+// ---- overlay panels: drag to move, "–" to minimise ----
+// A dragged panel keeps its CSS position and is shifted with `translate`, so the responsive layout and the
+// phone stacking in resize() stay in charge; place() only keeps the panel inside the window.
+const offs=new Map();let zTop=1;
+function place(el){
+  const o=offs.get(el);
+  el.style.translate=o.x+'px '+o.y+'px';
+  const r=el.getBoundingClientRect();
+  const dx=r.left<0?-r.left:Math.min(0,innerWidth-r.right),dy=r.top<0?-r.top:Math.min(0,innerHeight-r.bottom);
+  if(dx||dy){o.x+=dx;o.y+=dy;el.style.translate=o.x+'px '+o.y+'px';}
+}
+for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit']]){
+  const el=document.getElementById(id),bar=document.createElement('div'),nm=document.createElement('span'),btn=document.createElement('button');
+  bar.className='bar';nm.className='nm';nm.textContent=name;btn.className='mn';btn.type='button';
+  bar.append(nm,btn);el.prepend(bar);el.classList.add('float');
+  const o={x:0,y:0};offs.set(el,o);
+  const label=()=>{
+    const m=el.classList.contains('min');
+    btn.textContent=m?'+':'–';btn.title=name+(m?' einblenden':' minimieren');btn.setAttribute('aria-label',btn.title);
+  };
+  label();
+  btn.addEventListener('click',()=>{el.classList.toggle('min');label();resize();});
+  let grab=null;
+  el.addEventListener('pointerdown',e=>{
+    if(e.button||e.target.closest('button,select,input,a,label,canvas'))return;
+    grab={x:e.clientX-o.x,y:e.clientY-o.y};e.target.setPointerCapture(e.pointerId);e.preventDefault();
+    (el.closest('#left')||el).style.zIndex=++zTop;   // the grabbed panel comes to the front
+  });
+  el.addEventListener('pointermove',e=>{if(grab){o.x=e.clientX-grab.x;o.y=e.clientY-grab.y;place(el);}});
+  for(const ev of ['pointerup','pointercancel'])el.addEventListener(ev,()=>{grab=null;});
+  bar.addEventListener('dblclick',e=>{if(e.target!==btn){o.x=o.y=0;place(el);}});   // double-click the bar: back to its home position
+}
+
 function resize(){
   const w=innerWidth,h=innerHeight;
   renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
@@ -544,7 +605,8 @@ function resize(){
   // phones: stack title, cockpit and rider's-eye inset from the top, leaving the lower screen to the scene
   const mob=matchMedia('(max-width:760px)').matches,ck=document.getElementById('cockpit');
   ck.style.top=mob?document.getElementById('left').getBoundingClientRect().bottom+8+'px':'';
-  document.getElementById('pov').style.top=mob?ck.getBoundingClientRect().bottom+8+'px':'';
+  document.getElementById('pov').style.top=mob?ck.offsetTop+ck.offsetHeight+8+'px':'';   // layout box, not the dragged one
+  for(const el of offs.keys())place(el);
 }
 addEventListener('resize',resize);resize();
 
@@ -650,6 +712,7 @@ function tick(now){
 
   // inset top right: the road from the rider's eyes (1.6 m up, looking ahead), drawn into the #pov frame
   sharpen(pos);
+  if(povBox.classList.contains('min'))return;   // minimised: no picture to draw
   const r=povBox.getBoundingClientRect(),vy=innerHeight-r.bottom;
   eye.copy(pos).addScaledVector(dir,0.22).setY(pos.y+1.6);
   povCam.position.copy(eye);
