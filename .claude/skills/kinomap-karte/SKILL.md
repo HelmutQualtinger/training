@@ -41,7 +41,7 @@ Don't ask unless the user's reference matches several files.
 
 ```bash
 python3 .claude/skills/kinomap-karte/scripts/kinomap_karte.py \
-  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector]
+  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector] [--vector]
 ```
 
 All arguments are optional. `--radius` is how far from the route buildings
@@ -134,4 +134,9 @@ goes through cv2/AVFoundation, not ffmpeg).
 - Social-media preview: if the index thumbnail `karte_<D.M>_<slug>_3d.jpg` exists next to the
   page, the script derives `..._3d_og.jpg` (1200x630) from it and writes Open Graph / Twitter
   tags into the 3D page. For a new ride, put the thumbnail in place first, then rerun.
+- `--vector` (only when the user asks for vector tiles for a ride): the 3D ground is drawn from
+  Protomaps vector tiles instead of OSM raster tiles. The script cuts `karte_<D.M>_<slug>.pmtiles`
+  (about 6 MB) out of the Protomaps planet build and the page reads it at runtime; needs
+  `pip install pmtiles`. Once that file exists, plain reruns keep using it — commit it with the
+  page. The result then carries `vektor` (and `vektorkacheln` when it was freshly cut).
 - The 3D page needs numpy and Pillow at build time (elevation PNG decoding).

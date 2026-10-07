@@ -819,10 +819,10 @@ function sharpen(p){
   }
 }
 // Vector ground only: two finer rings right under the rider — 16 and 64 cells per texture tile, each cell
-// painted at 512 px (about 0.2 m and 4 cm per pixel), which raster tiles have no zoom levels for. They would
+// painted at 512 and 256 px (about 0.2 m and 8 cm per pixel), which raster tiles have no zoom levels for. They would
 // add up to thousands of textures over a ride, so cells the rider has left behind are removed again; and the
 // innermost ring only gets its turn while little else is waiting, so fast playback doesn't drown in it.
-const RINGS=[{hf:16,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,lift:.14,off:-6,busy:4,cells:new Map()}];
+const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}];
 function sharpenFine(p){
   if(!VEC)return;
   for(const R of RINGS){
@@ -832,7 +832,7 @@ function sharpenFine(p){
       const key=i+'_'+j;
       if(i<0||j<0||i>=nx||j>=ny||R.cells.has(key)||inflight>=R.busy)continue;
       R.cells.set(key,null);inflight++;
-      VEC.then(v=>v.patch(i,j,PATCH,R.hf)).then(c=>{inflight--;R.cells.set(key,drape(i,j,w,h,new THREE.CanvasTexture(c),R.lift,R.off));},
+      VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>{inflight--;R.cells.set(key,drape(i,j,w,h,new THREE.CanvasTexture(c),R.lift,R.off));},
                                                 e=>{inflight--;R.cells.delete(key);console.error('Vektorkachel:',e);});
     }
     for(const [key,m] of R.cells){
