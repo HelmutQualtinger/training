@@ -475,15 +475,45 @@ scene.add(new THREE.Mesh(tg,new THREE.MeshLambertMaterial({map:tex})));
 }
 
 // ---- route ----
-const P=[];for(let i=0;i<N;i++)P.push(new THREE.Vector3(T.x[i],hAt(T.x[i],T.z[i])+3,T.z[i]));
+// The route lies on the ground: every point at terrain height (plus LIFT, just clear of the sharper-ground
+// patches), and the stretch between two track points cut into pieces of at most 4 m that each sit on the
+// terrain too — a straight chord would float over a dip and dive through a rise.
+const LIFT=0.2;
+const P=[];for(let i=0;i<N;i++)P.push(new THREE.Vector3(T.x[i],hAt(T.x[i],T.z[i])+LIFT,T.z[i]));
 // the export repeats positions; drop zero-length steps for the line, remember the source index for colouring
 const keep=[0];for(let i=1;i<N;i++)if(P[i].distanceToSquared(P[keep[keep.length-1]])>0.01)keep.push(i);
-const flat=[];for(const i of keep)flat.push(P[i].x,P[i].y,P[i].z);
+const flat=[],src=[];   // line vertices, and the track point each one takes its colour from
+for(let q=0;q<keep.length;q++){
+  const b=P[keep[q]];
+  if(q){
+    const a=P[keep[q-1]],n=Math.ceil(Math.hypot(b.x-a.x,b.z-a.z)/4);
+    for(let k=1;k<n;k++){
+      const x=a.x+(b.x-a.x)*k/n,z=a.z+(b.z-a.z)*k/n;
+      flat.push(x,hAt(x,z)+LIFT,z);src.push(keep[k*2<n?q-1:q]);
+    }
+  }
+  flat.push(b.x,b.y,b.z);src.push(keep[q]);
+}
+// A line this close to the ground would lose its near half to it: the line is a screen-facing ribbon, and
+// the ground a few pixels below its centre is closer to the camera than the line itself — by more the flatter
+// the view. So each vertex is depth-tested as if it were a little nearer: by the distance those few pixels
+// cover on the ground at that viewing angle (capped at 35 %, towards the horizon). Seen from above that is
+// about 1 %, so buildings and hills in front of the route still hide it.
+const nearer=m=>{m.onBeforeCompile=sh=>{
+  sh.vertexShader=sh.vertexShader.replace('gl_Position = clip;',`gl_Position = clip;
+    {
+      vec3 ray = normalize( vec3( clip.x / clip.w / projectionMatrix[ 0 ][ 0 ], clip.y / clip.w / projectionMatrix[ 1 ][ 1 ], - 1.0 ) );
+      float slope = max( abs( dot( ray, ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) ), 0.02 );
+      float px = ( linewidth * 0.5 + 1.0 ) * 2.0 / ( projectionMatrix[ 1 ][ 1 ] * resolution.y );
+      vec4 nr = projectionMatrix * vec4( 0.0, 0.0, - clip.w * ( 1.0 - min( 0.35, 1.5 * px / slope ) ), 1.0 );
+      gl_Position.z = nr.z / nr.w * clip.w;
+    }`);
+};return m;};
 const casingGeo=new LineGeometry();casingGeo.setPositions(flat);
-const casingMat=new LineMaterial({color:0x111111,linewidth:8,depthWrite:false});
+const casingMat=nearer(new LineMaterial({color:0x111111,linewidth:8,depthWrite:false}));
 const casing=new Line2(casingGeo,casingMat);casing.renderOrder=1;scene.add(casing);
 const lineGeo=new LineGeometry();lineGeo.setPositions(flat);
-const lineMat=new LineMaterial({vertexColors:true,linewidth:5});
+const lineMat=nearer(new LineMaterial({vertexColors:true,linewidth:5,depthWrite:false}));   // no depth written: the rider, drawn later, stays in front
 const line=new Line2(lineGeo,lineMat);line.renderOrder=2;scene.add(line);
 // faint second pass without depth test, so the route still reads where buildings hide it
 const ghostMat=new LineMaterial({vertexColors:true,linewidth:4,transparent:true,opacity:.35,depthTest:false});
@@ -499,7 +529,7 @@ function colour(t){
 // route line coloured by power, blue (low) to red (high), 5th–95th percentile
 {
   const a=T.watt,s=[...a].sort((x,y)=>x-y),lo=s[Math.floor(N*0.05)],hi=s[Math.floor(N*0.95)];
-  const c=[];for(const i of keep){const k=colour((a[i]-lo)/((hi-lo)||1));c.push(k.r,k.g,k.b);}
+  const c=[];for(const i of src){const k=colour((a[i]-lo)/((hi-lo)||1));c.push(k.r,k.g,k.b);}
   lineGeo.setColors(c);
 }
 
@@ -854,7 +884,7 @@ function setFirstPerson(on){
   first=on;chaseReset=on;
   controls.enablePan=!on;controls.minDistance=on?2.5:4;controls.maxDistance=on?600:FREE_MAX;
   camera.near=on?0.3:5;camera.fov=on?78:45;camera.updateProjectionMatrix();
-  line.position.y=casing.position.y=on?-2.6:0;ghost.visible=!on;   // see-through pass would draw across the rider    // route line down to road level when seen from the saddle
+  ghost.visible=!on;   // see-through pass would draw across the rider
   if(!on){                                        // hand back to the orbit camera just behind the rider
     controls.target.copy(pos);
     camera.position.copy(pos).addScaledVector(dir,-60).setY(pos.y+30);
@@ -924,16 +954,15 @@ function tick(now){
   povCam.lookAt(look.copy(eye).addScaledVector(dir,10).setY(eye.y-1.6));
   if(povCam.aspect!==r.width/r.height){povCam.aspect=r.width/r.height;povCam.updateProjectionMatrix();}
   rider.visible=ghost.visible=false;                 // the avatar may be enlarged for the main view
-  line.position.y=casing.position.y=-2.6;            // route line at road level
   for(const m of [lineMat,casingMat])m.resolution.set(r.width,r.height);
   renderer.setViewport(r.left,vy,r.width,r.height);renderer.setScissor(r.left,vy,r.width,r.height);
   renderer.setScissorTest(true);
   renderer.render(scene,povCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
   for(const m of [lineMat,casingMat])m.resolution.set(innerWidth,innerHeight);
-  line.position.y=casing.position.y=first?-2.6:0;
   rider.visible=true;ghost.visible=!first;
 }
+rider.traverse(o=>{o.renderOrder=4;});   // after the route line, which writes no depth
 if(followBox.checked)setFirstPerson(true);
 if(params.has('close')){   // debug: start the orbit camera next to the rider
   atDist(distAt(t),pos);controls.target.copy(pos).setY(pos.y+1);

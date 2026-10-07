@@ -208,15 +208,177 @@ tg.rotateX(-Math.PI/2);
 const tp=tg.attributes.position;
 for(let i=0;i<H.length;i++)tp.setY(i,H[i]/10);
 tg.computeVertexNormals();
-// Ground texture: the OSM tiles covering the area are drawn into one canvas as they arrive.
+// ---- vector ground (rides built with --vector) ----
+// D.vt names a .pmtiles file next to the page: Protomaps basemap tiles (OpenStreetMap data) cut out of the
+// planet build for this ride. The page paints them itself with canvas 2D — once into the area texture and
+// again, much larger, into each sharper-ground patch near the rider. That is where vectors pay off: an OSM
+// raster tile is 1.3 m per pixel at best, a vector tile is drawn at whatever resolution the patch has.
+// Each tile becomes a handful of Path2D objects once (one per fill or stroke style, in the tile's own
+// 0..4096 coordinates); painting it is then a transform plus a few fills and strokes.
+const VEC=D.vt&&location.protocol!=='file:'?(async()=>{
+  const CDN='https://cdn.jsdelivr.net/npm/';
+  const [{PMTiles},{VectorTile},{default:Pbf}]=await Promise.all([
+    import(CDN+'pmtiles@4.5.0/+esm'),import(CDN+'@mapbox/vector-tile@2.0.5/+esm'),import(CDN+'pbf@4.0.2/+esm')]);
+  // The file is a few MB: fetched whole and read from memory, so the server needs no HTTP range support
+  // (python's http.server has none).
+  const buf=await(await fetch(D.vt.file)).arrayBuffer();
+  const pm=new PMTiles({getKey:()=>D.vt.file,getBytes:async(o,l)=>({data:buf.slice(o,o+l)})});
+  const zmax=(await pm.getHeader()).maxZoom,cache=new Map();
+  const LAND={};   // landuse/landcover kind -> fill style
+  for(const [k,v] of Object.entries({green:'park grass garden playground village_green recreation_ground meadow golf_course dog_park grassland zoo',
+    wood:'wood forest scrub',pitch:'pitch stadium',grave:'cemetery',civic:'school university college kindergarten hospital',
+    work:'industrial commercial retail railway',paved:'pedestrian platform pier',sand:'beach sand',farm:'farmland farm orchard allotments'}))
+    for(const n of v.split(' '))LAND[n]=k;
+  function prep(vt){
+    const P={},names=[],trees=[],places=[];
+    const add=(k,f,closed)=>{
+      const p=P[k]||(P[k]=new Path2D()),g=f.loadGeometry();
+      for(const ring of g){for(let i=0;i<ring.length;i++)i?p.lineTo(ring[i].x,ring[i].y):p.moveTo(ring[i].x,ring[i].y);if(closed)p.closePath();}
+      return g;
+    };
+    const each=(n,fn)=>{const l=vt.layers[n];if(l)for(let i=0;i<l.length;i++){const f=l.feature(i);fn(f,f.properties);}};
+    for(const n of ['landcover','landuse'])each(n,(f,p)=>{const k=LAND[p.kind];if(k&&f.type===3)add(k,f,true);});
+    each('water',(f,p)=>{if(f.type===3)add('water',f,true);else if(f.type===2)add(p.kind==='river'||p.kind==='canal'?'river':'stream',f,false);});
+    each('buildings',(f,p)=>{if(f.type===3&&p.kind==='building')add('bld',f,true);});
+    each('roads',(f,p)=>{
+      if(f.type!==2||p.is_tunnel||p.kind==='ferry')return;
+      const d=p.kind_detail||'';
+      if(p.kind==='rail'){if(d!=='subway')add('rail',f,false);return;}   // the metro runs underground
+      const k=p.kind==='highway'?'hw':p.kind==='major_road'?(/^(primary|trunk)/.test(d)?'pri':'maj')
+             :p.kind==='minor_road'?(d==='service'?'svc':'min'):p.kind==='path'?'path':null;
+      if(!k)return;
+      const g=add(k,f,false);
+      if(p.name&&k!=='path'&&k!=='svc')for(const l of g)names.push({name:p.name,big:k!=='min',l});
+    });
+    each('pois',(f,p)=>{if(p.kind==='tree'){const q=f.loadGeometry()[0][0];trees.push(q.x,q.y);}});
+    each('places',(f,p)=>{if(p.name&&f.type===1){const q=f.loadGeometry()[0][0];places.push({name:p.name,x:q.x,y:q.y});}});
+    names.sort((a,b)=>b.big-a.big);   // main roads get their name first
+    return {P,names,trees,places,lab:new Map()};
+  }
+  const tile=(z,x,y)=>{
+    const key=z+'/'+x+'/'+y;
+    if(!cache.has(key))cache.set(key,pm.getZxy(z,x,y).then(r=>r&&r.data?prep(new VectorTile(new Pbf(new Uint8Array(r.data)))):null));
+    return cache.get(key);
+  };
+  // roads: [style, fill, edge, real width in metres, minimum width in canvas px]
+  const ROADS=[['path','#fbf7ee','#c9bfad',2.5,0],['svc','#fff','#c9c0b2',4,0],['min','#fff','#bdb4a5',7,1.3],
+               ['maj','#fff','#b3a998',11,2.2],['pri','#fde293','#cfa646',15,3],['hw','#fccf70','#c8922f',18,3.6]];
+  // k: canvas px per tile unit, (ox,oy): where the tile's corner lands, mpp: metres per canvas px
+  function paint(c,t,k,ox,oy,mpp){
+    c.save();c.setTransform(k,0,0,k,ox,oy);c.lineJoin=c.lineCap='round';
+    const near=mpp<1.5;
+    const fill=(key,col)=>{if(t.P[key]){c.fillStyle=col;c.fill(t.P[key],'evenodd');}};
+    const px=(m,min)=>Math.max(min,m/mpp);   // a width in metres as canvas px, but never thinner than `min`
+    const line=(key,col,w)=>{if(t.P[key]&&w>=.6){c.strokeStyle=col;c.lineWidth=w/k;c.stroke(t.P[key]);}};
+    fill('farm','#eef0d5');fill('work','#e6e1e4');fill('civic','#f2e8d8');fill('green','#cfe6b8');fill('wood','#b2d69c');
+    fill('grave','#cfdcc4');fill('pitch','#b9dfa6');fill('sand','#f4ebc8');fill('paved','#e3dfe6');
+    fill('water','#a6d1ee');line('stream','#a6d1ee',px(2,.8));line('river','#a6d1ee',px(8,1.2));
+    fill('bld','#d8cfc5');line('bld','#bfb3a6',near?.8:0);
+    const R=ROADS.filter(r=>px(r[3],r[4])>=1);   // footpaths and driveways only where they are a pixel wide
+    for(const [key,,edge,m,min] of R)line(key,edge,px(m,min)+(near?1.6:1));
+    for(const [key,col,,m,min] of R)line(key,col,px(m,min));
+    if(mpp<.4){   // right at the rider: a dashed centre line on the main roads
+      c.lineCap='butt';c.setLineDash([3/mpp/k,6/mpp/k]);
+      line('maj','#cfc8ba',.25/mpp);line('pri','#fff',.25/mpp);line('hw','#fff',.25/mpp);
+      c.setLineDash([]);c.lineCap='round';
+    }
+    line('rail','#8b8b94',px(1.6,1));
+    c.restore();
+  }
+  const FONT='-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  // Street names for one tile, lettering `hu` tile units tall: straight text along the middle of a line that
+  // is long and straight enough for it, and wholly inside the tile, so no neighbouring tile has to draw the
+  // other half. Placed in tile units, so every patch size draws the same name at the same spot on the ground.
+  function labels(c,t,hu){
+    if(t.lab.has(hu))return t.lab.get(hu);
+    const out=[];
+    c.font=`600 100px ${FONT}`;
+    for(const {name,big,l} of t.names){
+      const tw=c.measureText(name).width/100*hu,cum=[0];
+      let len=0;
+      for(let i=1;i<l.length;i++)cum.push(len+=Math.hypot(l[i].x-l[i-1].x,l[i].y-l[i-1].y));
+      if(len<tw*1.2)continue;
+      const at=s=>{
+        let i=1;while(i<l.length-1&&cum[i]<s)i++;
+        const f=(s-cum[i-1])/((cum[i]-cum[i-1])||1);
+        return [l[i-1].x+(l[i].x-l[i-1].x)*f,l[i-1].y+(l[i].y-l[i-1].y)*f];
+      };
+      const a=at((len-tw)/2),b=at((len+tw)/2);
+      if(Math.hypot(b[0]-a[0],b[1]-a[1])<tw*.93)continue;   // too bendy for straight text
+      const x=(a[0]+b[0])/2,y=(a[1]+b[1])/2,r=tw/2+hu;
+      if(x-r<0||y-r<0||x+r>4096||y+r>4096)continue;
+      if(out.some(o=>Math.hypot(o.x-x,o.y-y)<(o.name===name?1800:(o.r+r)*.75)))continue;
+      let ang=Math.atan2(b[1]-a[1],b[0]-a[0]);if(Math.abs(ang)>Math.PI/2)ang+=Math.PI;
+      out.push({name,x,y,r,ang,big});
+    }
+    t.lab.set(hu,out);return out;
+  }
+  // list positions are in tile units (k px each), fs is the font size in px
+  function write(c,list,k,ox,oy,fs,col='#4a4640'){
+    c.font=`600 ${fs}px ${FONT}`;c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';
+    for(const o of list){
+      c.save();c.translate(ox+o.x*k,oy+o.y*k);c.rotate(o.ang||0);
+      c.lineWidth=fs*.28;c.strokeStyle='rgba(255,255,255,.9)';c.strokeText(o.name,0,0);
+      c.fillStyle=col;c.fillText(o.name,0,0);c.restore();
+    }
+  }
+  const BG='#e9e5da',LETTER=4,pause=()=>new Promise(r=>setTimeout(r));
+  // the whole area, one texture tile after the other; PT = canvas px per tile
+  async function area(c,PT,done){
+    const mpp=D.W/D.tx/PT,k=PT/4096,fs=11*PT/256,pf=fs*1.2;
+    for(let y=0;y<D.ty;y++)for(let x=0;x<D.tx;x++){
+      const t=await tile(D.zt,D.x0+x,D.y0+y),ox=x*PT,oy=y*PT;
+      c.save();c.beginPath();c.rect(ox,oy,PT,PT);c.clip();
+      c.fillStyle=BG;c.fillRect(ox,oy,PT,PT);
+      if(t)paint(c,t,k,ox,oy,mpp);
+      c.restore();
+      if(t){
+        write(c,labels(c,t,fs/k).filter(o=>o.big),k,ox,oy,fs);
+        c.font=`600 ${pf}px ${FONT}`;
+        write(c,t.places.map(p=>({name:p.name,x:p.x,y:p.y,w:c.measureText(p.name).width/k}))
+          .filter(p=>p.x-p.w/2>20&&p.x+p.w/2<4076&&p.y>pf/k&&p.y<4096-pf/k),k,ox,oy,pf,'#6b5f7a');
+      }
+      done();await pause();
+    }
+  }
+  // One sharper-ground cell (i,j) of a grid with hf×hf cells per texture tile, PS px wide, from the deepest
+  // tile that covers it: one level below the texture zoom along the route, the texture zoom itself elsewhere.
+  let queue=Promise.resolve();
+  const patch=(i,j,PS,hf)=>queue=queue.then(pause,pause).then(async()=>{
+    const lv=Math.log2(hf),zc=D.zt+lv,X=D.x0*hf+i,Y=D.y0*hf+j;
+    let zs=Math.min(zmax,D.zt+1),t=await tile(zs,X>>(zc-zs),Y>>(zc-zs));
+    if(!t&&zs>D.zt){zs=D.zt;t=await tile(zs,X>>lv,Y>>lv);}
+    const cvs=document.createElement('canvas');cvs.width=cvs.height=PS;
+    const c=cvs.getContext('2d');c.fillStyle=BG;c.fillRect(0,0,PS,PS);
+    if(!t)return cvs;
+    const n=1<<(zc-zs),S=PS*n,k=S/4096,ox=-(X-(X>>(zc-zs))*n)*PS,oy=-(Y-(Y>>(zc-zs))*n)*PS,mpp=D.W/(D.tx*hf)/PS;
+    paint(c,t,k,ox,oy,mpp);
+    c.fillStyle='rgba(112,164,96,.85)';
+    const r=2.4/mpp;
+    for(let q=0;q<t.trees.length;q+=2){
+      const x=ox+t.trees[q]*k,y=oy+t.trees[q+1]*k;
+      if(x>-r&&y>-r&&x<PS+r&&y<PS+r){c.beginPath();c.arc(x,y,r,0,7);c.fill();}
+    }
+    const fs=LETTER/mpp;   // street names are the same size on the ground in every patch, whatever its resolution
+    write(c,labels(c,t,fs/k),k,ox,oy,fs);
+    return cvs;
+  });
+  return {area,patch};
+})():null;
+if(D.vt)document.getElementById('attr').innerHTML='Karte: <a href="https://protomaps.com">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Gebäude © OpenStreetMap-Mitwirkende · Höhendaten: Mapzen Terrain Tiles';
+
+// Ground texture: the map tiles covering the area are drawn into one canvas as they arrive — OSM raster
+// tiles, or with D.vt the vector tiles above, painted at up to twice the resolution.
 // tile.openstreetmap.org blocks pages opened via file:// (no Referer), so there the terrain stays plain.
-const cv=document.createElement('canvas');cv.width=D.tx*256;cv.height=D.ty*256;
+const PT=D.vt?Math.min(512,Math.floor(4096/Math.max(D.tx,D.ty))):256;   // canvas px per texture tile
+const cv=document.createElement('canvas');cv.width=D.tx*PT;cv.height=D.ty*PT;
 const cx=cv.getContext('2d');cx.fillStyle='#dde5d0';cx.fillRect(0,0,cv.width,cv.height);
 const tex=new THREE.CanvasTexture(cv);
 if(location.protocol==='file:')document.getElementById('hint').hidden=false;
 else{
   let dirty=false;
-  for(let y=0;y<D.ty;y++)for(let x=0;x<D.tx;x++){
+  if(VEC)VEC.then(v=>v.area(cx,PT,()=>{dirty=true;})).catch(e=>console.error('Vektorkacheln:',e));
+  else for(let y=0;y<D.ty;y++)for(let x=0;x<D.tx;x++){
     const img=new Image();img.crossOrigin='anonymous';
     img.onload=()=>{cx.drawImage(img,x*256,y*256,256,256);dirty=true;};
     img.src=`https://tile.openstreetmap.org/${D.zt}/${D.x0+x}/${D.y0+y}.png`;
@@ -313,15 +475,45 @@ scene.add(new THREE.Mesh(tg,new THREE.MeshLambertMaterial({map:tex})));
 }
 
 // ---- route ----
-const P=[];for(let i=0;i<N;i++)P.push(new THREE.Vector3(T.x[i],hAt(T.x[i],T.z[i])+3,T.z[i]));
+// The route lies on the ground: every point at terrain height (plus LIFT, just clear of the sharper-ground
+// patches), and the stretch between two track points cut into pieces of at most 4 m that each sit on the
+// terrain too — a straight chord would float over a dip and dive through a rise.
+const LIFT=0.2;
+const P=[];for(let i=0;i<N;i++)P.push(new THREE.Vector3(T.x[i],hAt(T.x[i],T.z[i])+LIFT,T.z[i]));
 // the export repeats positions; drop zero-length steps for the line, remember the source index for colouring
 const keep=[0];for(let i=1;i<N;i++)if(P[i].distanceToSquared(P[keep[keep.length-1]])>0.01)keep.push(i);
-const flat=[];for(const i of keep)flat.push(P[i].x,P[i].y,P[i].z);
+const flat=[],src=[];   // line vertices, and the track point each one takes its colour from
+for(let q=0;q<keep.length;q++){
+  const b=P[keep[q]];
+  if(q){
+    const a=P[keep[q-1]],n=Math.ceil(Math.hypot(b.x-a.x,b.z-a.z)/4);
+    for(let k=1;k<n;k++){
+      const x=a.x+(b.x-a.x)*k/n,z=a.z+(b.z-a.z)*k/n;
+      flat.push(x,hAt(x,z)+LIFT,z);src.push(keep[k*2<n?q-1:q]);
+    }
+  }
+  flat.push(b.x,b.y,b.z);src.push(keep[q]);
+}
+// A line this close to the ground would lose its near half to it: the line is a screen-facing ribbon, and
+// the ground a few pixels below its centre is closer to the camera than the line itself — by more the flatter
+// the view. So each vertex is depth-tested as if it were a little nearer: by the distance those few pixels
+// cover on the ground at that viewing angle (capped at 35 %, towards the horizon). Seen from above that is
+// about 1 %, so buildings and hills in front of the route still hide it.
+const nearer=m=>{m.onBeforeCompile=sh=>{
+  sh.vertexShader=sh.vertexShader.replace('gl_Position = clip;',`gl_Position = clip;
+    {
+      vec3 ray = normalize( vec3( clip.x / clip.w / projectionMatrix[ 0 ][ 0 ], clip.y / clip.w / projectionMatrix[ 1 ][ 1 ], - 1.0 ) );
+      float slope = max( abs( dot( ray, ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) ), 0.02 );
+      float px = ( linewidth * 0.5 + 1.0 ) * 2.0 / ( projectionMatrix[ 1 ][ 1 ] * resolution.y );
+      vec4 nr = projectionMatrix * vec4( 0.0, 0.0, - clip.w * ( 1.0 - min( 0.35, 1.5 * px / slope ) ), 1.0 );
+      gl_Position.z = nr.z / nr.w * clip.w;
+    }`);
+};return m;};
 const casingGeo=new LineGeometry();casingGeo.setPositions(flat);
-const casingMat=new LineMaterial({color:0x111111,linewidth:8,depthWrite:false});
+const casingMat=nearer(new LineMaterial({color:0x111111,linewidth:8,depthWrite:false}));
 const casing=new Line2(casingGeo,casingMat);casing.renderOrder=1;scene.add(casing);
 const lineGeo=new LineGeometry();lineGeo.setPositions(flat);
-const lineMat=new LineMaterial({vertexColors:true,linewidth:5});
+const lineMat=nearer(new LineMaterial({vertexColors:true,linewidth:5,depthWrite:false}));   // no depth written: the rider, drawn later, stays in front
 const line=new Line2(lineGeo,lineMat);line.renderOrder=2;scene.add(line);
 // faint second pass without depth test, so the route still reads where buildings hide it
 const ghostMat=new LineMaterial({vertexColors:true,linewidth:4,transparent:true,opacity:.35,depthTest:false});
@@ -337,7 +529,7 @@ function colour(t){
 // route line coloured by power, blue (low) to red (high), 5th–95th percentile
 {
   const a=T.watt,s=[...a].sort((x,y)=>x-y),lo=s[Math.floor(N*0.05)],hi=s[Math.floor(N*0.95)];
-  const c=[];for(const i of keep){const k=colour((a[i]-lo)/((hi-lo)||1));c.push(k.r,k.g,k.b);}
+  const c=[];for(const i of src){const k=colour((a[i]-lo)/((hi-lo)||1));c.push(k.r,k.g,k.b);}
   lineGeo.setColors(c);
 }
 
@@ -624,7 +816,19 @@ addEventListener('resize',resize);resize();
 
 // From road level the area texture (≈3 m per pixel) is mush, so the ground around the rider gets
 // tiles two zoom levels deeper, draped as small patches and fetched lazily as the ride progresses.
-const HF=4,patches=new Set();let inflight=0;
+const HF=4,patches=new Set(),PATCH=matchMedia('(max-width:760px)').matches?256:512;let inflight=0;
+// drape one texture over cell (i,j) of an n×n-per-tile grid, following the ground `lift` metres above it
+function drape(i,j,w,h,tx,lift,off){
+  tx.colorSpace=THREE.SRGBColorSpace;
+  tx.anisotropy=renderer.capabilities.getMaxAnisotropy();tx.needsUpdate=true;
+  const seg=Math.min(32,Math.max(6,Math.ceil(2*w/(D.W/(D.nx-1)))));   // two per terrain cell, so the patch hugs the ground
+  const g=new THREE.PlaneGeometry(w,h,seg,seg);g.rotateX(-Math.PI/2);g.translate(-D.W/2+(i+.5)*w,0,-D.D/2+(j+.5)*h);
+  const a=g.attributes.position;
+  for(let k=0;k<a.count;k++)a.setY(k,hAt(a.getX(k),a.getZ(k))+lift);
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:off,polygonOffsetUnits:off}));
+  scene.add(m);return m;
+}
 function sharpen(p){
   if(location.protocol==='file:')return;
   const nx=D.tx*HF,ny=D.ty*HF,w=D.W/nx,h=D.D/ny;
@@ -633,20 +837,39 @@ function sharpen(p){
     const key=i+'_'+j;
     if(i<0||j<0||i>=nx||j>=ny||patches.has(key)||inflight>=8)continue;
     patches.add(key);inflight++;
+    if(VEC){   // vector ground: painted here, 512 px per cell (0.7 m per pixel); phones get half of that
+      VEC.then(v=>v.patch(i,j,PATCH,HF)).then(c=>{inflight--;drape(i,j,w,h,new THREE.CanvasTexture(c),0.12,-2);},
+                                              e=>{inflight--;console.error('Vektorkachel:',e);});
+      continue;
+    }
     const img=new Image();img.crossOrigin='anonymous';
     img.onerror=()=>{inflight--;};
-    img.onload=()=>{
-      inflight--;
-      const tx=new THREE.Texture(img);tx.colorSpace=THREE.SRGBColorSpace;
-      tx.anisotropy=renderer.capabilities.getMaxAnisotropy();tx.needsUpdate=true;
-      const seg=Math.min(32,Math.max(6,Math.ceil(2*w/(D.W/(D.nx-1)))));   // two per terrain cell, so the patch hugs the ground
-      const g=new THREE.PlaneGeometry(w,h,seg,seg);g.rotateX(-Math.PI/2);g.translate(-D.W/2+(i+.5)*w,0,-D.D/2+(j+.5)*h);
-      const a=g.attributes.position;
-      for(let k=0;k<a.count;k++)a.setY(k,hAt(a.getX(k),a.getZ(k))+0.12);
-      g.computeVertexNormals();
-      scene.add(new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})));
-    };
+    img.onload=()=>{inflight--;drape(i,j,w,h,new THREE.Texture(img),0.12,-2);};
     img.src=`https://tile.openstreetmap.org/${D.zt+2}/${D.x0*HF+i}/${D.y0*HF+j}.png`;
+  }
+}
+// Vector ground only: two finer rings right under the rider — 16 and 64 cells per texture tile, each cell
+// painted at 512 and 256 px (about 0.2 m and 8 cm per pixel), which raster tiles have no zoom levels for. They would
+// add up to thousands of textures over a ride, so cells the rider has left behind are removed again; and the
+// innermost ring only gets its turn while little else is waiting, so fast playback doesn't drown in it.
+const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}];
+function sharpenFine(p){
+  if(!VEC)return;
+  for(const R of RINGS){
+    const nx=D.tx*R.hf,ny=D.ty*R.hf,w=D.W/nx,h=D.D/ny;
+    const u=Math.floor((p.x/D.W+.5)*nx),v=Math.floor((p.z/D.D+.5)*ny);
+    for(let j=v-2;j<=v+2;j++)for(let i=u-2;i<=u+2;i++){
+      const key=i+'_'+j;
+      if(i<0||j<0||i>=nx||j>=ny||R.cells.has(key)||inflight>=R.busy)continue;
+      R.cells.set(key,null);inflight++;
+      VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>{inflight--;R.cells.set(key,drape(i,j,w,h,new THREE.CanvasTexture(c),R.lift,R.off));},
+                                                e=>{inflight--;R.cells.delete(key);console.error('Vektorkachel:',e);});
+    }
+    for(const [key,m] of R.cells){
+      const [i,j]=key.split('_').map(Number);
+      if(!m||(Math.abs(i-u)<=5&&Math.abs(j-v)<=5))continue;
+      scene.remove(m);m.geometry.dispose();m.material.map.dispose();m.material.dispose();R.cells.delete(key);
+    }
   }
 }
 
@@ -661,7 +884,7 @@ function setFirstPerson(on){
   first=on;chaseReset=on;
   controls.enablePan=!on;controls.minDistance=on?2.5:4;controls.maxDistance=on?600:FREE_MAX;
   camera.near=on?0.3:5;camera.fov=on?78:45;camera.updateProjectionMatrix();
-  line.position.y=casing.position.y=on?-2.6:0;ghost.visible=!on;   // see-through pass would draw across the rider    // route line down to road level when seen from the saddle
+  ghost.visible=!on;   // see-through pass would draw across the rider
   if(!on){                                        // hand back to the orbit camera just behind the rider
     controls.target.copy(pos);
     camera.position.copy(pos).addScaledVector(dir,-60).setY(pos.y+30);
@@ -723,7 +946,7 @@ function tick(now){
   renderer.render(scene,camera);
 
   // inset top right: the road from the rider's eyes (1.6 m up, looking ahead), drawn into the #pov frame
-  sharpen(pos);
+  sharpen(pos);sharpenFine(pos);
   if(povBox.classList.contains('min'))return;   // minimised: no picture to draw
   const r=povBox.getBoundingClientRect(),vy=innerHeight-r.bottom;
   eye.copy(pos).addScaledVector(dir,0.22).setY(pos.y+1.6);
@@ -731,16 +954,15 @@ function tick(now){
   povCam.lookAt(look.copy(eye).addScaledVector(dir,10).setY(eye.y-1.6));
   if(povCam.aspect!==r.width/r.height){povCam.aspect=r.width/r.height;povCam.updateProjectionMatrix();}
   rider.visible=ghost.visible=false;                 // the avatar may be enlarged for the main view
-  line.position.y=casing.position.y=-2.6;            // route line at road level
   for(const m of [lineMat,casingMat])m.resolution.set(r.width,r.height);
   renderer.setViewport(r.left,vy,r.width,r.height);renderer.setScissor(r.left,vy,r.width,r.height);
   renderer.setScissorTest(true);
   renderer.render(scene,povCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
   for(const m of [lineMat,casingMat])m.resolution.set(innerWidth,innerHeight);
-  line.position.y=casing.position.y=first?-2.6:0;
   rider.visible=true;ghost.visible=!first;
 }
+rider.traverse(o=>{o.renderOrder=4;});   // after the route line, which writes no depth
 if(followBox.checked)setFirstPerson(true);
 if(params.has('close')){   // debug: start the orbit camera next to the rider
   atDist(distAt(t),pos);controls.target.copy(pos).setY(pos.y+1);
