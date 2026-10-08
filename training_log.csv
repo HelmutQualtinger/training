@@ -148,3 +148,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 7.10,129,1994,384,202,129,,,127/82/90,,1,Golden Autumn on Vienna's Donauinsel,18.14,80,339,,95,22,50.1,
 7.10,130,1800,204,118,117,,,134/88/80,,,,,,,,,,,"HIT 10x(30:60) 260W/90W, ohne Kinomap, temp 23"
 8.10,131,1140,188,169,129,,,,,,,,,,,,,,"Stufentest 100-250W (+25W/3min), Abbruch in 250W nach 1:23, Pmax 236W, ohne Kinomap"
+8.10,132,1860,264,148,124,,,126/83/87,,,,,,,,,,,"Stufen 4x (120-210W, 90s-Stufen), zwei Aufzeichnungen 11:23+19:38 mit 2 min Pause, ohne Kinomap"
