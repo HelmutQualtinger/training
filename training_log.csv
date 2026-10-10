@@ -150,3 +150,6 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 8.10,131,1140,188,169,129,,,,,,,,,,,,,,"Stufentest 100-250W (+25W/3min), Abbruch in 250W nach 1:23, Pmax 236W, ohne Kinomap"
 8.10,132,1860,264,148,124,,,126/83/87,,,,,,,,,,,"Stufen 4x (120-210W, 90s-Stufen), am Stück gefahren; Aufzeichnung 2 min unterbrochen (Fehlbedienung am Handy), Werte aus 11:23+19:38, ohne Kinomap"
 8.10,133,1200,153,134,113,,,,,,,10.50,85,381,,,23,45.2,"HIIT 12x(30:30) 230W/80W, Vorgabe hiit-20, ohne Kinomap"
+9.10,134,1802,262,152,120,,,117/73/80,,,,14.40,77,258,,,22,36.5,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
+9.10,135,1200,149,130,117,,,,,,,9.70,78,355,,,22,36.2,"HIIT 12x(30:30) 230W/80W, Vorgabe hiit-20, ohne Kinomap"
+10.10,136,1801,275,160,124,,,109/73/87,,,,14.90,80,340,,,21,38.0,"3x5min 200W, Pausen 2min 120W, Vorgabe persoenlich-30, ohne Kinomap"
