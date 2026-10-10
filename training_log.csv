@@ -153,4 +153,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 9.10,134,1802,262,152,120,,,117/73/80,,,,14.40,77,258,,,22,36.5,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
 9.10,135,1200,149,130,117,,,,,,,9.70,78,355,,,22,36.2,"HIIT 12x(30:30) 230W/80W, Vorgabe hiit-20, ohne Kinomap"
 10.10,136,1801,275,160,124,,,109/73/87,,,,14.90,80,340,,,21,38.0,"3x5min 200W, Pausen 2min 120W, Vorgabe persoenlich-30, ohne Kinomap"
-10.10,137,1801,261,152,116,,,,,,,14.30,77,258,,,21,34.0,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
+10.10,137,1801,261,152,116,,,113/74/73,,,,14.30,77,258,,,21,34.0,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
