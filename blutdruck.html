@@ -42,6 +42,15 @@ h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-
 .dash{width:14px;height:0;border-top:2px dashed var(--text);flex-shrink:0}
 .li.stat{margin-left:auto;font-family:var(--num);color:var(--text)}
 .chart-wrap{position:relative;width:100%}
+.tbl-wrap{overflow-x:auto}
+table.rr{width:100%;border-collapse:collapse;font-size:13px}
+table.rr th{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;font-weight:600;text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
+table.rr td{font-family:var(--num);padding:6px 10px;border-bottom:0.5px solid var(--border2);white-space:nowrap}
+table.rr td:first-child{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text2)}
+table.rr td.na{color:var(--text3)}
+table.rr td.ex{color:#8a5a00;font-weight:600}
+table.rr td .puls{color:var(--text3);font-weight:400}
+@media(prefers-color-scheme:dark){table.rr td.ex{color:#F5B400}}
 
 @media print{
   :root{--bg:#fff;--surface:#fff;--surface2:#fff;--shadow:none}
@@ -75,6 +84,16 @@ h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-
     <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
   </div>
   <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+</div>
+
+<div class="card">
+  <div class="section-lbl" style="--c:var(--C1)">Einzelwerte</div>
+  <div class="legend">
+    <div class="li">Systolisch/Diastolisch/Puls · neueste zuerst</div>
+    <div class="li"><div class="dot" style="background:#F5B400"></div>außerhalb Zielband (systolisch &gt; 140 oder diastolisch &gt; 90)</div>
+    <div class="li stat" id="sTbl"></div>
+  </div>
+  <div class="tbl-wrap"><table class="rr"><thead><tr><th>Datum</th><th>Ruhe (vor dem Training)</th><th>Nach dem Training</th><th>Abends</th></tr></thead><tbody id="rrBody"></tbody></table></div>
 </div>
 
 <div class="card">
@@ -166,6 +185,21 @@ new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datas
   {label:'außerhalb Zielband',...tri,data:excessMark(bpAfter)},
   {label:'außerhalb Zielband',...tri,data:excessMark(bpEvening)}
 ]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
+
+// ---- EINZELWERTE ----
+// Alle Messungen als Tabelle, neueste zuerst; Werte außerhalb des Zielbands wie im Bänder-Chart markiert.
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const cell=raw=>{
+  const v=parseRR(raw);
+  if(!v)return '<td class="na">–</td>';
+  const m=raw.match(/^\s*\d+\/\d+\/?(\d+)?\s*(.*)$/);
+  const puls=m&&m[1]?`<span class="puls">/${m[1]}</span>`:'';
+  const note=m&&m[2]?` <span class="puls">${esc(m[2])}</span>`:'';
+  return `<td class="${isExcess(v)?'ex':''}">${isExcess(v)?'▲ ':''}${v[1]}/${v[0]}${puls}${note}</td>`;
+};
+document.getElementById('rrBody').innerHTML=bpRows.slice().reverse()
+  .map(r=>`<tr><td>${esc(r.dat)}</td>${cell(r.rr_ruhe)}${cell(r.rr)}${cell(r.rr_abend)}</tr>`).join('');
+document.getElementById('sTbl').textContent=`${readings.length} Messungen an ${bpRows.length} Tagen · außerhalb Zielband: ${readings.filter(isExcess).length}`;
 
 // ---- HISTOGRAMME ----
 // Je eines vor Belastung (RR_ruhe) und nach Belastung (RR_training), auf derselben mmHg-Achse,
