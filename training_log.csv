@@ -158,3 +158,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 11.10,–,,,,,,119/72/73 (08:54),,,,,,,,,,,,
 11.10,138,1800,262,152,126,,,119/73/77,,,,15.00,80,333,,,21,35.3,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
 12.10,–,,,,,,134/80/81 (09:49),,,,,,,,,,,,
+12.10,139,1800,266,155,122,,,,,,,14.70,79,339,,,21,34.6,"Stufen 4x (120-230W, 90s-Stufen), Vorgabe stufen-4x-230, ohne Kinomap"
