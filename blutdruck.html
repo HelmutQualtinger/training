@@ -89,7 +89,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
 <div class="card">
   <div class="section-lbl" style="--c:var(--C1)">Einzelwerte</div>
   <div class="legend">
-    <div class="li">Systolisch/Diastolisch/Puls · neueste zuerst</div>
+    <div class="li">Systolisch/Diastolisch/Puls · chronologisch, neueste Messung unten</div>
     <div class="li"><div class="dot" style="background:#F5B400"></div>außerhalb Zielband (systolisch &gt; 140 oder diastolisch &gt; 90)</div>
     <div class="li stat" id="sTbl"></div>
   </div>
@@ -187,7 +187,7 @@ new Chart(document.getElementById('cBP'),{type:'bar',data:{labels:bpLabels,datas
 ]},options:{...baseOpts,scales:{x:{...bx,offset:true},y:by('mmHg',50,170)},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{if(ctx.dataset.type==='line')return'⚠ außerhalb Zielband';const v=ctx.raw;return v?`${ctx.dataset.label}: ${v[1]}/${v[0]}`:'';}}}}},plugins:[bpBandPlugin]});
 
 // ---- EINZELWERTE ----
-// Alle Messungen als Tabelle, neueste zuerst; Werte außerhalb des Zielbands wie im Bänder-Chart markiert.
+// Alle Messungen als Tabelle, chronologisch (neueste unten); Werte außerhalb des Zielbands wie im Bänder-Chart markiert.
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const cell=raw=>{
   const v=parseRR(raw);
@@ -197,7 +197,7 @@ const cell=raw=>{
   const note=m&&m[2]?` <span class="puls">${esc(m[2])}</span>`:'';
   return `<td class="${isExcess(v)?'ex':''}">${isExcess(v)?'▲ ':''}${v[1]}/${v[0]}${puls}${note}</td>`;
 };
-document.getElementById('rrBody').innerHTML=bpRows.slice().reverse()
+document.getElementById('rrBody').innerHTML=bpRows
   .map(r=>`<tr><td>${esc(r.dat)}</td>${cell(r.rr_ruhe)}${cell(r.rr)}${cell(r.rr_abend)}</tr>`).join('');
 document.getElementById('sTbl').textContent=`${readings.length} Messungen an ${bpRows.length} Tagen · außerhalb Zielband: ${readings.filter(isExcess).length}`;
 
