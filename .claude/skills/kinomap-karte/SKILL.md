@@ -137,7 +137,7 @@ goes through cv2/AVFoundation, not ffmpeg).
   videos often stop short of closing a loop), not a rendering bug.
 - The 3D page takes `?t=<seconds>&follow` in the URL to start at a given
   point in follow mode, `?night`, `?moon`, `?clouds`, `?light` and `?const` to start with
-  that sky/headlight/constellation checkbox ticked, `?up=<degrees>` to look up, `?turn=<degrees>` to turn the gaze sideways, `?zoom=<factor>` to zoom in (1–40), `?dso=M31` to open that Messier object's Hubble picture, and `?shot` to make headless-Chrome screenshots work
+  that sky/headlight/constellation checkbox ticked, `?up=<degrees>` to look up, `?turn=<degrees>` to turn the gaze sideways, `?zoom=<factor>` to zoom in (1–40), `?dso=M31` to open that Messier object's telescope picture, and `?shot` to make headless-Chrome screenshots work
   (`--headless=new --enable-unsafe-swiftshader --virtual-time-budget=20000`).
 - Building heights come from OSM `height`/`building:levels` where tagged and
   are otherwise guessed from building type and footprint.
@@ -153,7 +153,9 @@ goes through cv2/AVFoundation, not ffmpeg).
 - The night sky (stars, Messier objects, constellations) comes from `assets/himmel.json`, which is
   committed. `scripts/fetch_himmel.py` rebuilds it from NASA HEASARC and Stellarium — only needed to
   change the magnitude limit or the Stellarium version, never for a normal run. The same file holds
-  the Hubble picture URL of each Messier object (from NASA's "Hubble's Messier Catalog"); a click on
-  an object in the night sky opens that picture in a small panel.
+  the picture URL of each Messier object — the James Webb Space Telescope's from ESA's Webb archive
+  where there is one (16 objects so far), otherwise Hubble's from NASA's "Hubble's Messier Catalog";
+  a click on an object in the night sky opens that picture in a small panel. Rerun the script to
+  pick up newly published Webb pictures.
 - The moon is a full-moon photo from Wikimedia Commons, cut to the phase of the ride's evening,
   which the script computes (`moon` in the page's sky data). Its place in the sky is fixed.

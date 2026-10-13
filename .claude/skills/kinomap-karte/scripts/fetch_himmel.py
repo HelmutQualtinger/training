@@ -7,8 +7,11 @@ sky culture: stick-figure lines and, for the illustrations by Johan Meuris, the 
 each picture to the sky. Stellarium names those stars by Hipparcos number; their positions come from
 HEASARC's Hipparcos table. And for each Messier object the picture NASA's "Hubble's Messier Catalog" shows
 for it (science.nasa.gov, one page per object; Hubble has not observed all 110), which the page opens on a
-click. Only the data is stored — the page loads the pictures themselves from a CDN or from NASA.
-The file is committed; rerun this only to change the magnitude limit or the Stellarium version.
+click — unless the James Webb Space Telescope has a picture of the object in ESA's Webb image archive
+(esawebb.org), which is then preferred. Only the data is stored — the page loads the pictures themselves from
+a CDN, NASA or ESA.
+The file is committed; rerun this only to change the magnitude limit or the Stellarium version, or to pick up
+new Webb pictures.
 kinomap_karte.py embeds it into every 3D page.
 
     python3 fetch_himmel.py [--mag 5.6]
@@ -28,6 +31,10 @@ STELLARIUM = "v25.2"      # git tag the sky culture is read from; the page loads
 TAP = "https://heasarc.gsfc.nasa.gov/xamin/vo/tap/sync"
 # one page per observed object, "<HUBBLE>messier-<n>/"
 HUBBLE = "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/"
+WEBB = "https://esawebb.org/images/"      # ESA's Webb image archive; "<WEBB>d2d/" is its JSON feed, 100 per page
+# titles of archive entries that are not a plain Webb picture: other telescopes, comparisons, labelled or cut versions
+NOT_WEBB = re.compile(r"hubble|\bHST\b|chandra|euclid|multi-observ|across the spectrum|annotat|compass|location|"
+                      r"spectr|graphic|light curve|close-up|cropped|scaled|pull-?out|zoom", re.I)
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36"
 
 
@@ -69,12 +76,51 @@ def hubble(n: int) -> list | None:
     return [img[1], html.unescape(name[1]) if name else ""]
 
 
+def webb_archive() -> list[dict]:
+    """Every entry of ESA's Webb image archive (a few hundred), from its paged JSON feed."""
+    items, url = [], WEBB + "d2d/"
+    while url:
+        page = json.loads(subprocess.run(["curl", "-sL", "-m", "120", "-H", f"User-Agent: {UA}", url],
+                                         capture_output=True, text=True, check=True).stdout)
+        items += page["Collections"]
+        url = page.get("Next")
+    return items
+
+
+def webb(archive: list[dict], n: int, ngc: str, popular: str) -> list | None:
+    """Webb's picture of Messier n: [picture URL, archive page, credit], or None if the archive has none.
+
+    An entry belongs to the object when its title or one of its subject names carries the Messier or NGC
+    number or the popular name — "Ring Nebula", but not the "Southern Ring Nebula", which is another object
+    (as the "Southern Pinwheel" is not the "Pinwheel Galaxy"). Many entries have no subject names at all.
+    Of the plain Webb pictures among them, the one ESA ranks highest wins, the newer one on a tie. Webb's
+    field of view is small, so this is often a detail of the object rather than all of it."""
+    numbers = [rf"(?:M|Messier)\s?{n}"]
+    m = re.search(r"NGC\s*(\d+)", ngc or "")
+    if m:
+        numbers.append(rf"NGC\s?{m[1]}")
+    popular = re.sub(r"^The ", "", popular)
+    if popular:
+        numbers.append("(?<!Southern )" + re.escape(popular))
+    rx = re.compile(r"(?<![\w-])(?:" + "|".join(numbers) + r")(?![\w-])", re.I)
+
+    def mine(it: dict) -> bool:
+        names = it["Subject"].get("Name") or []
+        return not NOT_WEBB.search(it["Title"]) and any(rx.search(s) for s in [it["Title"], *names])
+
+    found = sorted(filter(mine, archive), key=lambda it: (it.get("Priority") or 0, it["PublicationDate"]), reverse=True)
+    if not found:
+        return None
+    it = found[0]
+    return [f"https://cdn.esawebb.org/archives/images/screen/{it['ID']}.jpg", it["ReferenceURL"], it["Credit"]]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--mag", type=float, default=5.6, help="faintest star to keep (default 5.6)")
     args = ap.parse_args()
     stars = query(f"SELECT ra,dec,vmag,bv_color FROM bsc5p WHERE vmag<{args.mag}", "ddff")
-    dso = query("SELECT name,ra,dec,vmag,object_type FROM messier", "sddfs")
+    dso = query("SELECT name,ra,dec,vmag,object_type,alt_name FROM messier", "sddfss")
     culture = json.loads(subprocess.run(
         ["curl", "-s", "-m", "60", "-H", f"User-Agent: {UA}",
          f"https://raw.githubusercontent.com/Stellarium/stellarium/{STELLARIUM}/skycultures/modern/index.json"],
@@ -99,6 +145,13 @@ def main() -> None:
         bilder.append(entry)
     with ThreadPoolExecutor(8) as pool:
         pics = {f"M{n}": p for n, p in zip(range(1, 111), pool.map(hubble, range(1, 111))) if p}
+    archive = webb_archive()
+    jwst = {}
+    for name, *_, ngc in dso:
+        n = int(name.split()[-1])
+        p = webb(archive, n, ngc, (pics.get(f"M{n}") or ["", ""])[1])
+        if p:
+            jwst[f"M{n}"] = p
     nan = lambda v, d: d if v != v else v          # NaN -> default
     data = {
         "quelle": "NASA HEASARC: Bright Star Catalog BSC5P, Messier Catalog, Hipparcos; Stellarium modern sky culture",
@@ -106,16 +159,18 @@ def main() -> None:
         # [ra°, dec°, V mag, B−V], brightest first
         "sterne": [[round(r, 2), round(d, 2), round(v, 1), round(nan(bv, 0.6), 1)] for r, d, v, bv in sorted(stars, key=lambda s: s[2])],
         # [name, ra°, dec°, V mag, type]
-        "deepsky": [[n.replace(" ", ""), round(r, 2), round(d, 2), round(nan(v, 9), 1), t] for n, r, d, v, t in dso],
+        "deepsky": [[n.replace(" ", ""), round(r, 2), round(d, 2), round(nan(v, 9), 1), t] for n, r, d, v, t, _ in dso],
         # constellations: n name, l lines, and for the illustrated ones f file, s pixel size, a anchors
         "bilder": bilder,
         # Hubble pictures: Messier name -> [picture URL, popular name]; its page is "hubble_seite" + "messier-<n>/"
         "hubble_seite": HUBBLE,
         "hubble": pics,
+        # Webb pictures, preferred over Hubble's: Messier name -> [picture URL, archive page, credit]
+        "webb": jwst,
     }
     out = Path(__file__).resolve().parents[1] / "assets" / "himmel.json"
     out.write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
-    print(json.dumps({"out": str(out), "sterne": len(data["sterne"]), "deepsky": len(data["deepsky"]), "sternbilder": len(bilder), "mit_bild": sum("f" in b for b in bilder), "hubble": len(pics), "kb": round(out.stat().st_size / 1024)}))
+    print(json.dumps({"out": str(out), "sterne": len(data["sterne"]), "deepsky": len(data["deepsky"]), "sternbilder": len(bilder), "mit_bild": sum("f" in b for b in bilder), "hubble": len(pics), "webb": len(jwst), "kb": round(out.stat().st_size / 1024)}))
 
 
 if __name__ == "__main__":

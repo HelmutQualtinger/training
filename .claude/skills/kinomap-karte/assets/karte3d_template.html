@@ -87,7 +87,7 @@ label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
 #pov .mn{background:rgba(13,15,18,.78);opacity:1}
 #pov.min{aspect-ratio:auto;border:0;box-shadow:none;padding:0!important}
 #pov.min .bar{position:static}
-/* Hubble picture of the Messier object clicked in the night sky */
+/* telescope picture of the Messier object clicked in the night sky */
 #dso{right:12px;top:calc(min(400px,34vw)*.625 + 28px);width:min(300px,34vw);background:#0d0f12;border-color:#2a2e35;color:#f4f4f5;font-size:12px}
 #dso img{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:6px;background:#000;margin:4px 0 6px}
 #dso a{color:#9fc0ff}
@@ -994,7 +994,7 @@ function place(el){
   const dx=r.left<0?-r.left:Math.min(0,innerWidth-r.right),dy=r.top<0?-r.top:Math.min(0,innerHeight-r.bottom);
   if(dx||dy){o.x+=dx;o.y+=dy;el.style.translate=o.x+'px '+o.y+'px';}
 }
-for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit'],['dso','Hubble']]){
+for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit'],['dso','Teleskop']]){
   const el=document.getElementById(id),bar=document.createElement('div'),nm=document.createElement('span'),btn=document.createElement('button');
   bar.className='bar';nm.className='nm';nm.textContent=name;btn.className='mn';btn.type='button';
   bar.append(nm,btn);el.prepend(bar);el.classList.add('float');
@@ -1016,29 +1016,33 @@ for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersich
   bar.addEventListener('dblclick',e=>{if(e.target!==btn){o.x=o.y=0;place(el);}});   // double-click the bar: back to its home position
 }
 
-// ---- Hubble picture: a click on a Messier object in the night sky opens its picture in a small panel ----
-// The picture and the object's popular name come from NASA's "Hubble's Messier Catalog" (D.sky.hub, looked up
-// by fetch_himmel.py); the picture itself is loaded from NASA on the click. Hubble has not observed every
-// Messier object — those open the panel with a note instead.
+// ---- Telescope picture: a click on a Messier object in the night sky opens its picture in a small panel ----
+// The James Webb Space Telescope's picture from ESA's Webb archive where there is one (D.sky.webb: picture,
+// archive page, credit), otherwise the one from NASA's "Hubble's Messier Catalog" (D.sky.hub), which also
+// supplies the object's popular name — both looked up by fetch_himmel.py; the picture itself is loaded from
+// ESA or NASA on the click. Neither telescope has observed every Messier object — those open the panel with
+// a note instead.
 const dsoBox=document.getElementById('dso'),dsoImg=document.getElementById('dso-img'),dsoTxt=document.getElementById('dso-txt');
 const DSO_TYPE={S:'Galaxie',E:'Galaxie','E?':'Galaxie',IR:'Galaxie',GB:'Kugelsternhaufen',OC:'Offener Sternhaufen',DI:'Nebel',PL:'Planetarischer Nebel'};
 function showDso(o){
-  const pic=D.sky.hub[o.name],num=o.name.slice(1);
-  dsoBox.querySelector('.nm').textContent=o.name+(pic&&pic[1]?' · '+pic[1]:'');
+  const hub=D.sky.hub[o.name],jw=(D.sky.webb||{})[o.name],pic=jw||hub,num=o.name.slice(1);
+  dsoBox.querySelector('.nm').textContent=o.name+(hub&&hub[1]?' · '+hub[1]:'');
   dsoTxt.textContent=[DSO_TYPE[o.type],o.mag<9?(''+o.mag).replace('.',',')+' mag':''].filter(Boolean).join(' · ')+' — ';
   dsoImg.hidden=!pic;
   if(pic){
-    dsoImg.alt='Hubble-Aufnahme von '+o.name;
+    dsoImg.alt=(jw?'Webb':'Hubble')+'-Aufnahme von '+o.name;
     dsoImg.src=pic[0]+(pic[0].includes('/wp-content/')?'?w=640':'');   // the WordPress host scales on request
-    const a=document.createElement('a');a.href=D.sky.hubUrl+'messier-'+num+'/';a.target='_blank';a.rel='noopener';a.textContent='NASA/ESA Hubble';
+    const a=document.createElement('a');a.target='_blank';a.rel='noopener';
+    if(jw){a.href=jw[1];a.textContent='Webb: '+jw[2];}   // the archive's licence (CC BY 4.0) asks for the credit line
+    else{a.href=D.sky.hubUrl+'messier-'+num+'/';a.textContent='NASA/ESA Hubble';}
     dsoTxt.append(a);
-  }else dsoTxt.append('von Hubble nicht aufgenommen');
+  }else dsoTxt.append('weder von Webb noch von Hubble aufgenommen');
   dsoBox.hidden=false;if(dsoBox.classList.contains('min'))dsoBox.querySelector('.mn').click();
   dsoBox.style.zIndex=++zTop;place(dsoBox);
 }
 dsoImg.addEventListener('error',()=>{dsoImg.hidden=true;dsoTxt.prepend('Bild nicht geladen · ');});
 {
-  const x=document.createElement('button');x.className='mn';x.type='button';x.textContent='×';x.title='Hubble-Bild schließen';x.setAttribute('aria-label',x.title);
+  const x=document.createElement('button');x.className='mn';x.type='button';x.textContent='×';x.title='Bild schließen';x.setAttribute('aria-label',x.title);
   x.addEventListener('click',()=>{dsoBox.hidden=true;});dsoBox.querySelector('.bar').append(x);
   // a click, not the end of an orbit drag: the pointer comes up where it went down. The object is looked up
   // in screen space with the camera of the viewport under the pointer — main view or the rider's-eye inset

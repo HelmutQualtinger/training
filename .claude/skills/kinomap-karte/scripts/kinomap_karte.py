@@ -535,7 +535,7 @@ def night_sky(rows: list, start: datetime.datetime) -> dict:
     jd = utc.timestamp() / 86400 + 2440587.5
     lst = (280.46061837 + 360.98564736629 * (jd - 2451545.0) + lon) % 360
     return dict(lat=round(lat, 3), lst=round(lst, 2), moon=round(moon_elongation(jd), 1), stars=sky["sterne"], dso=sky["deepsky"],
-                con=sky["bilder"], art=sky["stellarium"], hub=sky["hubble"], hubUrl=sky["hubble_seite"])
+                con=sky["bilder"], art=sky["stellarium"], hub=sky["hubble"], hubUrl=sky["hubble_seite"], webb=sky["webb"])
 
 
 def main() -> None:
