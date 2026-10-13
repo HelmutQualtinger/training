@@ -222,10 +222,6 @@ tfoot td{font-weight:600;border-top:1px solid var(--border);border-bottom:none}
     </div>
     <div class="card">
       <div class="section-lbl" style="--c:var(--C3)">Ø Watt pro Woche (Hover: + kcal/min)</div>
-      <div class="legend">
-        <div class="li"><div class="dot" style="background:var(--text3)"></div>Ø Watt aller Einheiten</div>
-        <div class="li"><div class="dot" style="background:var(--text);border-radius:50%"></div>Max. Watt einer Einheit ab 30 min</div>
-      </div>
       <div class="chart-wrap" style="height:210px"><canvas id="cWeekPerf" role="img" aria-label="Watt pro Woche">Ø Watt pro Woche.</canvas></div>
     </div>
     <div class="card">
@@ -290,7 +286,7 @@ tfoot td{font-weight:600;border-top:1px solid var(--border);border-bottom:none}
   <div class="card">
     <div class="section-lbl" style="--c:var(--C2)">Watt-Progression: Erreicht vs. Ziel</div>
     <div class="legend">
-      <div class="li"><div class="dot" style="background:#1D9E75"></div>Erreicht (Ø/Woche)</div>
+      <div class="li"><div class="dot" style="background:#1D9E75"></div>Erreicht (Wochen-Max. einer Einheit ab 30 min)</div>
       <div class="li"><div class="dot" style="background:#BA7517"></div>Ziel</div>
     </div>
     <div class="chart-wrap" style="height:230px"><canvas id="cPlan" role="img" aria-label="Watt-Progression">Watt-Progression bis 200W.</canvas></div>
@@ -312,7 +308,6 @@ function show(id,btn){
 const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
 const gc=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
 const tc=isDark?'rgba(255,255,255,0.45)':'rgba(0,0,0,0.45)';
-const fgLine=isDark?'#f0efe9':'#14140f';
 
 // Fixed chart-accent colors (unrelated to week number, used by cKum/cPlan/etc.)
 const C1='#185FA5',C2='#1D9E75',C3='#BA7517',C4='#533AB7',C5='#A32D2D',C6='#6B21A8',C7='#0F766E';
@@ -487,7 +482,7 @@ new Chart(document.getElementById('cPuls'),{type:'bar',data:{labels:aggLabels,da
 
 // ---- WEEKLY ROLLUPS ----
 const wkKcal=[],wkMin=[],wkWatt=[],wkKpm=[],wkLabels=[],wkColArr=[];
-const wkMax30=[],wkMax30Info=[]; // strongest session of the week lasting at least 30 min (Ø-Watt of that session)
+const wkMax30=[]; // Ø-Watt of the week's strongest session lasting at least 30 min — the Plan tab's "Erreicht" series
 const wn={};
 for(let w=1;w<=maxWeek;w++){
   const inWeek=sessions.filter(s=>s.w===w);
@@ -498,8 +493,8 @@ for(let w=1;w<=maxWeek;w++){
   const avgW=wattsWk.length?Math.round(wattsWk.reduce((a,b)=>a+b,0)/wattsWk.length):null;
   const kpm=min>0?+(kcal/min).toFixed(1):null;
   wkKcal.push(kcal); wkMin.push(min); wkWatt.push(avgW); wkKpm.push(kpm);
-  const best30=realInWeek.filter(s=>s.watt!=null&&s.durSec>=1800).reduce((b,s)=>!b||s.watt>b.watt?s:b,null);
-  wkMax30.push(best30?best30.watt:null); wkMax30Info.push(best30);
+  const w30=realInWeek.filter(s=>s.watt!=null&&s.durSec>=1800).map(s=>s.watt);
+  wkMax30.push(w30.length?Math.max(...w30):null);
   wkColArr.push(weekColor(w));
 
   const weekStart=new Date(startDate); weekStart.setDate(startDate.getDate()+(w-1)*7);
@@ -526,12 +521,10 @@ new Chart(document.getElementById('cWeekKcal'),{type:'bar',data:{
 
 new Chart(document.getElementById('cWeekPerf'),{type:'bar',data:{
   labels:wkLabels.map((_,i)=>`W${i+1}`),
-  datasets:[
-    {type:'line',data:wkMax30,borderColor:fgLine,backgroundColor:fgLine,borderWidth:1.5,pointRadius:3.5,spanGaps:true,tension:0},
-    {data:wkWatt,backgroundColor:wkColArr,borderRadius:5}]
+  datasets:[{data:wkWatt,backgroundColor:wkColArr,borderRadius:5}]
 },options:{...baseOpts,
-  scales:{x:{ticks:{color:tc,autoSkip:false},grid:{color:gc}},y:{min:scaleMin(wkWatt.concat(wkMax30),10),max:scaleMax(wkWatt.concat(wkMax30),10),title:{display:true,text:'Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
-  plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const i=ctx.dataIndex;if(ctx.datasetIndex===0){const b=wkMax30Info[i];return b?`Max ab 30 min: ~${b.watt}W (${b.dat}, ${Math.floor(b.durSec/60)} min)`:'';}return[`Ø Watt: ${wkWatt[i]}W`,`Ø kcal/min: ${wkKpm[i]}`];}}}}
+  scales:{x:{ticks:{color:tc,autoSkip:false},grid:{color:gc}},y:{min:scaleMin(wkWatt,10),max:scaleMax(wkWatt,10),title:{display:true,text:'Ø Watt',font:{size:11},color:tc},ticks:{color:tc},grid:{color:gc}}},
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const i=ctx.dataIndex;return[`Ø Watt: ${wkWatt[i]}W`,`Ø kcal/min: ${wkKpm[i]}`];}}}}
 }});
 
 // Cumulative per calendar day
@@ -548,7 +541,7 @@ new Chart(document.getElementById('cKum'),{type:'line',data:{
 // ---- PLAN chart (phase cards + "Ziel" target series stay hand-authored — see CLAUDE.md) ----
 const planWeeks=Math.max(maxWeek+3,18); // keep a few future weeks visible on the axis like before
 const planLabels=[]; for(let w=1;w<=planWeeks;w++) planLabels.push(w===maxWeek?`W${w} (jetzt)`:`W${w}`);
-const erreicht=wkWatt.concat(Array(planWeeks-maxWeek).fill(null));
+const erreicht=wkMax30.concat(Array(planWeeks-maxWeek).fill(null));
 const ziel=[null,null,null,null,null,null,null,181,187,190,190,195,195,195,200,200,200,200];
 while(ziel.length<planWeeks) ziel.push(200);
 new Chart(document.getElementById('cPlan'),{type:'line',data:{
