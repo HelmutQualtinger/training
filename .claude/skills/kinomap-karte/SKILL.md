@@ -135,6 +135,9 @@ goes through cv2/AVFoundation, not ffmpeg).
   rider by the distance column along the route, not by the raw coordinates.
 - A visible gap between the route's end and its start is real data (Kinomap
   videos often stop short of closing a loop), not a rendering bug.
+- Both pages come in German, Italian, English and French (flag buttons in the header; `?lang=de|it|en|fr`
+  in the URL, otherwise the last choice, then the browser's language). The texts live in the `I18N`
+  table of each template.
 - The 3D page takes `?t=<seconds>&follow` in the URL to start at a given
   point in follow mode, `?night`, `?moon`, `?clouds`, `?light` and `?const` to start with
   that sky/headlight/constellation checkbox ticked, `?up=<degrees>` to look up, `?turn=<degrees>` to turn the gaze sideways, `?zoom=<factor>` to zoom in (1–40), `?dso=M31` to open that Messier object's telescope picture, and `?shot` to make headless-Chrome screenshots work

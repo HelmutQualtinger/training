@@ -30,7 +30,7 @@
   --accent:#7db8f0;
 }}
 html{background:var(--grain),var(--bg);background-attachment:fixed;min-height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:var(--text);padding:18px 14px 24px;max-width:600px;margin:0 auto;font-size:13px;line-height:1.3}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:var(--text);padding:18px 14px 24px;max-width:94vw;margin:0 auto;font-size:13px;line-height:1.3}
 
 /* header: engraved title, a rider rolling along a steel rail */
 header{margin-bottom:12px}
@@ -41,15 +41,22 @@ h1 span{color:var(--accent)}
 .road::after{content:'';position:absolute;left:0;right:0;bottom:2px;height:2px;background:var(--edge);box-shadow:0 1px 0 var(--shine)}
 .rider{position:absolute;bottom:3px;left:0;font-size:18px;line-height:1;animation:ride 12s linear -5s infinite}
 .rider b{display:inline-block;font-weight:400;transform:scaleX(-1)}
-@keyframes ride{from{transform:translateX(-30px)}to{transform:translateX(610px)}}
+@keyframes ride{from{transform:translateX(-30px)}to{transform:translateX(100vw)}}
 
-/* two columns of plates side by side; one column on narrow screens */
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+/* three columns of plates side by side; two on tablets, one on narrow screens */
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:0 18px;align-items:start}
 .col{min-width:0}
+@media(max-width:900px){.cols{grid-template-columns:1fr 1fr}}
 @media(max-width:460px){.cols{grid-template-columns:1fr}}
 .section-lbl{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--text2);text-shadow:0 1px 0 var(--shine);margin:12px 2px 4px}
 .section-lbl i{display:none}
-.card{background:var(--grain),var(--plate);border:1px solid var(--edge);border-radius:5px;overflow:hidden;box-shadow:inset 0 1px 0 var(--shine),0 1px 2px rgba(0,0,0,.35)}
+.card{background:var(--grain),var(--plate);border:1px solid var(--edge);border-radius:5px;overflow:hidden;box-shadow:inset 0 1px 0 var(--shine),0 1px 2px rgba(0,0,0,.35);position:relative;transition:transform .2s ease-out,box-shadow .2s ease-out}
+/* a plate under the pointer lifts off the sheet and swings into depth like a door ajar: the outer columns
+   turn towards the middle, the middle one tips back */
+.card:hover,.card:focus-within{transform:perspective(900px) translateY(-6px) rotateY(7deg);z-index:1;box-shadow:inset 0 1px 0 var(--shine),0 14px 28px rgba(0,0,0,.4),0 4px 8px rgba(0,0,0,.3)}
+.col:nth-child(2) .card:hover,.col:nth-child(2) .card:focus-within{transform:perspective(900px) translateY(-6px) rotateX(6deg)}
+.col:nth-child(3) .card:hover,.col:nth-child(3) .card:focus-within{transform:perspective(900px) translateY(-6px) rotateY(-7deg)}
+.card+.card{margin-top:10px}
 .link-row{display:flex;align-items:center;gap:9px;padding:5px 9px;border-bottom:1px solid var(--seam);box-shadow:0 1px 0 var(--shine);text-decoration:none;color:inherit}
 .link-row:last-child{border-bottom:none;box-shadow:none}
 .link-row:hover,.link-row:focus-visible{background:var(--grain),var(--plate-hover);outline:none}
@@ -68,7 +75,7 @@ h1 span{color:var(--accent)}
 
 footer{margin-top:14px;font-size:10px;color:var(--text2);text-shadow:0 1px 0 var(--shine);text-align:center}
 
-@media(prefers-reduced-motion:reduce){.rider{animation:none;left:8px}.link-row::after{transition:none}}
+@media(prefers-reduced-motion:reduce){.rider{animation:none;left:8px}.link-row::after{transition:none}.card{transition:none}.col:nth-child(n) .card:hover,.col:nth-child(n) .card:focus-within{transform:none}}
 </style>
 </head>
 <body>
@@ -109,6 +116,8 @@ footer{margin-top:14px;font-size:10px;color:var(--text2);text-shadow:0 1px 0 var
     <div class="txt"><div class="link-title">2D-Karte CERN</div></div>
     <div class="link-ext">HTML</div>
   </a>
+</div>
+<div class="card mint">
   <a class="thumb-link" href="karte_6.10_widnau_3d.html"><img class="thumb" src="karte_6.10_widnau_3d.jpg" alt="3D-Karte der Fahrt Widnau – Widnau mit Tempo, Leistung, Puls und Höhe"><span class="play" aria-hidden="true">▶ Mitfahren</span></a>
   <a class="link-row" href="karte_6.10_widnau_3d.html" title="karte_6.10_widnau_3d.html">
     <div class="ico">🚴</div>
@@ -120,6 +129,13 @@ footer{margin-top:14px;font-size:10px;color:var(--text2);text-shadow:0 1px 0 var
     <div class="txt"><div class="link-title">2D-Karte Widnau</div></div>
     <div class="link-ext">HTML</div>
   </a>
+</div>
+
+</div>
+<div class="col">
+
+<div class="section-lbl"><i>🏰</i>3D-Fahrt Moskau</div>
+<div class="card mint">
   <a class="thumb-link" href="karte_1.10_moscow-heart-of-russia_3d.html"><img class="thumb" src="karte_1.10_moscow-heart-of-russia_3d.jpg" alt="Filmplakat „Der Sprint von Moskau“: Radfahrer vor Basilius-Kathedrale und Kreml"><span class="play" aria-hidden="true">▶ Mitfahren</span></a>
   <a class="link-row" href="karte_1.10_moscow-heart-of-russia_3d.html" title="karte_1.10_moscow-heart-of-russia_3d.html">
     <div class="ico">🏰</div>
@@ -132,9 +148,6 @@ footer{margin-top:14px;font-size:10px;color:var(--text2);text-shadow:0 1px 0 var
     <div class="link-ext">HTML</div>
   </a>
 </div>
-
-</div>
-<div class="col">
 
 <div class="section-lbl"><i>🍂</i>3D-Fahrt Donauinsel</div>
 <div class="card mint">
@@ -150,6 +163,9 @@ footer{margin-top:14px;font-size:10px;color:var(--text2);text-shadow:0 1px 0 var
     <div class="link-ext">HTML</div>
   </a>
 </div>
+
+</div>
+<div class="col">
 
 <div class="section-lbl"><i>🌴</i>3D-Fahrt Bora Bora</div>
 <div class="card mint">

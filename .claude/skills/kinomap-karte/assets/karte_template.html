@@ -29,10 +29,17 @@ h1{font-size:22px;margin:0 0 2px}
 #map{height:520px;border-radius:8px;z-index:0}
 .chartbox{position:relative;height:220px}
 #read{font-size:13px;color:var(--muted);min-height:20px;margin-top:6px;font-variant-numeric:tabular-nums}
+/* language flags */
+#langs{display:inline-flex;gap:3px;vertical-align:middle}
+#langs button{font:inherit;font-size:15px;line-height:1;padding:2px 4px;border-radius:5px;border:1px solid transparent;background:transparent;cursor:pointer;opacity:.5}
+#langs button:hover{opacity:.85}
+#langs button[aria-pressed="true"]{opacity:1;border-color:var(--accent)}
+#langs{float:right;margin-top:4px}
 @media (max-width:600px){#map{height:380px}.legend{margin-left:0}}
 </style>
 </head>
 <body>
+<span id="langs"></span>
 <h1 id="title"></h1>
 <div class="sub" id="sub"></div>
 <div class="hero" id="hero"></div>
@@ -47,12 +54,105 @@ h1{font-size:22px;margin:0 0 2px}
 
 <div class="card">
   <div class="chartbox"><canvas id="chart"></canvas></div>
-  <div id="read">Mit der Maus über das Profil fahren, um die Position auf der Karte zu sehen.</div>
+  <div id="read" data-i18n="hover"></div>
 </div>
 
 <script>
 const D=/*__DATA__*/null;
-const TITLE_SUFFIX='',H1_SUFFIX='',OTHER={file:D.meta.file3d,label:'3D-Ansicht'};
+const I18N={
+ "de": {
+  "link": "3D-Ansicht",
+  "unit": "Einheit",
+  "hover": "Mit der Maus über das Profil fahren, um die Position auf der Karte zu sehen.",
+  "power": "Leistung",
+  "hr": "Herzfrequenz",
+  "cadence": "Kadenz",
+  "speed": "Geschwindigkeit",
+  "ele": "Höhe",
+  "dist": "Distanz",
+  "dur": "Dauer",
+  "file": "Kartenkacheln laden nur über HTTP: im Repo {cmd} starten und {url} öffnen.",
+  "contrib": "{osm}-Mitwirkende",
+  "startEnd": "Start / Ziel"
+ },
+ "it": {
+  "link": "Vista 3D",
+  "unit": "Sessione",
+  "hover": "Passa il mouse sul profilo per vedere la posizione sulla mappa.",
+  "power": "Potenza",
+  "hr": "Frequenza cardiaca",
+  "cadence": "Cadenza",
+  "speed": "Velocità",
+  "ele": "Quota",
+  "dist": "Distanza",
+  "dur": "Durata",
+  "file": "Le tessere della mappa si caricano solo via HTTP: nel repo avvia {cmd} e apri {url}.",
+  "contrib": "contributori di {osm}",
+  "startEnd": "Partenza / Arrivo"
+ },
+ "en": {
+  "link": "3D view",
+  "unit": "Session",
+  "hover": "Move the mouse over the profile to see the position on the map.",
+  "power": "Power",
+  "hr": "Heart rate",
+  "cadence": "Cadence",
+  "speed": "Speed",
+  "ele": "Elevation",
+  "dist": "Distance",
+  "dur": "Duration",
+  "file": "Map tiles only load over HTTP: in the repo run {cmd} and open {url}.",
+  "contrib": "{osm} contributors",
+  "startEnd": "Start / Finish"
+ },
+ "fr": {
+  "link": "Vue 3D",
+  "unit": "Séance",
+  "hover": "Passez la souris sur le profil pour voir la position sur la carte.",
+  "power": "Puissance",
+  "hr": "Fréquence cardiaque",
+  "cadence": "Cadence",
+  "speed": "Vitesse",
+  "ele": "Altitude",
+  "dist": "Distance",
+  "dur": "Durée",
+  "file": "Les tuiles de la carte ne se chargent que via HTTP : dans le dépôt, lancez {cmd} et ouvrez {url}.",
+  "contrib": "contributeurs d'{osm}",
+  "startEnd": "Départ / Arrivée"
+ }
+};
+// ---- language: German, Italian, English, French — flag buttons in the header ----
+// Chosen by ?lang=, else the last choice (kept in localStorage, shared by all tour pages), else the
+// browser's language, else German. A switch reloads the page with ?lang= set: many texts are painted
+// into canvases and sprites, so rebuilding is simpler and safer than patching every one in place.
+const params=new URLSearchParams(location.search);
+const LANGS={de:['🇩🇪','Deutsch','de-DE'],it:['🇮🇹','Italiano','it-IT'],en:['🇬🇧','English','en-GB'],fr:['🇫🇷','Français','fr-FR']};
+let LANG=params.get('lang');
+if(!LANGS[LANG])try{LANG=localStorage.getItem('karte-lang');}catch(e){}
+if(!LANGS[LANG])LANG=(navigator.language||'').slice(0,2).toLowerCase();
+if(!LANGS[LANG])LANG='de';
+document.documentElement.lang=LANG;
+const tx=(k,v={})=>(I18N[LANG][k]??I18N.de[k]??k).replace(/\{(\w+)\}/g,(m,n)=>v[n]??m);
+function setLang(l,extra={}){
+  try{localStorage.setItem('karte-lang',l);}catch(e){}
+  const p=new URLSearchParams(location.search);p.set('lang',l);
+  for(const [k,v] of Object.entries(extra))p.set(k,v);
+  location.search=p.toString().replace(/=(?=&|$)/g,'');   // keep bare flags like ?follow bare
+}
+for(const e of document.querySelectorAll('[data-i18n]'))e.textContent=tx(e.dataset.i18n);
+for(const e of document.querySelectorAll('[data-i18n-aria]'))e.setAttribute('aria-label',tx(e.dataset.i18nAria));
+for(const e of document.querySelectorAll('[data-i18n-title]'))e.title=tx(e.dataset.i18nTitle);
+{
+  const box=document.getElementById('langs');
+  for(const [l,[flag,name]] of Object.entries(LANGS)){
+    const b=document.createElement('button');
+    b.type='button';b.textContent=flag;b.title=name;b.lang=l;b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',l===LANG);
+    b.addEventListener('click',()=>{if(l!==LANG)setLang(l,LANG_EXTRA());});
+    box.append(b);
+  }
+}
+const LANG_EXTRA=()=>({});
+const TITLE_SUFFIX='',H1_SUFFIX='',OTHER={file:D.meta.file3d+'?lang='+LANG,label:tx('link')};
 // D.meta comes from kinomap_karte.py: {title, sub, file2d, file3d}; set via textContent since the
 // route name is whatever the Kinomap export says.
 document.title=D.meta.title+TITLE_SUFFIX;
@@ -60,20 +160,20 @@ document.getElementById('title').textContent=D.meta.title+H1_SUFFIX;
 {
   const sub=document.getElementById('sub'),a=document.createElement('a');
   a.href=OTHER.file;a.textContent=OTHER.label;
-  sub.append(D.meta.sub+' · ',a);
+  sub.append(D.meta.sub.replace(/^Einheit /,tx('unit')+' ')+' · ',a);   // the script writes the subtitle in German
 }
 const N=D.lat.length;
 const METRICS={
-  watt:{label:'Leistung',unit:'W'},
-  hf:{label:'Herzfrequenz',unit:'bpm'},
-  rpm:{label:'Kadenz',unit:'rpm'},
-  kmh:{label:'Geschwindigkeit',unit:'km/h'},
-  ele:{label:'Höhe',unit:'m'},
+  watt:{label:tx('power'),unit:'W'},
+  hf:{label:tx('hr'),unit:'bpm'},
+  rpm:{label:tx('cadence'),unit:'rpm'},
+  kmh:{label:tx('speed'),unit:'km/h'},
+  ele:{label:tx('ele'),unit:'m'},
 };
 const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
-const fmt=(v,d=0)=>v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt=(v,d=0)=>v.toLocaleString(LANGS[LANG][2],{minimumFractionDigits:d,maximumFractionDigits:d});
 
 // hero metrics, derived from the track itself
 const secs=N-1, km=D.dist[N-1]/1000;
@@ -81,13 +181,13 @@ const secs=N-1, km=D.dist[N-1]/1000;
 // rise only counts once it adds up to 3 m — summing every little step would triple the climb.
 let climb=0;for(let i=1,ref=D.ele[0];i<N;i++){const v=D.ele[i];if(v-ref>=3){climb+=v-ref;ref=v;}else if(v<ref)ref=v;}
 const hero=[
-  ['Distanz',fmt(km,2)+' km',''],
-  ['Dauer',Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0'),''],
-  ['Leistung','Ø '+fmt(avg(D.watt))+' W','max '+Math.max(...D.watt)+' W'],
-  ['Herzfrequenz','Ø '+fmt(avg(D.hf))+' bpm','max '+Math.max(...D.hf)+' bpm'],
-  ['Kadenz','Ø '+fmt(avg(D.rpm))+' rpm','max '+Math.max(...D.rpm)+' rpm'],
-  ['Geschwindigkeit','Ø '+fmt(km/(secs/3600),1)+' km/h','max '+fmt(Math.max(...D.kmh),1)+' km/h'],
-  ['Höhe',fmt(Math.min(...D.ele))+'–'+fmt(Math.max(...D.ele))+' m','↑ '+fmt(climb)+' m'],
+  [tx('dist'),fmt(km,2)+' km',''],
+  [tx('dur'),Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0'),''],
+  [tx('power'),'Ø '+fmt(avg(D.watt))+' W','max '+Math.max(...D.watt)+' W'],
+  [tx('hr'),'Ø '+fmt(avg(D.hf))+' bpm','max '+Math.max(...D.hf)+' bpm'],
+  [tx('cadence'),'Ø '+fmt(avg(D.rpm))+' rpm','max '+Math.max(...D.rpm)+' rpm'],
+  [tx('speed'),'Ø '+fmt(km/(secs/3600),1)+' km/h','max '+fmt(Math.max(...D.kmh),1)+' km/h'],
+  [tx('ele'),fmt(Math.min(...D.ele))+'–'+fmt(Math.max(...D.ele))+' m','↑ '+fmt(climb)+' m'],
 ];
 document.getElementById('hero').innerHTML=hero.map(([l,v,s])=>
   `<div class="metric"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
@@ -109,17 +209,17 @@ const map=L.map('map',{preferCanvas:true,scrollWheelZoom:false});
 // Referer and tile.openstreetmap.org answers every tile with 403 "Access blocked".
 if(location.protocol==='file:')
   document.getElementById('map').insertAdjacentHTML('beforebegin',
-    '<p style="color:var(--accent)">Kartenkacheln laden nur über HTTP: im Repo <code>python3 -m http.server 8756</code> starten und <code>http://localhost:8756/'+D.meta.file2d+'</code> öffnen.</p>');
+    '<p style="color:var(--accent)">'+tx('file',{cmd:'<code>python3 -m http.server 8756</code>',url:'<code>http://localhost:8756/'+D.meta.file2d+'</code>'})+'</p>');
 else L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
   maxZoom:19,
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende',
+  attribution:'&copy; '+tx('contrib',{osm:'<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}),
 }).addTo(map);
 const pts=D.lat.map((la,i)=>[la,D.lon[i]]);
 map.fitBounds(L.latLngBounds(pts),{padding:[24,24]});
 L.polyline(pts,{color:'#111',weight:8,opacity:.55}).addTo(map);   // casing
 const track=L.layerGroup().addTo(map);
 L.circleMarker(pts[0],{radius:7,color:'#fff',weight:2,fillColor:'#16a34a',fillOpacity:1})
-  .addTo(map).bindTooltip('Start / Ziel');
+  .addTo(map).bindTooltip(tx('startEnd'));
 const cursor=L.circleMarker(pts[0],{radius:7,color:'#fff',weight:3,fillColor:'#111',fillOpacity:1,opacity:0,fill:false});
 
 function drawTrack(key){
@@ -153,7 +253,7 @@ const chart=new Chart(document.getElementById('chart'),{
   type:'line',
   data:{datasets:[
     {label:'',data:[],yAxisID:'y',borderColor:css('--accent'),borderWidth:1.5,pointRadius:0,tension:.2},
-    {label:'Höhe',data:D.dist.map((d,i)=>({x:d/1000,y:D.ele[i]})),yAxisID:'e',borderWidth:0,pointRadius:0,
+    {label:tx('ele'),data:D.dist.map((d,i)=>({x:d/1000,y:D.ele[i]})),yAxisID:'e',borderWidth:0,pointRadius:0,
      fill:true,backgroundColor:isDark?'rgba(255,255,255,.10)':'rgba(0,0,0,.08)'},
   ]},
   options:{

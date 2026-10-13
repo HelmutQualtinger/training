@@ -27,6 +27,12 @@ button,select{font:inherit;font-size:13px;padding:4px 11px;border-radius:999px;b
 #bottom .row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 #scrub{flex:1;min-width:160px;accent-color:var(--accent)}
 #tilt,#zoom{width:76px;vertical-align:middle;accent-color:var(--accent)}
+/* language flags */
+#langs{display:inline-flex;gap:3px;vertical-align:middle}
+#langs button{font:inherit;font-size:15px;line-height:1;padding:2px 4px;border-radius:5px;border:1px solid transparent;background:transparent;cursor:pointer;opacity:.5}
+#langs button:hover{opacity:.85}
+#langs button[aria-pressed="true"]{opacity:1;border-color:var(--accent)}
+#langs{margin-left:8px}
 /* bike-computer cockpit: always dark, like a head unit */
 #cockpit{position:fixed;right:12px;bottom:26px;width:532px;background:#0d0f12;border:1px solid #2a2e35;border-radius:16px;padding:10px 12px 8px;color:#f4f4f5;box-shadow:inset 0 0 0 3px #16191e}
 #dials{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
@@ -107,11 +113,11 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
 <div id="left">
 <div class="panel" id="top">
   <h1 id="title"></h1>
-  <div class="sub" id="sub"></div>
-  <div id="hint" hidden>Kartenbild lädt nur über HTTP: im Repo <code>python3 -m http.server 8756</code> starten und <code id="hint-url"></code> öffnen.</div>
+  <div class="sub"><span id="sub"></span><span id="langs"></span></div>
+  <div id="hint" hidden><span data-i18n="hint1"></span> <code>python3 -m http.server 8756</code> <span data-i18n="hint2"></span> <code id="hint-url"></code> <span data-i18n="hint3"></span></div>
 </div>
 
-<div id="profbox"><canvas id="prof" aria-label="Verlauf von Tempo, Leistung, Puls und Höhe"></canvas></div>
+<div id="profbox"><canvas id="prof" data-i18n-aria="profAria"></canvas></div>
 </div>
 
 <div id="pov"></div>
@@ -123,30 +129,30 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
 
 <div class="panel" id="bottom">
   <div class="row">
-    <button id="play">▶ Abspielen</button>
-    <select id="speed" aria-label="Tempo"><option value="1">1× Echtzeit</option><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
-    <label><input type="checkbox" id="follow"> Mitfahren</label>
-    <label><input type="checkbox" id="spin"> Drehen</label>
-    <label><input type="checkbox" id="sound" checked> Ton</label>
-    <label><input type="checkbox" id="night"> Nacht</label>
-    <label><input type="checkbox" id="moon"> Mond</label>
-    <label><input type="checkbox" id="clouds"> Wolken</label>
-    <label><input type="checkbox" id="lamp"> Licht</label>
-    <label><input type="checkbox" id="constel"> Sternbilder</label>
-    <label>Blick ↑ <input type="range" id="tilt" min="0" max="85" value="0" step="any" aria-label="Blick nach oben, Grad"></label>
-    <label title="Mausrad mit Umschalttaste, oder Mausrad beim Blick in den Himmel">Zoom <input type="range" id="zoom" min="0" max="1" value="0" step="any" aria-label="Zoom"></label>
-    <input type="range" id="scrub" min="0" value="0" step="1" aria-label="Position auf der Strecke">
+    <button id="play" data-i18n="play"></button>
+    <select id="speed" data-i18n-aria="speed"><option value="1" data-i18n="realtime"></option><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
+    <label><input type="checkbox" id="follow"> <span data-i18n="follow"></span></label>
+    <label><input type="checkbox" id="spin"> <span data-i18n="spin"></span></label>
+    <label><input type="checkbox" id="sound" checked> <span data-i18n="sound"></span></label>
+    <label><input type="checkbox" id="night"> <span data-i18n="night"></span></label>
+    <label><input type="checkbox" id="moon"> <span data-i18n="moon"></span></label>
+    <label><input type="checkbox" id="clouds"> <span data-i18n="clouds"></span></label>
+    <label><input type="checkbox" id="lamp"> <span data-i18n="lamp"></span></label>
+    <label><input type="checkbox" id="constel"> <span data-i18n="constel"></span></label>
+    <label><span data-i18n="tilt"></span> <input type="range" id="tilt" min="0" max="85" value="0" step="any" data-i18n-aria="tiltAria"></label>
+    <label data-i18n-title="zoomTitle">Zoom <input type="range" id="zoom" min="0" max="1" value="0" step="any" aria-label="Zoom"></label>
+    <input type="range" id="scrub" min="0" value="0" step="1" data-i18n-aria="scrubAria">
   </div>
 </div>
-<div id="cockpit" aria-label="Fahrradcomputer">
+<div id="cockpit" data-i18n-aria="cockpitAria">
   <div id="dials"><div id="d-kmh"></div><div id="d-watt"></div><div id="d-hf"></div><div id="d-rpm"></div></div>
   <div id="stats">
-    <div><div class="l">Distanz</div><div class="v"><span id="s-km"></span> <small>km</small></div></div>
-    <div><div class="l">Zeit</div><div class="v" id="s-time"></div></div>
-    <div><div class="l">Höhe</div><div class="v"><span id="s-ele"></span> <small>m</small></div></div>
+    <div><div class="l" data-i18n="dist"></div><div class="v"><span id="s-km"></span> <small>km</small></div></div>
+    <div><div class="l" data-i18n="time"></div><div class="v" id="s-time"></div></div>
+    <div><div class="l" data-i18n="ele"></div><div class="v"><span id="s-ele"></span> <small>m</small></div></div>
   </div>
 </div>
-<div id="attr">Karte &amp; Gebäude © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende · Höhendaten: Mapzen Terrain Tiles</div>
+<div id="attr"></div>
 
 <script type="application/json" id="data">/*__DATA__*/null</script>
 <script type="module">
@@ -160,7 +166,260 @@ import {LineMaterial} from 'three/addons/lines/LineMaterial.js';
 // texture (OSM tiles) is fetched live. Scene units are metres: x east, z south, y up.
 const D=JSON.parse(document.getElementById('data').textContent);
 const T=D.track,N=T.x.length;
-const TITLE_SUFFIX=' in 3D',H1_SUFFIX=' in 3D',OTHER={file:D.meta.file2d,label:'2D-Karte'};
+const I18N={
+ "de": {
+  "link": "2D-Karte",
+  "unit": "Einheit",
+  "hint1": "Kartenbild lädt nur über HTTP: im Repo",
+  "hint2": "starten und",
+  "hint3": "öffnen.",
+  "profAria": "Verlauf von Tempo, Leistung, Puls und Höhe",
+  "play": "▶ Abspielen",
+  "pause": "❚❚ Pause",
+  "realtime": "1× Echtzeit",
+  "follow": "Mitfahren",
+  "spin": "Drehen",
+  "sound": "Ton",
+  "night": "Nacht",
+  "moon": "Mond",
+  "clouds": "Wolken",
+  "lamp": "Licht",
+  "constel": "Sternbilder",
+  "tilt": "Blick ↑",
+  "tiltAria": "Blick nach oben, Grad",
+  "zoomTitle": "Mausrad mit Umschalttaste, oder Mausrad beim Blick in den Himmel",
+  "scrubAria": "Position auf der Strecke",
+  "cockpitAria": "Fahrradcomputer",
+  "dist": "Distanz",
+  "time": "Zeit",
+  "ele": "Höhe",
+  "speed": "Tempo",
+  "power": "Leistung",
+  "pulse": "Puls",
+  "cadence": "Kadenz",
+  "attrMap": "Karte & Gebäude © {osm}-Mitwirkende",
+  "attrSat": "Luftbild: {esri} (Esri, Maxar, Earthstar Geographics) · Gebäude © {osm}-Mitwirkende",
+  "attrVec": "Karte: {pm} © {osm} · Gebäude © OpenStreetMap-Mitwirkende",
+  "attrElev": "Höhendaten: Mapzen Terrain Tiles",
+  "attrStars": "Sterne",
+  "attrConst": "Sternbilder",
+  "attrMoon": "Mond",
+  "pTop": "Fahrt",
+  "pProf": "Verlauf",
+  "pPov": "Fahrersicht",
+  "pBottom": "Steuerung",
+  "pCockpit": "Cockpit",
+  "pDso": "Teleskop",
+  "show": "{n} einblenden",
+  "minimise": "{n} minimieren",
+  "galaxy": "Galaxie",
+  "glob": "Kugelsternhaufen",
+  "open": "Offener Sternhaufen",
+  "neb": "Nebel",
+  "pn": "Planetarischer Nebel",
+  "dsoAlt": "{t}-Aufnahme von {n}",
+  "noPic": "weder von Webb noch von Hubble aufgenommen",
+  "notLoaded": "Bild nicht geladen",
+  "closePic": "Bild schließen"
+ },
+ "it": {
+  "link": "Mappa 2D",
+  "unit": "Sessione",
+  "hint1": "L'immagine della mappa si carica solo via HTTP: nel repo avvia",
+  "hint2": "e apri",
+  "hint3": ".",
+  "profAria": "Andamento di velocità, potenza, battito e quota",
+  "play": "▶ Riproduci",
+  "pause": "❚❚ Pausa",
+  "realtime": "1× tempo reale",
+  "follow": "Segui",
+  "spin": "Ruota",
+  "sound": "Audio",
+  "night": "Notte",
+  "moon": "Luna",
+  "clouds": "Nuvole",
+  "lamp": "Luce",
+  "constel": "Costellazioni",
+  "tilt": "Sguardo ↑",
+  "tiltAria": "Sguardo verso l'alto, gradi",
+  "zoomTitle": "Rotella del mouse con Maiusc, oppure rotella guardando il cielo",
+  "scrubAria": "Posizione lungo il percorso",
+  "cockpitAria": "Ciclocomputer",
+  "dist": "Distanza",
+  "time": "Tempo",
+  "ele": "Quota",
+  "speed": "Velocità",
+  "power": "Potenza",
+  "pulse": "Battito",
+  "cadence": "Cadenza",
+  "attrMap": "Mappa ed edifici © contributori di {osm}",
+  "attrSat": "Foto aerea: {esri} (Esri, Maxar, Earthstar Geographics) · Edifici © contributori di {osm}",
+  "attrVec": "Mappa: {pm} © {osm} · Edifici © contributori di OpenStreetMap",
+  "attrElev": "Dati altimetrici: Mapzen Terrain Tiles",
+  "attrStars": "Stelle",
+  "attrConst": "Costellazioni",
+  "attrMoon": "Luna",
+  "pTop": "Giro",
+  "pProf": "Andamento",
+  "pPov": "Vista del ciclista",
+  "pBottom": "Comandi",
+  "pCockpit": "Cockpit",
+  "pDso": "Telescopio",
+  "show": "Mostra {n}",
+  "minimise": "Riduci {n}",
+  "galaxy": "Galassia",
+  "glob": "Ammasso globulare",
+  "open": "Ammasso aperto",
+  "neb": "Nebulosa",
+  "pn": "Nebulosa planetaria",
+  "dsoAlt": "Immagine {t} di {n}",
+  "noPic": "non ripreso né da Webb né da Hubble",
+  "notLoaded": "Immagine non caricata",
+  "closePic": "Chiudi immagine"
+ },
+ "en": {
+  "link": "2D map",
+  "unit": "Session",
+  "hint1": "The map image only loads over HTTP: in the repo run",
+  "hint2": "and open",
+  "hint3": ".",
+  "profAria": "Speed, power, heart rate and elevation over the ride",
+  "play": "▶ Play",
+  "pause": "❚❚ Pause",
+  "realtime": "1× real time",
+  "follow": "Ride along",
+  "spin": "Rotate",
+  "sound": "Sound",
+  "night": "Night",
+  "moon": "Moon",
+  "clouds": "Clouds",
+  "lamp": "Light",
+  "constel": "Constellations",
+  "tilt": "Look ↑",
+  "tiltAria": "Look up, degrees",
+  "zoomTitle": "Mouse wheel with Shift, or mouse wheel while looking at the sky",
+  "scrubAria": "Position along the route",
+  "cockpitAria": "Bike computer",
+  "dist": "Distance",
+  "time": "Time",
+  "ele": "Elevation",
+  "speed": "Speed",
+  "power": "Power",
+  "pulse": "Pulse",
+  "cadence": "Cadence",
+  "attrMap": "Map & buildings © {osm} contributors",
+  "attrSat": "Aerial imagery: {esri} (Esri, Maxar, Earthstar Geographics) · Buildings © {osm} contributors",
+  "attrVec": "Map: {pm} © {osm} · Buildings © OpenStreetMap contributors",
+  "attrElev": "Elevation data: Mapzen Terrain Tiles",
+  "attrStars": "Stars",
+  "attrConst": "Constellations",
+  "attrMoon": "Moon",
+  "pTop": "Ride",
+  "pProf": "Profile",
+  "pPov": "Rider's view",
+  "pBottom": "Controls",
+  "pCockpit": "Cockpit",
+  "pDso": "Telescope",
+  "show": "Show {n}",
+  "minimise": "Minimise {n}",
+  "galaxy": "Galaxy",
+  "glob": "Globular cluster",
+  "open": "Open cluster",
+  "neb": "Nebula",
+  "pn": "Planetary nebula",
+  "dsoAlt": "{t} image of {n}",
+  "noPic": "not imaged by Webb or Hubble",
+  "notLoaded": "Image not loaded",
+  "closePic": "Close image"
+ },
+ "fr": {
+  "link": "Carte 2D",
+  "unit": "Séance",
+  "hint1": "L'image de la carte ne se charge que via HTTP : dans le dépôt, lancez",
+  "hint2": "et ouvrez",
+  "hint3": ".",
+  "profAria": "Vitesse, puissance, pouls et altitude au fil du parcours",
+  "play": "▶ Lecture",
+  "pause": "❚❚ Pause",
+  "realtime": "1× temps réel",
+  "follow": "Suivre",
+  "spin": "Tourner",
+  "sound": "Son",
+  "night": "Nuit",
+  "moon": "Lune",
+  "clouds": "Nuages",
+  "lamp": "Phare",
+  "constel": "Constellations",
+  "tilt": "Regard ↑",
+  "tiltAria": "Regard vers le haut, degrés",
+  "zoomTitle": "Molette avec Maj, ou molette en regardant le ciel",
+  "scrubAria": "Position sur le parcours",
+  "cockpitAria": "Compteur vélo",
+  "dist": "Distance",
+  "time": "Temps",
+  "ele": "Altitude",
+  "speed": "Vitesse",
+  "power": "Puissance",
+  "pulse": "Pouls",
+  "cadence": "Cadence",
+  "attrMap": "Carte et bâtiments © contributeurs d'{osm}",
+  "attrSat": "Vue aérienne : {esri} (Esri, Maxar, Earthstar Geographics) · Bâtiments © contributeurs d'{osm}",
+  "attrVec": "Carte : {pm} © {osm} · Bâtiments © contributeurs d'OpenStreetMap",
+  "attrElev": "Données d'altitude : Mapzen Terrain Tiles",
+  "attrStars": "Étoiles",
+  "attrConst": "Constellations",
+  "attrMoon": "Lune",
+  "pTop": "Sortie",
+  "pProf": "Profil",
+  "pPov": "Vue du cycliste",
+  "pBottom": "Commandes",
+  "pCockpit": "Cockpit",
+  "pDso": "Télescope",
+  "show": "Afficher {n}",
+  "minimise": "Réduire {n}",
+  "galaxy": "Galaxie",
+  "glob": "Amas globulaire",
+  "open": "Amas ouvert",
+  "neb": "Nébuleuse",
+  "pn": "Nébuleuse planétaire",
+  "dsoAlt": "Image {t} de {n}",
+  "noPic": "photographié ni par Webb ni par Hubble",
+  "notLoaded": "Image non chargée",
+  "closePic": "Fermer l'image"
+ }
+};
+// ---- language: German, Italian, English, French — flag buttons in the header ----
+// Chosen by ?lang=, else the last choice (kept in localStorage, shared by all tour pages), else the
+// browser's language, else German. A switch reloads the page with ?lang= set: many texts are painted
+// into canvases and sprites, so rebuilding is simpler and safer than patching every one in place.
+const params=new URLSearchParams(location.search);
+const LANGS={de:['🇩🇪','Deutsch','de-DE'],it:['🇮🇹','Italiano','it-IT'],en:['🇬🇧','English','en-GB'],fr:['🇫🇷','Français','fr-FR']};
+let LANG=params.get('lang');
+if(!LANGS[LANG])try{LANG=localStorage.getItem('karte-lang');}catch(e){}
+if(!LANGS[LANG])LANG=(navigator.language||'').slice(0,2).toLowerCase();
+if(!LANGS[LANG])LANG='de';
+document.documentElement.lang=LANG;
+const tx=(k,v={})=>(I18N[LANG][k]??I18N.de[k]??k).replace(/\{(\w+)\}/g,(m,n)=>v[n]??m);
+function setLang(l,extra={}){
+  try{localStorage.setItem('karte-lang',l);}catch(e){}
+  const p=new URLSearchParams(location.search);p.set('lang',l);
+  for(const [k,v] of Object.entries(extra))p.set(k,v);
+  location.search=p.toString().replace(/=(?=&|$)/g,'');   // keep bare flags like ?follow bare
+}
+for(const e of document.querySelectorAll('[data-i18n]'))e.textContent=tx(e.dataset.i18n);
+for(const e of document.querySelectorAll('[data-i18n-aria]'))e.setAttribute('aria-label',tx(e.dataset.i18nAria));
+for(const e of document.querySelectorAll('[data-i18n-title]'))e.title=tx(e.dataset.i18nTitle);
+{
+  const box=document.getElementById('langs');
+  for(const [l,[flag,name]] of Object.entries(LANGS)){
+    const b=document.createElement('button');
+    b.type='button';b.textContent=flag;b.title=name;b.lang=l;b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',l===LANG);
+    b.addEventListener('click',()=>{if(l!==LANG)setLang(l,LANG_EXTRA());});
+    box.append(b);
+  }
+}
+const LANG_EXTRA=()=>({t:Math.round(t)});   // a language switch keeps the place in the ride
+const TITLE_SUFFIX=' in 3D',H1_SUFFIX=' in 3D',OTHER={file:D.meta.file2d+'?lang='+LANG,label:tx('link')};
 // D.meta comes from kinomap_karte.py: {title, sub, file2d, file3d}; set via textContent since the
 // route name is whatever the Kinomap export says.
 document.title=D.meta.title+TITLE_SUFFIX;
@@ -168,11 +427,10 @@ document.getElementById('title').textContent=D.meta.title+H1_SUFFIX;
 {
   const sub=document.getElementById('sub'),a=document.createElement('a');
   a.href=OTHER.file;a.textContent=OTHER.label;
-  sub.append(D.meta.sub+' · ',a);
+  sub.append(D.meta.sub.replace(/^Einheit /,tx('unit')+' ')+' · ',a);   // the script writes the subtitle in German
 }
 document.getElementById('hint-url').textContent='http://localhost:8756/'+D.meta.file3d;
-const params=new URLSearchParams(location.search);
-const fmt=(v,d=0)=>v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt=(v,d=0)=>v.toLocaleString(LANGS[LANG][2],{minimumFractionDigits:d,maximumFractionDigits:d});
 
 // ---- heightmap (uint16 decimetres above D.hmin, row 0 = north) ----
 const hb=atob(D.H),H=new Uint16Array(hb.length/2);
@@ -566,9 +824,12 @@ const VEC=D.vt&&location.protocol!=='file:'?(async()=>{
 const SAT=!!D.sat,SAT_ZMAX=19;
 const tileUrl=(z,x,y)=>SAT?`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
                           :`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-if(SAT)document.getElementById('attr').innerHTML='Luftbild: <a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a> (Esri, Maxar, Earthstar Geographics) · Gebäude © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende · Höhendaten: Mapzen Terrain Tiles';
-if(D.vt)document.getElementById('attr').innerHTML='Karte: <a href="https://protomaps.com">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Gebäude © OpenStreetMap-Mitwirkende · Höhendaten: Mapzen Terrain Tiles';
-document.getElementById('attr').insertAdjacentHTML('beforeend',' · Sterne: <a href="https://heasarc.gsfc.nasa.gov">NASA HEASARC</a> · Sternbilder: <a href="https://stellarium.org">Stellarium</a> (J. Meuris) · Mond: <a href="https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg">G. H. Revera</a>, CC BY-SA 3.0');
+{
+  const links={osm:'<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',pm:'<a href="https://protomaps.com">Protomaps</a>',
+    esri:'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a>'};
+  document.getElementById('attr').innerHTML=tx(SAT?'attrSat':D.vt?'attrVec':'attrMap',links).replace('&','&amp;')+' · '+tx('attrElev');
+}
+document.getElementById('attr').insertAdjacentHTML('beforeend',' · '+tx('attrStars')+': <a href="https://heasarc.gsfc.nasa.gov">NASA HEASARC</a> · '+tx('attrConst')+': <a href="https://stellarium.org">Stellarium</a> (J. Meuris) · '+tx('attrMoon')+': <a href="https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg">G. H. Revera</a>, CC BY-SA 3.0');
 
 // Ground texture: the map tiles covering the area are drawn into one canvas as they arrive — OSM raster
 // tiles, or with D.vt the vector tiles above, painted at up to twice the resolution.
@@ -742,14 +1003,28 @@ const UP=new THREE.Vector3(0,1,0);
 function setBar(m,a,b){            // stretch a unit cylinder from a to b
   m.position.copy(a).add(b).multiplyScalar(.5);
   const d=_v.copy(b).sub(a),len=d.length();
-  m.scale.set(1,len,1);
+  m.scale.set(m.userData.sx||1,len,m.userData.sz||1);
   m.quaternion.setFromUnitVectors(UP,d.divideScalar(len||1));
 }
-const _v=new THREE.Vector3();
+const _v=new THREE.Vector3(),_v2a=new THREE.Vector3();
 const V=(x,y,z)=>new THREE.Vector3(x,y,z);
-function bar(parent,a,b,r,color){
-  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,10),new THREE.MeshLambertMaterial({color}));
+// The avatar is built from primitives only — tapered tubes and squashed spheres, nothing downloaded.
+// One material per colour, shared by all parts; "shiny" ones (frame, helmet, glasses) get a highlight.
+const MATS={};
+function mat(color,shiny){
+  const k=color+(shiny?'s':'');
+  return MATS[k]||(MATS[k]=shiny?new THREE.MeshPhongMaterial({color,shininess:80,specular:0x8a8a8a}):new THREE.MeshLambertMaterial({color}));
+}
+// tube from a to b: radius r at a, r2 at b; sx/sz squash its cross-section (sx is the bike's left-right
+// axis for any tube lying in the bike's plane, which is where setBar leaves the local x axis)
+function bar(parent,a,b,r,color,r2=r,sx=1,sz=1,shiny=false){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r2,r,1,12),mat(color,shiny));
+  m.userData.sx=sx;m.userData.sz=sz;
   setBar(m,a,b);parent.add(m);return m;
+}
+function ball(parent,p,r,color,sx=1,sy=1,sz=1,shiny=false){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(color,shiny));
+  m.position.copy(p);m.scale.set(sx,sy,sz);parent.add(m);return m;
 }
 const rider=new THREE.Group(),bike=new THREE.Group(),body=new THREE.Group(),head=new THREE.Group();
 rider.add(bike,body,head);scene.add(rider);
@@ -764,42 +1039,142 @@ const bulbs=[[0xfffbe0,0,0.98,0.47],[0xff2a2a,0,0.9,-0.34]].map(([c,x,y,z])=>{
   const b=new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),new THREE.MeshBasicMaterial({color:c,fog:false}));
   b.position.set(x,y,z);bike.add(b);return b;});
 const WR=0.34,REAR=V(0,WR,-0.5),FRONT=V(0,WR,0.54),BB=V(0,0.29,-0.04),SEAT=V(0,0.96,-0.2),HEADT=V(0,0.93,0.38),STEM=V(0,1.02,0.42);
-const FRAME=0xb91c1c,DARK=0x26262a,SKIN=0xe8b48c,JERSEY=0xf97316,SHORTS=0x1f2937;
-for(const [a,b] of [[BB,SEAT],[SEAT,HEADT],[BB,HEADT],[BB,REAR],[SEAT,REAR],[HEADT,FRONT]])bar(bike,a,b,0.022,FRAME);
-bar(bike,HEADT,STEM,0.018,DARK);
-bar(bike,V(-0.22,1.02,0.42),V(0.22,1.02,0.42),0.016,DARK);           // handlebar
-bar(bike,V(-0.07,0.98,-0.26),V(0.07,0.98,-0.26),0.035,DARK).scale.z=3;  // saddle
+const FRAME=0xb91c1c,DARK=0x26262a,SKIN=0xe8b48c,JERSEY=0xf97316,SHORTS=0x1f2937,
+      STEEL=0xb8bcc4,TYRE=0x17171a,WHITE=0xf4f4f5,BOTTLE=0x38bdf8;
+// frame: main triangle, paired stays and fork blades. DRIVE is the right-hand side (x<0), where the chain runs.
+const SEATC=V(0,0.88,-0.181),HT_LO=V(0,0.8,0.415),DRIVE=-0.045,AXLE=0.065;
+bar(bike,BB,V(0,0.82,0.405),0.03,FRAME,0.027,1,1,true);              // down tube
+bar(bike,BB,SEATC,0.022,FRAME,0.02,1,1,true);                        // seat tube
+bar(bike,SEATC,V(0,0.905,0.385),0.02,FRAME,0.022,1,1,true);          // top tube
+bar(bike,HT_LO,HEADT,0.026,FRAME,0.026,1,1,true);                    // head tube
+bar(bike,SEATC,SEAT,0.013,DARK);                                     // seat post
+for(const s of [-1,1]){
+  bar(bike,V(s*0.012,SEATC.y,SEATC.z),V(s*AXLE,WR,REAR.z),0.011,FRAME,0.009,1,1,true);   // seat stay
+  bar(bike,V(s*0.03,BB.y,BB.z),V(s*AXLE,WR,REAR.z),0.014,FRAME,0.01,1,1,true);          // chain stay
+  bar(bike,V(s*0.05,0.775,0.422),V(s*0.05,WR,FRONT.z),0.016,DARK,0.01,1,1,true);        // fork blade
+}
+bar(bike,V(-0.062,0.775,0.422),V(0.062,0.775,0.422),0.018,DARK,0.018,1,1,true);         // fork crown
+bar(bike,V(-0.07,BB.y,BB.z),V(0.07,BB.y,BB.z),0.022,DARK);                              // bottom bracket
+ball(bike,V(0,0.975,-0.24),0.06,DARK,1.15,0.3,2.3);                                     // saddle
+ball(bike,V(0,0.968,-0.13),0.03,DARK,0.9,0.4,2);                                        // ... and its nose
+// cockpit: stem and a drop bar — tops, hoods, drops
+bar(bike,HEADT,STEM,0.016,DARK);
+bar(bike,V(-0.2,1.02,0.42),V(0.2,1.02,0.42),0.014,DARK);
+for(const s of [-1,1]){
+  const pts=[V(s*0.2,1.02,0.42),V(s*0.2,1.025,0.5),V(s*0.2,0.975,0.535),V(s*0.2,0.91,0.515),V(s*0.2,0.885,0.45),V(s*0.2,0.885,0.38)];
+  for(let k=1;k<pts.length;k++){bar(bike,pts[k-1],pts[k],0.014,DARK);ball(bike,pts[k],0.014,DARK);}
+  bar(bike,V(s*0.2,1.02,0.495),V(s*0.2,1.095,0.535),0.019,DARK,0.015);                  // brake hood
+  bar(bike,V(s*0.2,1.075,0.54),V(s*0.2,0.95,0.56),0.006,STEEL);                         // brake lever
+}
+// bottle in its cage on the down tube
+bar(bike,V(0,0.485,0.053),V(0,0.635,0.18),0.036,BOTTLE);
+bar(bike,V(0,0.635,0.18),V(0,0.66,0.201),0.03,WHITE,0.016);
+// drivetrain: chainring (turns with the cranks), cassette, rear derailleur and the chain around them
+const ring=new THREE.Group();ring.position.set(DRIVE,BB.y,BB.z);bike.add(ring);
+{
+  const t=new THREE.Mesh(new THREE.TorusGeometry(0.09,0.007,6,32),mat(STEEL,true));t.rotation.y=Math.PI/2;ring.add(t);
+  for(let k=0;k<5;k++){const a=k*Math.PI*2/5;bar(ring,V(0,0,0),V(0,Math.sin(a)*0.088,Math.cos(a)*0.088),0.012,DARK,0.008,0.35);}
+}
+bar(bike,V(DRIVE-0.02,WR,REAR.z),V(DRIVE+0.016,WR,REAR.z),0.03,STEEL,0.052,1,1,true);   // cassette
+const JOCKEY=V(DRIVE,WR-0.125,REAR.z+0.045);
+bar(bike,V(DRIVE,WR-0.03,REAR.z+0.01),JOCKEY,0.009,DARK);                               // derailleur cage
+for(const y of [WR-0.06,WR-0.125])bar(bike,V(DRIVE-0.006,y,REAR.z+0.03+(WR-0.06-y)*0.25),V(DRIVE+0.006,y,REAR.z+0.03+(WR-0.06-y)*0.25),0.018,DARK);
+bar(bike,V(DRIVE,BB.y+0.09,BB.z),V(DRIVE,WR+0.047,REAR.z),0.005,DARK);                  // chain, upper run
+bar(bike,V(DRIVE,BB.y-0.09,BB.z),JOCKEY,0.005,DARK);                                    // chain, lower run
 const wheels=[REAR,FRONT].map(c=>{
   const w=new THREE.Group();w.position.copy(c);
-  const tyre=new THREE.Mesh(new THREE.TorusGeometry(WR-0.02,0.022,8,28),new THREE.MeshLambertMaterial({color:DARK}));
-  tyre.rotation.y=Math.PI/2;w.add(tyre);
-  for(let k=0;k<4;k++){const a=k*Math.PI/4;bar(w,V(0,Math.cos(a)*WR*.94,Math.sin(a)*WR*.94),V(0,-Math.cos(a)*WR*.94,-Math.sin(a)*WR*.94),0.004,0xb0b0b0);}
+  const tyre=new THREE.Mesh(new THREE.TorusGeometry(WR-0.02,0.021,10,40),mat(TYRE));
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(WR-0.05,0.014,8,40),mat(DARK,true));
+  rim.scale.z=0.7;
+  for(const m of [tyre,rim]){m.rotation.y=Math.PI/2;w.add(m);}
+  bar(w,V(-0.05,0,0),V(0.05,0,0),0.02,STEEL,0.02,1,1,true);                             // hub
+  // 20 spokes, laced alternately to the left and the right hub flange
+  for(let k=0;k<20;k++){const a=k*Math.PI/10,r=WR-0.055;bar(w,V(k%2?0.035:-0.035,0,0),V(0,Math.cos(a)*r,Math.sin(a)*r),0.0028,STEEL);}
+  // valve and a white rim decal, so the wheel is seen to turn
+  bar(w,V(0,-(WR-0.064),0),V(0,-(WR-0.11),0),0.004,STEEL);
+  for(const s of [-1,1])ball(w,V(s*0.011,WR-0.05,0),0.02,WHITE,0.15,0.5,2.6);
   bike.add(w);return w;
 });
-// rider: torso, arms, two-bone legs driven by the crank angle
-const HIP=V(0,1.0,-0.18),SHOULDER=V(0,1.4,0.2);
-bar(body,HIP,SHOULDER,0.13,JERSEY);
-for(const s of [-1,1])bar(body,V(s*0.17,1.38,0.2),V(s*0.2,1.04,0.42),0.035,SKIN);
-const legs=[-1,1].map(s=>({s,thigh:bar(body,HIP,BB,0.06,SHORTS),shin:bar(body,HIP,BB,0.042,SKIN),
-  crank:bar(bike,BB,BB,0.012,0xb0b0b0)}));
-bar(head,V(0,1.4,0.2),V(0,1.5,0.27),0.045,SKIN);
-const skull=new THREE.Mesh(new THREE.SphereGeometry(0.105,16,12),new THREE.MeshLambertMaterial({color:SKIN}));
-skull.position.set(0,1.57,0.3);head.add(skull);
-const helmet=new THREE.Mesh(new THREE.SphereGeometry(0.125,16,10,0,Math.PI*2,0,Math.PI*0.55),new THREE.MeshLambertMaterial({color:0xfafafa}));
-helmet.position.set(0,1.585,0.295);helmet.rotation.x=0.25;head.add(helmet);
+// rider: hips on the saddle, leaning forward onto the brake hoods
+const HIP=V(0,1.0,-0.18),SHOULDER=V(0,1.4,0.2),CHEST=V(0,1.27,0.076),HAND=s=>V(s*0.2,1.085,0.5);
+ball(body,V(0,1.0,-0.19),0.13,SHORTS,1.2,0.85,1.05);                                    // seat of the shorts
+bar(body,V(0,0.99,-0.19),CHEST,0.118,JERSEY,0.14,1.22,0.82);                            // waist to chest
+bar(body,CHEST,V(0,1.41,0.21),0.14,JERSEY,0.115,1.3,0.8);                               // chest to shoulders
+bar(body,V(0,1.1,-0.085),V(0,1.135,-0.052),0.134,WHITE,0.137,1.22,0.82);                // hoop across the jersey
+bar(body,V(0,1.02,-0.2),V(0,1.11,-0.19),0.07,WHITE,0.07,1.9,0.5);                       // back pockets
+ball(body,V(0,1.425,0.225),0.07,JERSEY,1,0.6,1);                                        // collar
+for(const s of [-1,1]){
+  const sh=V(s*0.185,1.385,0.2),el=V(s*0.235,1.2,0.325),wr=V(s*0.205,1.1,0.47);
+  ball(body,sh,0.062,JERSEY);
+  bar(body,sh,_v2a.lerpVectors(sh,el,0.6).clone(),0.056,JERSEY,0.047);                  // sleeve
+  bar(body,_v2a.lerpVectors(sh,el,0.58).clone(),_v2a.lerpVectors(sh,el,0.66).clone(),0.049,WHITE,0.048);   // cuff
+  bar(body,_v2a.lerpVectors(sh,el,0.6).clone(),el,0.043,SKIN,0.04);
+  ball(body,el,0.041,SKIN);
+  bar(body,el,wr,0.04,SKIN,0.029);
+  ball(body,HAND(s),0.036,DARK,1,0.85,1.25);                                            // glove on the hood
+  bar(body,wr,HAND(s),0.03,DARK,0.032);
+}
+// legs: thigh in the shorts down to above the knee, shin, sock and shoe; the cranks and pedals are the bike's
+const legs=[-1,1].map(s=>({s,
+  thigh:bar(body,HIP,BB,0.078,SHORTS,0.064),cuff:bar(body,HIP,BB,0.07,WHITE,0.067),thigh2:bar(body,HIP,BB,0.058,SKIN,0.05),
+  knee:ball(body,BB,0.052,SKIN),shin:bar(body,HIP,BB,0.05,SKIN,0.034,0.9,1.15),sock:bar(body,HIP,BB,0.037,WHITE,0.04),
+  shoe:bar(body,HIP,BB,0.041,WHITE,0.033,1,0.8),heel:ball(body,BB,0.041,WHITE,1,0.8,0.9),toe:ball(body,BB,0.033,WHITE,1,0.75,1.3),
+  sole:bar(body,HIP,BB,0.03,DARK,0.026,1.15,0.35),
+  hip:ball(body,V(s*0.1,HIP.y,HIP.z),0.085,SHORTS),
+  crank:bar(bike,BB,BB,0.013,DARK,0.011,1.5),axle:bar(bike,BB,BB,0.007,STEEL),
+  pedal:(()=>{const m=new THREE.Mesh(new THREE.BoxGeometry(0.075,0.016,0.085),mat(DARK));bike.add(m);return m;})()}));
+// head: neck, face with nose and ears, sport glasses, and a vented helmet with straps
+bar(head,V(0,1.4,0.2),V(0,1.5,0.27),0.048,SKIN,0.044);
+const FACE=V(0,1.57,0.3);
+ball(head,FACE,0.103,SKIN,0.9,1.08,1);
+ball(head,V(0,1.535,0.345),0.07,SKIN,0.95,0.9,0.9);                                     // jaw and chin
+ball(head,V(0,1.558,0.405),0.017,SKIN,0.9,1.1,1.2);                                     // nose
+for(const s of [-1,1]){
+  ball(head,V(s*0.092,1.565,0.3),0.022,SKIN,0.4,1,0.8);                                 // ear
+  ball(head,V(s*0.04,1.588,0.382),0.036,0x111318,1,0.62,0.5,true);                      // lens
+  bar(head,V(s*0.072,1.59,0.37),V(s*0.094,1.587,0.3),0.006,0x111318);                   // temple
+  bar(head,V(s*0.096,1.62,0.31),V(s*0.05,1.475,0.335),0.005,DARK);                      // helmet strap
+}
+bar(head,V(-0.02,1.592,0.397),V(0.02,1.592,0.397),0.006,0x111318);                      // bridge
+const helmet=new THREE.Group();helmet.position.set(0,1.59,0.292);helmet.rotation.x=0.22;helmet.scale.set(1,1,1.12);head.add(helmet);
+{
+  const shell=new THREE.Mesh(new THREE.SphereGeometry(0.125,20,12,0,Math.PI*2,0,Math.PI*0.6),mat(WHITE,true));
+  helmet.add(shell);
+  // vents: dark arcs from the brow over the crown to the back; a coloured band around the rim
+  for(const x of [-0.07,-0.036,0,0.036,0.07]){
+    const R=Math.sqrt(0.127*0.127-x*x);
+    const v=new THREE.Mesh(new THREE.TorusGeometry(R,0.0075,6,20,Math.PI*0.86),mat(x?DARK:JERSEY));
+    v.rotation.y=-Math.PI/2;v.position.x=x;helmet.add(v);   // arc now runs in the y/z plane, starting at the brow
+  }
+  const band=new THREE.Mesh(new THREE.TorusGeometry(0.12,0.009,6,28),mat(JERSEY));
+  band.rotation.x=Math.PI/2;band.position.y=-0.036;helmet.add(band);
+}
 const THIGH=0.43,SHIN=0.47,CRANK=0.17;
-const _h=new THREE.Vector3(),_f=new THREE.Vector3(),_k=new THREE.Vector3();
+const _h=new THREE.Vector3(),_f=new THREE.Vector3(),_k=new THREE.Vector3(),_p=new THREE.Vector3(),_m=new THREE.Vector3(),_m2=new THREE.Vector3();
 function pedal(angle){
+  ring.rotation.x=-angle;
   for(const L of legs){
-    const a=angle+(L.s>0?Math.PI:0);
-    _h.set(L.s*0.1,HIP.y,HIP.z);
-    _f.set(L.s*0.1,BB.y+Math.sin(a)*CRANK,BB.z+Math.cos(a)*CRANK);
+    const a=angle+(L.s>0?Math.PI:0),x=L.s*0.1;
+    _p.set(x,BB.y+Math.sin(a)*CRANK,BB.z+Math.cos(a)*CRANK);          // pedal axle
+    setBar(L.crank,_v2.set(L.s*0.066,BB.y,BB.z),_m.set(L.s*0.066,_p.y,_p.z));
+    setBar(L.axle,_m,_p);
+    L.pedal.position.copy(_p);
+    // the ball of the foot sits on the pedal; the ankle is behind and above it, the heel a little higher
+    // at the bottom of the stroke (toes pointing down) than at the top
+    _h.set(x,HIP.y,HIP.z);
+    _f.set(x,_p.y+0.09-0.03*Math.sin(a),_p.z-0.115);
     // knee = intersection of the two bone circles in the y/z plane, the one pointing forward
     const dy=_f.y-_h.y,dz=_f.z-_h.z,d=Math.min(THIGH+SHIN-0.001,Math.hypot(dy,dz));
     const along=(THIGH*THIGH-SHIN*SHIN+d*d)/(2*d),off=Math.sqrt(Math.max(0,THIGH*THIGH-along*along));
     _k.set(_h.x,_h.y+dy/d*along+dz/d*off,_h.z+dz/d*along-dy/d*off);
-    setBar(L.thigh,_h,_k);setBar(L.shin,_k,_f);
-    setBar(L.crank,_v2.set(L.s*0.1,BB.y,BB.z),_f);
+    setBar(L.thigh,_h,_m.lerpVectors(_h,_k,0.72));
+    setBar(L.cuff,_m2.lerpVectors(_h,_k,0.68),_m);
+    setBar(L.thigh2,_m,_k);L.knee.position.copy(_k);
+    setBar(L.shin,_k,_f);
+    setBar(L.sock,_f,_m.lerpVectors(_f,_k,0.2));
+    _m.set(x,_f.y-0.045,_f.z-0.015);_m2.set(x,_p.y+0.036,_p.z+0.045);   // heel, toe
+    setBar(L.shoe,_m,_m2);L.heel.position.copy(_m);L.toe.position.copy(_m2);
+    _m.y-=0.026;_m2.y-=0.022;setBar(L.sole,_m,_m2);
   }
 }
 const _v2=new THREE.Vector3();
@@ -830,10 +1205,10 @@ function distAt(s){
 // ---- profile strip (top left): tempo / power / pulse / elevation over distance, one row each ----
 const prof=document.getElementById('prof'),PW=prof.clientWidth,RH=46,PH=4*RH+16;
 const ROWS=[
-  {k:'kmh',label:'Tempo',unit:'km/h',color:'#38bdf8',d:1},
-  {k:'watt',label:'Leistung',unit:'W',color:'#fb923c',d:0},
-  {k:'hf',label:'Puls',unit:'bpm',color:'#f87171',d:0},
-  {k:'ele',label:'Höhe',unit:'m',color:'#a8b0bd',d:0,fill:true},
+  {k:'kmh',label:tx('speed'),unit:'km/h',color:'#38bdf8',d:1},
+  {k:'watt',label:tx('power'),unit:'W',color:'#fb923c',d:0},
+  {k:'hf',label:tx('pulse'),unit:'bpm',color:'#f87171',d:0},
+  {k:'ele',label:tx('ele'),unit:'m',color:'#a8b0bd',d:0,fill:true},
 ];
 const pdpr=Math.min(devicePixelRatio,2),pbase=document.createElement('canvas'),TOTAL=T.dist[N-1]||1;
 let drawProf=()=>{};
@@ -897,10 +1272,10 @@ function dial(id,{min,max,step,label,unit,color,d=0}){
   };
 }
 const dials={
-  kmh:dial('d-kmh',{min:0,max:60,step:10,label:'Tempo',unit:'km/h',color:'#38bdf8',d:1}),
-  watt:dial('d-watt',{min:0,max:400,step:100,label:'Leistung',unit:'Watt',color:'#fb923c'}),
-  hf:dial('d-hf',{min:60,max:160,step:20,label:'Puls',unit:'bpm',color:'#f87171'}),
-  rpm:dial('d-rpm',{min:0,max:120,step:20,label:'Kadenz',unit:'rpm',color:'#a3e635'}),
+  kmh:dial('d-kmh',{min:0,max:60,step:10,label:tx('speed'),unit:'km/h',color:'#38bdf8',d:1}),
+  watt:dial('d-watt',{min:0,max:400,step:100,label:tx('power'),unit:'Watt',color:'#fb923c'}),
+  hf:dial('d-hf',{min:60,max:160,step:20,label:tx('pulse'),unit:'bpm',color:'#f87171'}),
+  rpm:dial('d-rpm',{min:0,max:120,step:20,label:tx('cadence'),unit:'rpm',color:'#a3e635'}),
 };
 function readout(){
   const i=Math.min(N-2,Math.floor(t)),f=t-i,v=k=>T[k][i]+(T[k][i+1]-T[k][i])*f,s=Math.round(t);
@@ -910,7 +1285,7 @@ function readout(){
   document.getElementById('s-ele').textContent=fmt(v('ele'));
   drawProf();
 }
-function setPlaying(p){playing=p;playBtn.textContent=p?'❚❚ Pause':'▶ Abspielen';}
+function setPlaying(p){playing=p;playBtn.textContent=tx(p?'pause':'play');}
 // ---- sound: pedal strokes, chain whirr, breathing and heartbeat, synthesised (no audio files). Pedals,
 // chain and heart follow the ride's real cadence and measured pulse, not the playback speed-up — at 30×
 // the true rhythm would be a 45 Hz buzz. Breathing is stretched over this ride's own power range: its
@@ -994,14 +1369,14 @@ function place(el){
   const dx=r.left<0?-r.left:Math.min(0,innerWidth-r.right),dy=r.top<0?-r.top:Math.min(0,innerHeight-r.bottom);
   if(dx||dy){o.x+=dx;o.y+=dy;el.style.translate=o.x+'px '+o.y+'px';}
 }
-for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit'],['dso','Teleskop']]){
+for(const [id,name] of [['top',tx('pTop')],['profbox',tx('pProf')],['pov',tx('pPov')],['bottom',tx('pBottom')],['cockpit',tx('pCockpit')],['dso',tx('pDso')]]){
   const el=document.getElementById(id),bar=document.createElement('div'),nm=document.createElement('span'),btn=document.createElement('button');
   bar.className='bar';nm.className='nm';nm.textContent=name;btn.className='mn';btn.type='button';
   bar.append(nm,btn);el.prepend(bar);el.classList.add('float');
   const o={x:0,y:0};offs.set(el,o);
   const label=()=>{
     const m=el.classList.contains('min');
-    btn.textContent=m?'+':'–';btn.title=name+(m?' einblenden':' minimieren');btn.setAttribute('aria-label',btn.title);
+    btn.textContent=m?'+':'–';btn.title=tx(m?'show':'minimise',{n:name});btn.setAttribute('aria-label',btn.title);
   };
   label();
   btn.addEventListener('click',()=>{el.classList.toggle('min');label();resize();});
@@ -1023,26 +1398,26 @@ for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersich
 // ESA or NASA on the click. Neither telescope has observed every Messier object — those open the panel with
 // a note instead.
 const dsoBox=document.getElementById('dso'),dsoImg=document.getElementById('dso-img'),dsoTxt=document.getElementById('dso-txt');
-const DSO_TYPE={S:'Galaxie',E:'Galaxie','E?':'Galaxie',IR:'Galaxie',GB:'Kugelsternhaufen',OC:'Offener Sternhaufen',DI:'Nebel',PL:'Planetarischer Nebel'};
+const DSO_TYPE={S:tx('galaxy'),E:tx('galaxy'),'E?':tx('galaxy'),IR:tx('galaxy'),GB:tx('glob'),OC:tx('open'),DI:tx('neb'),PL:tx('pn')};
 function showDso(o){
   const hub=D.sky.hub[o.name],jw=(D.sky.webb||{})[o.name],pic=jw||hub,num=o.name.slice(1);
   dsoBox.querySelector('.nm').textContent=o.name+(hub&&hub[1]?' · '+hub[1]:'');
-  dsoTxt.textContent=[DSO_TYPE[o.type],o.mag<9?(''+o.mag).replace('.',',')+' mag':''].filter(Boolean).join(' · ')+' — ';
+  dsoTxt.textContent=[DSO_TYPE[o.type],o.mag<9?fmt(o.mag,1)+' mag':''].filter(Boolean).join(' · ')+' — ';
   dsoImg.hidden=!pic;
   if(pic){
-    dsoImg.alt=(jw?'Webb':'Hubble')+'-Aufnahme von '+o.name;
+    dsoImg.alt=tx('dsoAlt',{t:jw?'Webb':'Hubble',n:o.name});
     dsoImg.src=pic[0]+(pic[0].includes('/wp-content/')?'?w=640':'');   // the WordPress host scales on request
     const a=document.createElement('a');a.target='_blank';a.rel='noopener';
     if(jw){a.href=jw[1];a.textContent='Webb: '+jw[2];}   // the archive's licence (CC BY 4.0) asks for the credit line
     else{a.href=D.sky.hubUrl+'messier-'+num+'/';a.textContent='NASA/ESA Hubble';}
     dsoTxt.append(a);
-  }else dsoTxt.append('weder von Webb noch von Hubble aufgenommen');
+  }else dsoTxt.append(tx('noPic'));
   dsoBox.hidden=false;if(dsoBox.classList.contains('min'))dsoBox.querySelector('.mn').click();
   dsoBox.style.zIndex=++zTop;place(dsoBox);
 }
-dsoImg.addEventListener('error',()=>{dsoImg.hidden=true;dsoTxt.prepend('Bild nicht geladen · ');});
+dsoImg.addEventListener('error',()=>{dsoImg.hidden=true;dsoTxt.prepend(tx('notLoaded')+' · ');});
 {
-  const x=document.createElement('button');x.className='mn';x.type='button';x.textContent='×';x.title='Bild schließen';x.setAttribute('aria-label',x.title);
+  const x=document.createElement('button');x.className='mn';x.type='button';x.textContent='×';x.title=tx('closePic');x.setAttribute('aria-label',x.title);
   x.addEventListener('click',()=>{dsoBox.hidden=true;});dsoBox.querySelector('.bar').append(x);
   // a click, not the end of an orbit drag: the pointer comes up where it went down. The object is looked up
   // in screen space with the camera of the viewport under the pointer — main view or the rider's-eye inset
