@@ -41,7 +41,7 @@ Don't ask unless the user's reference matches several files.
 
 ```bash
 python3 .claude/skills/kinomap-karte/scripts/kinomap_karte.py \
-  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector] [--vector]
+  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector] [--satellite] [--map]
 ```
 
 All arguments are optional. `--radius` is how far from the route buildings
@@ -62,6 +62,15 @@ next to the page (a few MB, needs `pip install pmtiles`), and the page paints
 them itself — much sharper from road level. It is per ride and sticks: a later
 plain rerun finds the `.pmtiles` and keeps using it; delete the file to go back
 to raster tiles. Commit the `.pmtiles` together with the page.
+
+`--satellite` (only when the user asks for satellite/aerial images for that
+ride) draws the 3D ground from Esri World Imagery photo tiles instead of map
+tiles — loaded live by the page, nothing is downloaded or written next to it.
+Buildings, route and everything else stay as they are; there are no street
+names on a photo. It is per ride and sticks: a later plain rerun reads the
+choice back from the existing 3D page; `--map` switches that ride back to map
+tiles. It wins over a `.pmtiles` file lying next to the page. The result then
+carries `luftbild`.
 
 ## Step 3 — read the result
 
@@ -127,7 +136,8 @@ goes through cv2/AVFoundation, not ffmpeg).
 - A visible gap between the route's end and its start is real data (Kinomap
   videos often stop short of closing a loop), not a rendering bug.
 - The 3D page takes `?t=<seconds>&follow` in the URL to start at a given
-  point in follow mode, and `?shot` to make headless-Chrome screenshots work
+  point in follow mode, `?night`, `?moon`, `?clouds`, `?light` and `?const` to start with
+  that sky/headlight/constellation checkbox ticked, `?up=<degrees>` to look up, `?turn=<degrees>` to turn the gaze sideways, `?zoom=<factor>` to zoom in (1–40), `?dso=M31` to open that Messier object's Hubble picture, and `?shot` to make headless-Chrome screenshots work
   (`--headless=new --enable-unsafe-swiftshader --virtual-time-budget=20000`).
 - Building heights come from OSM `height`/`building:levels` where tagged and
   are otherwise guessed from building type and footprint.
@@ -140,3 +150,10 @@ goes through cv2/AVFoundation, not ffmpeg).
   `pip install pmtiles`. Once that file exists, plain reruns keep using it — commit it with the
   page. The result then carries `vektor` (and `vektorkacheln` when it was freshly cut).
 - The 3D page needs numpy and Pillow at build time (elevation PNG decoding).
+- The night sky (stars, Messier objects, constellations) comes from `assets/himmel.json`, which is
+  committed. `scripts/fetch_himmel.py` rebuilds it from NASA HEASARC and Stellarium — only needed to
+  change the magnitude limit or the Stellarium version, never for a normal run. The same file holds
+  the Hubble picture URL of each Messier object (from NASA's "Hubble's Messier Catalog"); a click on
+  an object in the night sky opens that picture in a small panel.
+- The moon is a full-moon photo from Wikimedia Commons, cut to the phase of the ride's evening,
+  which the script computes (`moon` in the page's sky data). Its place in the sky is fixed.

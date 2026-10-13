@@ -26,6 +26,7 @@ button,select{font:inherit;font-size:13px;padding:4px 11px;border-radius:999px;b
 #bottom{left:12px;right:556px;bottom:26px}
 #bottom .row{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 #scrub{flex:1;min-width:160px;accent-color:var(--accent)}
+#tilt,#zoom{width:76px;vertical-align:middle;accent-color:var(--accent)}
 /* bike-computer cockpit: always dark, like a head unit */
 #cockpit{position:fixed;right:12px;bottom:26px;width:532px;background:#0d0f12;border:1px solid #2a2e35;border-radius:16px;padding:10px 12px 8px;color:#f4f4f5;box-shadow:inset 0 0 0 3px #16191e}
 #dials{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
@@ -86,8 +87,16 @@ label{font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
 #pov .mn{background:rgba(13,15,18,.78);opacity:1}
 #pov.min{aspect-ratio:auto;border:0;box-shadow:none;padding:0!important}
 #pov.min .bar{position:static}
+/* Hubble picture of the Messier object clicked in the night sky */
+#dso{right:12px;top:calc(min(400px,34vw)*.625 + 28px);width:min(300px,34vw);background:#0d0f12;border-color:#2a2e35;color:#f4f4f5;font-size:12px}
+#dso img{display:block;width:100%;max-height:46vh;object-fit:contain;border-radius:6px;background:#000;margin:4px 0 6px}
+#dso a{color:#9fc0ff}
+#dso img[hidden]{display:none}
+#dso .nm{margin-right:auto}
+@media (max-width:760px){#dso{top:auto;bottom:96px;width:46vw}}
 body.rec .mn{display:none}
 @media (max-width:760px){#pov{top:150px;width:46vw}}
+body.night #attr,body.night #attr a{color:#cbd5e1;text-shadow:0 0 3px #000}
 body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback controls */
 #attr{position:fixed;right:12px;bottom:6px;font-size:11px;color:#333;text-shadow:0 0 3px #fff}
 #attr a{color:inherit}
@@ -107,13 +116,25 @@ body.rec #bottom{display:none}   /* ?rec: frame-by-frame capture, no playback co
 
 <div id="pov"></div>
 
+<div class="panel" id="dso" hidden>
+  <img id="dso-img" alt="" draggable="false">
+  <div id="dso-txt"></div>
+</div>
+
 <div class="panel" id="bottom">
   <div class="row">
     <button id="play">▶ Abspielen</button>
-    <select id="speed" aria-label="Tempo"><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
+    <select id="speed" aria-label="Tempo"><option value="1">1× Echtzeit</option><option value="10">10×</option><option value="30" selected>30×</option><option value="90">90×</option></select>
     <label><input type="checkbox" id="follow"> Mitfahren</label>
     <label><input type="checkbox" id="spin"> Drehen</label>
     <label><input type="checkbox" id="sound" checked> Ton</label>
+    <label><input type="checkbox" id="night"> Nacht</label>
+    <label><input type="checkbox" id="moon"> Mond</label>
+    <label><input type="checkbox" id="clouds"> Wolken</label>
+    <label><input type="checkbox" id="lamp"> Licht</label>
+    <label><input type="checkbox" id="constel"> Sternbilder</label>
+    <label>Blick ↑ <input type="range" id="tilt" min="0" max="85" value="0" step="any" aria-label="Blick nach oben, Grad"></label>
+    <label title="Mausrad mit Umschalttaste, oder Mausrad beim Blick in den Himmel">Zoom <input type="range" id="zoom" min="0" max="1" value="0" step="any" aria-label="Zoom"></label>
     <input type="range" id="scrub" min="0" value="0" step="1" aria-label="Position auf der Strecke">
   </div>
 </div>
@@ -180,15 +201,200 @@ const camera=new THREE.PerspectiveCamera(45,1,5,Math.max(60000,SPAN*5));
 // start south-east of the route's centre, looking north across it
 const mid={x:T.x.reduce((s,v)=>s+v,0)/N,z:T.z.reduce((s,v)=>s+v,0)/N};
 camera.position.set(mid.x+SPAN*0.21,SPAN*0.26,mid.z+SPAN*0.63);
+const ZOOM_MAX=40;   // telescope zoom of the main view, see setFov()
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.target.set(mid.x,0,mid.z);
 controls.enableDamping=true;
 controls.maxPolarAngle=Math.PI/2-0.04;
 controls.minDistance=4;controls.maxDistance=Math.max(26000,SPAN*2.1);
-scene.add(new THREE.HemisphereLight(0xffffff,0x8a8f80,1.3));
+const hemi=new THREE.HemisphereLight(0xffffff,0x8a8f80,1.3);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff4e0,2.5);   // strong enough that slopes read as relief
 sun.position.set(-0.6,0.8,0.5);   // from the south-west, afternoon
 scene.add(sun);
+
+// ---- sky: day/night, moon, clouds (checkboxes "Nacht", "Mond", "Wolken"; ?night ?moon ?clouds) ----
+// Moon, stars and clouds sit on a dome that is moved to whichever camera is about to render, so they
+// stay at the horizon however far the view is zoomed out. They ignore the fog, which would swallow them.
+// Switching only changes colours and light intensities — a light that came and went would make three.js
+// recompile every material.
+const dome=new THREE.Group(),DOME=camera.far*0.7;scene.add(dome);
+const MOON_DIR=new THREE.Vector3(0.52,0.42,0.74).normalize();   // south-east, 25° up
+const moonLight=new THREE.DirectionalLight(0xa9bcff,0);moonLight.position.copy(MOON_DIR);scene.add(moonLight);
+const disc=(size,draw)=>{const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;};
+// The moon: a telescope photo of the full moon (Gregory H. Revera, Wikimedia Commons, CC BY-SA 3.0; loaded
+// when the moon is first shown) with only the lit part of the disc kept — the phase of the ride's evening,
+// from D.sky.moon, the moon's angle from the sun (0 new, 90 first quarter, 180 full, 270 last quarter). The
+// terminator is half an ellipse of width R·|cos|; the dark side keeps a trace of earthshine and is, at night,
+// backed with the sky colour so no star shines through it (by day it stays see-through). Seen from the
+// southern hemisphere the whole disc is upside down. Until the photo arrives (or without network) the lit
+// part is a plain pale disc.
+const MOON_IMG='https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/500px-FullMoon2010.jpg';
+const moonCv=document.createElement('canvas');moonCv.width=moonCv.height=512;
+let moonImg=null;
+function drawMoon(night){
+  const img=moonImg;
+  const c=moonCv.getContext('2d'),n=moonCv.width,R=n*.24,e=D.sky.moon,ee=e>180?360-e:e,lit=(1-Math.cos(ee*RAD))/2;
+  c.clearRect(0,0,n,n);
+  const g=c.createRadialGradient(n/2,n/2,n*.2,n/2,n/2,n/2);   // halo, fainter for a thin moon
+  g.addColorStop(0,`rgba(220,230,255,${.03+.47*lit})`);g.addColorStop(1,'rgba(220,230,255,0)');
+  c.fillStyle=g;c.fillRect(0,0,n,n);
+  c.save();c.translate(n/2,n/2);if(SLAT<0)c.rotate(Math.PI);
+  // the photo's disc (centre .5/.483 of the picture's width, radius .414) onto the canvas disc
+  const face=()=>{
+    if(img){const k=R/(.414*img.width);c.drawImage(img,-.5*img.width*k,-.483*img.width*k,img.width*k,img.height*k);}
+    else{c.fillStyle='#f3f1e6';c.fillRect(-R,-R,2*R,2*R);}
+  };
+  c.beginPath();c.arc(0,0,R*.99,0,7);c.clip();
+  if(night){c.fillStyle='#0d1428';c.fillRect(-R,-R,2*R,2*R);c.globalAlpha=.1;face();c.globalAlpha=1;}   // backing and earthshine
+  // lit part: the limb on the sunward side (right while waxing) closed by the terminator
+  if(e>180)c.scale(-1,1);
+  c.beginPath();c.arc(0,0,R,-Math.PI/2,Math.PI/2);c.ellipse(0,0,R*Math.abs(Math.cos(ee*RAD)),R,0,Math.PI/2,-Math.PI/2,ee<90);c.clip();
+  if(e>180)c.scale(-1,1);
+  face();c.globalCompositeOperation='lighter';c.globalAlpha=.45;face();   // the photo is exposed for a full moon: lift it
+  c.restore();
+}
+const RAD=Math.PI/180,SLAT=D.sky.lat;
+drawMoon(false);
+const moonTex=new THREE.CanvasTexture(moonCv);moonTex.colorSpace=THREE.SRGBColorSpace;
+const moon=new THREE.Sprite(new THREE.SpriteMaterial({fog:false,depthWrite:false,transparent:true,map:moonTex}));
+let moonJob=()=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>{moonImg=i;sky();};i.src=MOON_IMG;};
+moon.position.copy(MOON_DIR).multiplyScalar(DOME);moon.scale.setScalar(DOME*0.16);moon.renderOrder=-2;dome.add(moon);
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;   // fixed sequence: the same clouds on every load
+// Night sky: the naked-eye stars of the Yale Bright Star Catalog and the Messier objects (NASA HEASARC,
+// embedded as D.sky by the script), placed where they stand over the ride's start at 23:00 local solar
+// time on the ride's date. Right ascension/declination become a direction on the dome via the hour angle;
+// the scene's axes are x = east, y = up, z = south. Whatever is below the horizon is left out.
+const LST=D.sky.lst,sinLat=Math.sin(SLAT*RAD),cosLat=Math.cos(SLAT*RAD);
+function skyDir(ra,dec,out){
+  const h=(LST-ra)*RAD,sd=Math.sin(dec*RAD),cd=Math.cos(dec*RAD);
+  return out.set(-cd*Math.sin(h),sd*sinLat+cd*Math.cos(h)*cosLat,-(sd*cosLat-cd*Math.cos(h)*sinLat));
+}
+const dotTex=disc(32,(c,n)=>{const g=c.createRadialGradient(n/2,n/2,0,n/2,n/2,n/2);
+  g.addColorStop(0,'#fff');g.addColorStop(.45,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.fillRect(0,0,n,n);});
+// star colour from the B−V index: blue-white through white and yellow to orange
+const BV=[[-.3,.62,.74,1],[.0,.86,.9,1],[.4,1,1,.96],[.8,1,.93,.74],[1.3,1,.8,.55],[2,1,.62,.4]];
+function bvColour(bv){
+  let k=1;while(k<BV.length-1&&bv>BV[k][0])k++;
+  const a=BV[k-1],b=BV[k],f=Math.min(1,Math.max(0,(bv-a[0])/(b[0]-a[0])));
+  return [1,2,3].map(i=>a[i]+(b[i]-a[i])*f);
+}
+// four point sizes by magnitude (points of one material share a size), dimmer stars also darker
+const stars=new THREE.Group(),_s=new THREE.Vector3();stars.renderOrder=-3;dome.add(stars);
+let magLo=-9;
+for(const [lim,size] of [[1.5,7],[3,5],[4.3,3.4],[99,2.3]]){
+  const pos=[],col=[];
+  for(const [ra,dec,mag,bv] of D.sky.stars){
+    if(mag<magLo||mag>=lim||skyDir(ra,dec,_s).y<.015)continue;
+    const b=Math.min(1,Math.max(.4,1.1-mag*.13)),c=bvColour(bv);
+    pos.push(_s.x*DOME,_s.y*DOME,_s.z*DOME);col.push(c[0]*b,c[1]*b,c[2]*b);
+  }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  const p=new THREE.Points(g,new THREE.PointsMaterial({size,sizeAttenuation:false,vertexColors:true,map:dotTex,fog:false,depthWrite:false,transparent:true}));
+  p.frustumCulled=false;p.renderOrder=-3;stars.add(p);magLo=lim;
+}
+// Messier objects: far too faint to see like this in reality — drawn as a labelled glow, tinted by type
+// (galaxy warm white, globular cluster yellow, open cluster blue, nebula red, planetary nebula green)
+const dsos=[];   // what a click on the sky can hit: {name, dir, type, mag, size}
+const DSO_COL={S:'255,236,205',E:'255,236,205','E?':'255,236,205',IR:'255,236,205',GB:'255,222,140',OC:'170,205,255',DI:'255,130,150',PL:'130,240,200'};
+for(const [name,ra,dec,mag,type] of D.sky.dso){
+  if(skyDir(ra,dec,_s).y<.03)continue;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({fog:false,depthWrite:false,transparent:true,map:disc(128,(c,n)=>{
+    const rgb=DSO_COL[type]||'230,230,230',r=n*.2,g=c.createRadialGradient(n/2,n*.36,0,n/2,n*.36,r);
+    g.addColorStop(0,`rgba(${rgb},.95)`);g.addColorStop(.35,`rgba(${rgb},.5)`);g.addColorStop(1,`rgba(${rgb},0)`);
+    c.save();if('SE'.includes(type[0]))c.transform(1,-.25,0,.6,0,n*.27);   // galaxies: a tilted ellipse
+    c.fillStyle=g;c.fillRect(0,0,n,n);c.restore();
+    c.font='600 26px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';c.textAlign='center';
+    c.fillStyle=`rgba(${rgb},.85)`;c.fillText(name,n/2,n*.82);
+  })}));
+  sp.position.copy(_s).multiplyScalar(DOME);sp.scale.setScalar(DOME*(mag<5?.05:.04));sp.renderOrder=-3;stars.add(sp);
+  dsos.push({name,dir:_s.clone(),type,mag,size:mag<5?.05:.04});
+}
+// Constellations ("Sternbilder", ?const; night only): stick figures plus the illustrations of Stellarium's
+// modern sky culture (Johan Meuris). Each picture comes with three anchor stars — pixel position and
+// RA/Dec — which fix an affine map from picture pixels to a tangent plane of the sky; a 6x6 grid of the
+// picture is pushed through that map onto the dome. The pictures are light drawings on black, so they are
+// blended additively. They are fetched from the CDN only when the constellations are first shown.
+const constel=new THREE.Group();constel.visible=false;dome.add(constel);
+const ART=`https://cdn.jsdelivr.net/gh/Stellarium/stellarium@${D.sky.art}/skycultures/modern/illustrations/`,artJobs=[];
+{
+  const seg=[],a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),e1=new THREE.Vector3(),e2=new THREE.Vector3();
+  for(const k of D.sky.con){
+    c.set(0,0,0);let n=0;
+    for(const l of k.l)for(let i=0;i+3<l.length;i+=2){
+      skyDir(l[i],l[i+1],a);skyDir(l[i+2],l[i+3],b);c.add(a).add(b);n+=2;
+      if(a.y>.01&&b.y>.01)seg.push(a.x*DOME,a.y*DOME,a.z*DOME,b.x*DOME,b.y*DOME,b.z*DOME);
+    }
+    if(!n||c.normalize().y<.1)continue;   // centre near or below the horizon: no name, no picture
+    const lab=new THREE.Sprite(new THREE.SpriteMaterial({fog:false,depthWrite:false,transparent:true,opacity:.8,map:disc(256,(x,s)=>{
+      x.font='500 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';x.textAlign='center';x.fillStyle='#9fc0ff';x.fillText(k.n,s/2,s/2);})}));
+    lab.position.copy(c).multiplyScalar(DOME);lab.scale.setScalar(DOME*.16);lab.renderOrder=-3;constel.add(lab);
+    if(!k.f)continue;
+    // tangent plane at the anchors' centre; (u,v) of a direction d is (d·e1, d·e2)/(d·c)
+    c.set(0,0,0);const dirs=k.a.map(p=>skyDir(p[2],p[3],new THREE.Vector3()));for(const d of dirs)c.add(d);c.normalize();
+    e1.set(0,1,0).cross(c).normalize();e2.crossVectors(c,e1);
+    const P=k.a.map((p,i)=>[p[0],p[1],dirs[i].dot(e1)/dirs[i].dot(c),dirs[i].dot(e2)/dirs[i].dot(c)]);
+    // affine map pixel -> plane from the three anchors (Cramer's rule)
+    const [[x1,y1],[x2,y2],[x3,y3]]=P,det=x1*(y2-y3)-y1*(x2-x3)+(x2*y3-x3*y2);
+    if(Math.abs(det)<1)continue;
+    const fit=j=>{const [q1,q2,q3]=P.map(p=>p[j]);return [(q1*(y2-y3)-y1*(q2-q3)+(q2*y3-q3*y2))/det,
+      (x1*(q2-q3)-q1*(x2-x3)+(x2*q3-x3*q2))/det,(x1*(y2*q3-y3*q2)-y1*(x2*q3-x3*q2)+q1*(x2*y3-x3*y2))/det];};
+    const U=fit(2),Vv=fit(3),G=6,pos=[],uv=[],idx=[];
+    for(let j=0;j<=G;j++)for(let i=0;i<=G;i++){
+      const px=i/G*k.s[0],py=j/G*k.s[1],u=U[0]*px+U[1]*py+U[2],v=Vv[0]*px+Vv[1]*py+Vv[2];
+      a.copy(c).addScaledVector(e1,u).addScaledVector(e2,v).normalize().multiplyScalar(DOME);
+      pos.push(a.x,a.y,a.z);uv.push(i/G,1-j/G);
+      if(i<G&&j<G){const q=j*(G+1)+i;idx.push(q,q+1,q+G+1,q+1,q+G+2,q+G+1);}
+    }
+    const g=new THREE.BufferGeometry();g.setIndex(idx);
+    g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    const mat=new THREE.MeshBasicMaterial({color:0x7fa4e8,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,
+      side:THREE.DoubleSide,fog:false,depthWrite:false,visible:false});
+    const m=new THREE.Mesh(g,mat);m.frustumCulled=false;m.renderOrder=-3;constel.add(m);
+    artJobs.push(()=>new THREE.TextureLoader().setCrossOrigin('anonymous').load(ART+k.f,t=>{
+      t.colorSpace=THREE.SRGBColorSpace;mat.map=t;mat.visible=true;mat.needsUpdate=true;}));
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(seg,3));
+  const ls=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x6f93d6,transparent:true,opacity:.55,fog:false,depthWrite:false}));
+  ls.frustumCulled=false;ls.renderOrder=-3;constel.add(ls);
+}
+const cloudMat=new THREE.SpriteMaterial({fog:false,depthWrite:false,transparent:true,opacity:.9,map:disc(256,(c,n)=>{
+  for(const [x,y,r] of [[.3,.58,.2],[.5,.48,.27],[.7,.58,.2],[.42,.62,.22],[.6,.64,.2]]){
+    const g=c.createRadialGradient(n*x,n*y,0,n*x,n*y,n*r);
+    g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=g;c.fillRect(0,0,n,n);
+  }
+})});
+const clouds=new THREE.Group();dome.add(clouds);
+for(let i=0;i<54;i++){
+  const a=rnd()*Math.PI*2,el=(.06+rnd()*.5),r=Math.cos(el),w=DOME*(.22+rnd()*.3);
+  const sp=new THREE.Sprite(cloudMat);sp.position.set(Math.cos(a)*r*DOME,Math.sin(el)*DOME,Math.sin(a)*r*DOME);
+  sp.scale.set(w,w*(.45+rnd()*.2),1);sp.renderOrder=-1;clouds.add(sp);
+}
+const nightBox=document.getElementById('night'),moonBox=document.getElementById('moon'),
+      cloudBox=document.getElementById('clouds'),lampBox=document.getElementById('lamp'),
+      constelBox=document.getElementById('constel'),tiltIn=document.getElementById('tilt'),zoomIn=document.getElementById('zoom');
+function sky(){
+  const n=nightBox.checked,m=moonBox.checked,c=cloudBox.checked;
+  const col=n?(m?0x0d1428:0x05070f):(c?0xb7c6d4:SKY);
+  scene.background.set(col);scene.fog.color.set(col);document.body.classList.toggle('night',n);
+  hemi.color.set(n?0x8fa3d8:0xffffff);hemi.groundColor.set(n?0x1a1d24:0x8a8f80);
+  hemi.intensity=n?(m?.2:.08):(c?1.15:1.3);
+  sun.intensity=n?0:(c?1.6:2.5);
+  moonLight.intensity=n&&m?(c?.4:.75):0;
+  moon.visible=m;moon.material.opacity=n?1:.5;
+  if(m&&moonJob){moonJob();moonJob=null;}
+  if(m){drawMoon(n);moonTex.needsUpdate=true;}
+  stars.visible=n;for(const o of stars.children)o.material.opacity=c?.5:1;
+  constel.visible=n&&constelBox.checked;
+  if(constel.visible)while(artJobs.length)artJobs.pop()();
+  clouds.visible=c;cloudMat.color.set(n?(m?0x56617a:0x1b2030):0xffffff);
+}
+tiltIn.value=+params.get('up')||0;
+zoomIn.value=Math.log(Math.min(ZOOM_MAX,Math.max(1,+params.get('zoom')||1)))/Math.log(ZOOM_MAX);
+for(const [b,k] of [[nightBox,'night'],[moonBox,'moon'],[cloudBox,'clouds'],[lampBox,'light'],[constelBox,'const']]){b.checked=params.has(k);b.addEventListener('change',sky);}
+sky();
 
 // ---- terrain ----
 const tg=new THREE.PlaneGeometry(D.W,D.D,D.nx-1,D.ny-1);
@@ -353,12 +559,22 @@ const VEC=D.vt&&location.protocol!=='file:'?(async()=>{
   });
   return {area,patch};
 })():null;
+// ---- satellite ground (rides built with --satellite) ----
+// D.sat swaps the OSM raster tiles for Esri World Imagery aerial photos (no API key, tiles are CORS-enabled).
+// Unlike OSM raster tiles these go down to zoom 19, so the area texture is loaded one level deeper where the
+// canvas allows it and the rider gets one finer ring (see RINGS) on top of the usual patches.
+const SAT=!!D.sat,SAT_ZMAX=19;
+const tileUrl=(z,x,y)=>SAT?`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
+                          :`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+if(SAT)document.getElementById('attr').innerHTML='Luftbild: <a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a> (Esri, Maxar, Earthstar Geographics) · Gebäude © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende · Höhendaten: Mapzen Terrain Tiles';
 if(D.vt)document.getElementById('attr').innerHTML='Karte: <a href="https://protomaps.com">Protomaps</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Gebäude © OpenStreetMap-Mitwirkende · Höhendaten: Mapzen Terrain Tiles';
+document.getElementById('attr').insertAdjacentHTML('beforeend',' · Sterne: <a href="https://heasarc.gsfc.nasa.gov">NASA HEASARC</a> · Sternbilder: <a href="https://stellarium.org">Stellarium</a> (J. Meuris) · Mond: <a href="https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg">G. H. Revera</a>, CC BY-SA 3.0');
 
 // Ground texture: the map tiles covering the area are drawn into one canvas as they arrive — OSM raster
 // tiles, or with D.vt the vector tiles above, painted at up to twice the resolution.
 // tile.openstreetmap.org blocks pages opened via file:// (no Referer), so there the terrain stays plain.
-const PT=D.vt?Math.min(512,Math.floor(4096/Math.max(D.tx,D.ty))):256;   // canvas px per texture tile
+const PT=D.vt||SAT?Math.min(512,Math.floor(4096/Math.max(D.tx,D.ty))):256;   // canvas px per texture tile
+const AF=SAT&&PT>=384?2:1;   // satellite: area texture from tiles one zoom level deeper when the canvas has the pixels for it
 const cv=document.createElement('canvas');cv.width=D.tx*PT;cv.height=D.ty*PT;
 const cx=cv.getContext('2d');cx.fillStyle='#dde5d0';cx.fillRect(0,0,cv.width,cv.height);
 const tex=new THREE.CanvasTexture(cv);
@@ -366,10 +582,10 @@ if(location.protocol==='file:')document.getElementById('hint').hidden=false;
 else{
   let dirty=false;
   if(VEC)VEC.then(v=>v.area(cx,PT,()=>{dirty=true;})).catch(e=>console.error('Vektorkacheln:',e));
-  else for(let y=0;y<D.ty;y++)for(let x=0;x<D.tx;x++){
+  else for(let y=0;y<D.ty*AF;y++)for(let x=0;x<D.tx*AF;x++){
     const img=new Image();img.crossOrigin='anonymous';
-    img.onload=()=>{cx.drawImage(img,x*256,y*256,256,256);dirty=true;};
-    img.src=`https://tile.openstreetmap.org/${D.zt}/${D.x0+x}/${D.y0+y}.png`;
+    img.onload=()=>{cx.drawImage(img,x*PT/AF,y*PT/AF,PT/AF,PT/AF);dirty=true;};
+    img.src=tileUrl(D.zt+Math.log2(AF),D.x0*AF+x,D.y0*AF+y);
   }
   setInterval(()=>{if(dirty){tex.needsUpdate=true;dirty=false;}},400);
 }
@@ -537,6 +753,16 @@ function bar(parent,a,b,r,color){
 }
 const rider=new THREE.Group(),bike=new THREE.Group(),body=new THREE.Group(),head=new THREE.Group();
 rider.add(bike,body,head);scene.add(rider);
+// Headlight ("Licht", ?light): a spot light down the road plus a white front and a red rear lamp on the bike.
+// The light lives in its own group that copies the rider's pose each frame, not inside `rider` — the
+// rider is hidden while the rider's-eye inset renders, and a light in a hidden group is switched off.
+const lamp=new THREE.Group(),LAMP=260;
+const beam=new THREE.SpotLight(0xfff1cf,0,140,0.42,0.7,1.6);
+beam.position.set(0,1.05,0.55);beam.target.position.set(0,-0.4,22);
+lamp.add(beam,beam.target);scene.add(lamp);
+const bulbs=[[0xfffbe0,0,0.98,0.47],[0xff2a2a,0,0.9,-0.34]].map(([c,x,y,z])=>{
+  const b=new THREE.Mesh(new THREE.SphereGeometry(0.035,10,8),new THREE.MeshBasicMaterial({color:c,fog:false}));
+  b.position.set(x,y,z);bike.add(b);return b;});
 const WR=0.34,REAR=V(0,WR,-0.5),FRONT=V(0,WR,0.54),BB=V(0,0.29,-0.04),SEAT=V(0,0.96,-0.2),HEADT=V(0,0.93,0.38),STEM=V(0,1.02,0.42);
 const FRAME=0xb91c1c,DARK=0x26262a,SKIN=0xe8b48c,JERSEY=0xf97316,SHORTS=0x1f2937;
 for(const [a,b] of [[BB,SEAT],[SEAT,HEADT],[BB,HEADT],[BB,REAR],[SEAT,REAR],[HEADT,FRONT]])bar(bike,a,b,0.022,FRAME);
@@ -768,7 +994,7 @@ function place(el){
   const dx=r.left<0?-r.left:Math.min(0,innerWidth-r.right),dy=r.top<0?-r.top:Math.min(0,innerHeight-r.bottom);
   if(dx||dy){o.x+=dx;o.y+=dy;el.style.translate=o.x+'px '+o.y+'px';}
 }
-for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit']]){
+for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersicht'],['bottom','Steuerung'],['cockpit','Cockpit'],['dso','Hubble']]){
   const el=document.getElementById(id),bar=document.createElement('div'),nm=document.createElement('span'),btn=document.createElement('button');
   bar.className='bar';nm.className='nm';nm.textContent=name;btn.className='mn';btn.type='button';
   bar.append(nm,btn);el.prepend(bar);el.classList.add('float');
@@ -788,6 +1014,52 @@ for(const [id,name] of [['top','Fahrt'],['profbox','Verlauf'],['pov','Fahrersich
   el.addEventListener('pointermove',e=>{if(grab){o.x=e.clientX-grab.x;o.y=e.clientY-grab.y;place(el);}});
   for(const ev of ['pointerup','pointercancel'])el.addEventListener(ev,()=>{grab=null;});
   bar.addEventListener('dblclick',e=>{if(e.target!==btn){o.x=o.y=0;place(el);}});   // double-click the bar: back to its home position
+}
+
+// ---- Hubble picture: a click on a Messier object in the night sky opens its picture in a small panel ----
+// The picture and the object's popular name come from NASA's "Hubble's Messier Catalog" (D.sky.hub, looked up
+// by fetch_himmel.py); the picture itself is loaded from NASA on the click. Hubble has not observed every
+// Messier object — those open the panel with a note instead.
+const dsoBox=document.getElementById('dso'),dsoImg=document.getElementById('dso-img'),dsoTxt=document.getElementById('dso-txt');
+const DSO_TYPE={S:'Galaxie',E:'Galaxie','E?':'Galaxie',IR:'Galaxie',GB:'Kugelsternhaufen',OC:'Offener Sternhaufen',DI:'Nebel',PL:'Planetarischer Nebel'};
+function showDso(o){
+  const pic=D.sky.hub[o.name],num=o.name.slice(1);
+  dsoBox.querySelector('.nm').textContent=o.name+(pic&&pic[1]?' · '+pic[1]:'');
+  dsoTxt.textContent=[DSO_TYPE[o.type],o.mag<9?(''+o.mag).replace('.',',')+' mag':''].filter(Boolean).join(' · ')+' — ';
+  dsoImg.hidden=!pic;
+  if(pic){
+    dsoImg.alt='Hubble-Aufnahme von '+o.name;
+    dsoImg.src=pic[0]+(pic[0].includes('/wp-content/')?'?w=640':'');   // the WordPress host scales on request
+    const a=document.createElement('a');a.href=D.sky.hubUrl+'messier-'+num+'/';a.target='_blank';a.rel='noopener';a.textContent='NASA/ESA Hubble';
+    dsoTxt.append(a);
+  }else dsoTxt.append('von Hubble nicht aufgenommen');
+  dsoBox.hidden=false;if(dsoBox.classList.contains('min'))dsoBox.querySelector('.mn').click();
+  dsoBox.style.zIndex=++zTop;place(dsoBox);
+}
+dsoImg.addEventListener('error',()=>{dsoImg.hidden=true;dsoTxt.prepend('Bild nicht geladen · ');});
+{
+  const x=document.createElement('button');x.className='mn';x.type='button';x.textContent='×';x.title='Hubble-Bild schließen';x.setAttribute('aria-label',x.title);
+  x.addEventListener('click',()=>{dsoBox.hidden=true;});dsoBox.querySelector('.bar').append(x);
+  // a click, not the end of an orbit drag: the pointer comes up where it went down. The object is looked up
+  // in screen space with the camera of the viewport under the pointer — main view or the rider's-eye inset
+  let down=null;const cv=renderer.domElement,v=new THREE.Vector3();
+  cv.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];});
+  cv.addEventListener('pointerup',e=>{
+    if(!down||!stars.visible||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;
+    let cam=camera,r={left:0,top:0,width:innerWidth,height:innerHeight};
+    const p=povBox.getBoundingClientRect();
+    if(!povBox.classList.contains('min')&&e.clientX>=p.left&&e.clientX<=p.right&&e.clientY>=p.top&&e.clientY<=p.bottom){cam=povCam;r=p;}
+    const focal=r.height/2/Math.tan(cam.fov*RAD/2);
+    let best=null,bd=1e9;
+    for(const o of dsos){
+      v.copy(o.dir).multiplyScalar(DOME).add(cam.position).project(cam);
+      if(v.z>1||v.z<-1)continue;   // behind the camera
+      const d=Math.hypot(r.left+(v.x+1)/2*r.width-e.clientX,r.top+(1-v.y)/2*r.height-e.clientY);
+      if(d<Math.max(18,o.size*focal*.5)&&d<bd){bd=d;best=o;}
+    }
+    if(best)showDso(best);
+  });
+  const o=dsos.find(o=>o.name===params.get('dso'));if(o)showDso(o);   // ?dso=M31: open that picture right away
 }
 
 function resize(){
@@ -833,16 +1105,23 @@ function sharpen(p){
     const img=new Image();img.crossOrigin='anonymous';
     img.onerror=()=>{inflight--;};
     img.onload=()=>{inflight--;drape(i,j,w,h,new THREE.Texture(img),0.12,-2);};
-    img.src=`https://tile.openstreetmap.org/${D.zt+2}/${D.x0*HF+i}/${D.y0*HF+j}.png`;
+    img.src=tileUrl(D.zt+2,D.x0*HF+i,D.y0*HF+j);
   }
 }
 // Vector ground only: two finer rings right under the rider — 16 and 64 cells per texture tile, each cell
 // painted at 512 and 256 px (about 0.2 m and 8 cm per pixel), which raster tiles have no zoom levels for. They would
 // add up to thousands of textures over a ride, so cells the rider has left behind are removed again; and the
 // innermost ring only gets its turn while little else is waiting, so fast playback doesn't drown in it.
-const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}];
+// Satellite ground gets the first ring only, as photo tiles four zoom levels below the area (0.2–0.3 m per pixel),
+// and only where the imagery has that zoom level.
+const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}]
+  .filter(R=>VEC||(SAT&&D.zt+Math.log2(R.hf)<=SAT_ZMAX));
+// one ring cell as a texture: painted from vector tiles, or the matching satellite tile
+const ringTex=(i,j,R)=>VEC?VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>new THREE.CanvasTexture(c))
+  :new Promise((ok,no)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>ok(new THREE.Texture(img));img.onerror=no;
+                         img.src=tileUrl(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j);});
 function sharpenFine(p){
-  if(!VEC)return;
+  if(!RINGS.length||location.protocol==='file:')return;
   for(const R of RINGS){
     const nx=D.tx*R.hf,ny=D.ty*R.hf,w=D.W/nx,h=D.D/ny;
     const u=Math.floor((p.x/D.W+.5)*nx),v=Math.floor((p.z/D.D+.5)*ny);
@@ -850,8 +1129,8 @@ function sharpenFine(p){
       const key=i+'_'+j;
       if(i<0||j<0||i>=nx||j>=ny||R.cells.has(key)||inflight>=R.busy)continue;
       R.cells.set(key,null);inflight++;
-      VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>{inflight--;R.cells.set(key,drape(i,j,w,h,new THREE.CanvasTexture(c),R.lift,R.off));},
-                                                e=>{inflight--;R.cells.delete(key);console.error('Vektorkachel:',e);});
+      ringTex(i,j,R).then(t=>{inflight--;R.cells.set(key,drape(i,j,w,h,t,R.lift,R.off));},
+                         e=>{inflight--;R.cells.delete(key);console.error('Bodenkachel:',e);});
     }
     for(const [key,m] of R.cells){
       const [i,j]=key.split('_').map(Number);
@@ -868,10 +1147,50 @@ let last=performance.now(),first=false,snapDir=true,crank=0,lastD=null,chaseRese
 const FREE_MAX=controls.maxDistance,_up=new THREE.Vector3(0,1,0),_off=new THREE.Vector3(),_tgt=new THREE.Vector3();
 // "Mitfahren" = wide-angle chase camera that starts 30 m behind and 5 m above the rider and stays locked
 // onto them: drag to circle around the rider, wheel/pinch to zoom, no panning. Otherwise free orbit camera.
+// Gaze: where the camera looks relative to its orbit target — gazeYaw turns it sideways, the "Blick ↑"
+// slider pitches it up. Right-drag or Shift-drag on the scene changes both, the sky following the pointer
+// (the angle per pixel shrinks with the zoom); Shift-double-click looks back at the target, unzoomed.
+// Zoom narrows the field of view instead of moving the camera — the only way to get closer to the sky,
+// which the orbit dolly never reaches. The wheel does that with Shift held or while looking above the horizon.
+let gazeYaw=(+params.get('turn')||0)*RAD,baseFov=45,skyward=false;
+function setFov(){
+  camera.fov=2*Math.atan(Math.tan(baseFov*RAD/2)/ZOOM_MAX**zoomIn.value)/RAD;camera.updateProjectionMatrix();
+}
+zoomIn.addEventListener('input',setFov);
+setFov();
+{
+  const cv=renderer.domElement;let drag=null;
+  // capture phase, so these run before OrbitControls' own listeners on the canvas and can keep the event from it
+  cv.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch'||!(e.button===2||(e.button===0&&e.shiftKey)))return;
+    e.stopImmediatePropagation();e.preventDefault();
+    drag=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId);
+  },true);
+  cv.addEventListener('pointermove',e=>{
+    if(!drag)return;
+    e.stopImmediatePropagation();
+    const k=camera.fov*RAD/innerHeight;
+    gazeYaw+=(e.clientX-drag[0])*k;
+    tiltIn.value=Math.min(85,Math.max(0,+tiltIn.value+(e.clientY-drag[1])*k/RAD));
+    drag=[e.clientX,e.clientY];
+  },true);
+  for(const ev of ['pointerup','pointercancel'])cv.addEventListener(ev,e=>{
+    if(!drag)return;
+    e.stopImmediatePropagation();drag=null;cv.releasePointerCapture(e.pointerId);
+  },true);
+  cv.addEventListener('wheel',e=>{
+    if(!e.shiftKey&&!skyward)return;
+    e.stopImmediatePropagation();e.preventDefault();
+    // Shift turns a mouse wheel into a horizontal scroll on macOS, hence deltaX as fallback
+    zoomIn.value=Math.min(1,Math.max(0,+zoomIn.value-(e.deltaY||e.deltaX)*(e.deltaMode?.02:.0012)));setFov();
+  },{capture:true,passive:false});
+  cv.addEventListener('dblclick',e=>{if(e.shiftKey){gazeYaw=0;tiltIn.value=0;zoomIn.value=0;setFov();}});
+}
 function setFirstPerson(on){
   first=on;chaseReset=on;
-  controls.enablePan=!on;controls.minDistance=on?2.5:4;controls.maxDistance=on?600:FREE_MAX;
-  camera.near=on?0.3:5;camera.fov=on?78:45;camera.updateProjectionMatrix();
+  controls.enablePan=!on;controls.minDistance=on?2.5:4;   // zooming out is as free as in the overview
+  camera.near=on?0.3:5;baseFov=on?78:45;setFov();
+  gazeYaw=0;
   ghost.visible=!on;   // see-through pass would draw across the rider
   if(!on){                                        // hand back to the orbit camera just behind the rider
     controls.target.copy(pos);
@@ -911,6 +1230,12 @@ function tick(now){
   const wb=0.52*rs,hR=hAt(pos.x-dir.x*wb,pos.z-dir.z*wb),hF=hAt(pos.x+dir.x*wb,pos.z+dir.z*wb);
   rider.position.copy(pos).setY(Math.max(pos.y,(hR+hF)/2)+0.15);
   rider.lookAt(look.copy(rider.position).add(dir).setY(rider.position.y+(hF-hR)/(2*wb)));
+  // headlight follows the bike; with the enlarged overview rider the beam grows too, so it still reaches the road
+  const lit=lampBox.checked;
+  lamp.position.copy(rider.position);lamp.quaternion.copy(rider.quaternion);lamp.scale.setScalar(rs);
+  beam.distance=140*rs;beam.intensity=lit?LAMP*rs**1.6:0;
+  for(const b of bulbs)b.visible=lit;
+  clouds.rotation.y=now*4e-6;   // slow drift, one turn in about 26 min
   if(first){
     sharpen(pos);
     _tgt.copy(pos).setY(pos.y+1.2);
@@ -927,10 +1252,21 @@ function tick(now){
     controls.update(dt);
     const floor=hAt(camera.position.x,camera.position.z)+1;      // never dip into a hillside
     if(camera.position.y<floor){camera.position.y=floor;camera.lookAt(_tgt);}
+    // near plane grows with the zoom distance: 0.3 m is needed next to the rider, but from kilometres
+    // away it would cost so much depth precision that the ground patches flicker
+    const nr=Math.min(5,Math.max(.3,camera.position.distanceTo(_tgt)/120));
+    if(Math.abs(nr-camera.near)>camera.near*.2){camera.near=nr;camera.updateProjectionMatrix();}
   }else{
     controls.update(dt);
     if(camera.position.distanceTo(controls.target)<1500)sharpen(controls.target);   // zoomed in: sharper ground there too
   }
+  // "Blick ↑": the orbit camera always looks at its target, so looking up at the sky is an extra pitch on
+  // top of it, applied anew each frame — controls.update() and lookAt() reset the orientation every time
+  const tilt=tiltIn.value*RAD;
+  if(gazeYaw)camera.rotateOnWorldAxis(_up,gazeYaw);
+  if(tilt)camera.rotateX(tilt);
+  skyward=camera.matrixWorld.elements[9]<0;   // view direction (-Z of the camera) points above the horizon
+  dome.position.copy(camera.position);
   renderer.render(scene,camera);
 
   // inset top right: the road from the rider's eyes (1.6 m up, looking ahead), drawn into the #pov frame
@@ -945,6 +1281,9 @@ function tick(now){
   for(const m of [lineMat,casingMat])m.resolution.set(r.width,r.height);
   renderer.setViewport(r.left,vy,r.width,r.height);renderer.setScissor(r.left,vy,r.width,r.height);
   renderer.setScissorTest(true);
+  if(gazeYaw)povCam.rotateOnWorldAxis(_up,gazeYaw);
+  if(tilt)povCam.rotateX(tilt);
+  dome.position.copy(povCam.position);
   renderer.render(scene,povCam);
   renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);
   for(const m of [lineMat,casingMat])m.resolution.set(innerWidth,innerHeight);

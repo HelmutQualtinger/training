@@ -508,6 +508,36 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
                 zt=zt, x0=x0, y0=y0, tx=tx, ty=ty, _hmax=float(H.max()), _missing=missing, _chunks=n_lat * n_lon)
 
 
+def moon_elongation(jd: float) -> float:
+    """Angle from the sun to the moon along the ecliptic, degrees: 0 new moon, 90 first quarter, 180 full moon,
+    270 last quarter. Low-precision series of the Astronomical Almanac — good to a fraction of a degree,
+    far finer than the phase drawn from it."""
+    d = jd - 2451545.0
+    t = d / 36525
+    sin = lambda deg: math.sin(math.radians(deg))
+    g = 357.528 + 0.9856003 * d
+    sun = 280.460 + 0.9856474 * d + 1.915 * sin(g) + 0.020 * sin(2 * g)
+    moon = (218.32 + 481267.881 * t + 6.29 * sin(135.0 + 477198.87 * t) - 1.27 * sin(259.3 - 413335.36 * t)
+            + 0.66 * sin(235.7 + 890534.22 * t) + 0.21 * sin(269.9 + 954397.74 * t)
+            - 0.19 * sin(357.5 + 35999.05 * t) - 0.11 * sin(186.5 + 966404.03 * t))
+    return (moon - sun) % 360
+
+
+def night_sky(rows: list, start: datetime.datetime) -> dict:
+    """Stars, Messier objects and constellations (assets/himmel.json, from NASA HEASARC — see fetch_himmel.py) plus where
+    and when to look: the ride's place, at 23:00 local solar time on the ride's date. `lst` is the local
+    sidereal time in degrees, which is all the page needs to turn right ascension into a compass direction.
+    `moon` is the moon's phase at that moment (see moon_elongation)."""
+    sky = json.loads((Path(__file__).resolve().parents[1] / "assets" / "himmel.json").read_text(encoding="utf-8"))
+    lat, lon = rows[0]["lat"], rows[0]["lon"]
+    utc = datetime.datetime(start.year, start.month, start.day, 23, tzinfo=datetime.timezone.utc) \
+        - datetime.timedelta(hours=lon / 15)
+    jd = utc.timestamp() / 86400 + 2440587.5
+    lst = (280.46061837 + 360.98564736629 * (jd - 2451545.0) + lon) % 360
+    return dict(lat=round(lat, 3), lst=round(lst, 2), moon=round(moon_elongation(jd), 1), stars=sky["sterne"], dso=sky["deepsky"],
+                con=sky["bilder"], art=sky["stellarium"], hub=sky["hubble"], hubUrl=sky["hubble_seite"])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Kinomap-Export -> 2D- und 3D-Kartenseite")
     ap.add_argument("zip", nargs="?", help="Export-Zip (default: neuestes export_*.zip)")
@@ -519,6 +549,10 @@ def main() -> None:
     ap.add_argument("--vector", action="store_true",
                     help="Boden der 3D-Seite aus Vektorkacheln (Protomaps) statt OSM-Rasterkacheln: schneidet "
                          "<karte>.pmtiles neu aus; liegt die Datei schon da, wird sie auch ohne die Option benutzt")
+    ap.add_argument("--satellite", action="store_true",
+                    help="Boden der 3D-Seite aus Luftbildern (Esri World Imagery) statt Kartenkacheln; bleibt bei "
+                         "späteren Läufen erhalten, solange die 3D-Seite liegen bleibt (--map stellt zurück)")
+    ap.add_argument("--map", action="store_true", help="Luftbild-Boden einer Fahrt wieder auf Kartenkacheln zurückstellen")
     args = ap.parse_args()
 
     zpath = Path(args.zip).expanduser() if args.zip else newest_zip()
@@ -557,9 +591,17 @@ def main() -> None:
         pm = out_dir / f"{base}.pmtiles"
         if args.vector:
             result["vektorkacheln"] = vector_tiles(pm, d3, rows)
-        if pm.is_file():
+        # satellite ground: opted into per ride with --satellite, and it sticks too — a rerun reads the choice
+        # back from the page it is about to overwrite (--map undoes it). It wins over vector tiles.
+        old3d = out_dir / file3d
+        sat = not args.map and (args.satellite or (old3d.is_file() and '"sat":true' in old3d.read_text(encoding="utf-8")))
+        if sat:
+            d3["sat"] = True
+            result["luftbild"] = True
+        elif pm.is_file():
             d3["vt"] = {"file": pm.name}
             result["vektor"] = pm.name
+        d3["sky"] = night_sky(rows, start)
         ele = d3["track"]["ele"]
         km = f"{rows[-1]['dist'] / 1000:.1f}".replace(".", ",")
         desc = (f"{km} km · {seconds // 60}:{seconds % 60:02d} min · Ø {result['avg_watt']} W — "
