@@ -507,7 +507,7 @@ function drawMoon(night){
   const c=moonCv.getContext('2d'),n=moonCv.width,R=n*.24,e=D.sky.moon,ee=e>180?360-e:e,lit=(1-Math.cos(ee*RAD))/2;
   c.clearRect(0,0,n,n);
   const g=c.createRadialGradient(n/2,n/2,n*.2,n/2,n/2,n/2);   // halo, fainter for a thin moon
-  g.addColorStop(0,`rgba(220,230,255,${.03+.47*lit})`);g.addColorStop(1,'rgba(220,230,255,0)');
+  g.addColorStop(0,`rgba(235,240,255,${.15+.85*lit})`);g.addColorStop(1,'rgba(220,230,255,0)');
   c.fillStyle=g;c.fillRect(0,0,n,n);
   c.save();c.translate(n/2,n/2);if(SLAT<0)c.rotate(Math.PI);
   // the photo's disc (centre .5/.483 of the picture's width, radius .414) onto the canvas disc
@@ -521,7 +521,7 @@ function drawMoon(night){
   if(e>180)c.scale(-1,1);
   c.beginPath();c.arc(0,0,R,-Math.PI/2,Math.PI/2);c.ellipse(0,0,R*Math.abs(Math.cos(ee*RAD)),R,0,Math.PI/2,-Math.PI/2,ee<90);c.clip();
   if(e>180)c.scale(-1,1);
-  face();c.globalCompositeOperation='lighter';c.globalAlpha=.45;face();   // the photo is exposed for a full moon: lift it
+  face();c.globalCompositeOperation='lighter';c.globalAlpha=1;face();face();   // the photo is exposed for a full moon: lift it well
   c.restore();
 }
 const RAD=Math.PI/180,SLAT=D.sky.lat;
@@ -650,10 +650,10 @@ function sky(){
   const col=n?(m?0x0d1428:0x05070f):(c?0xb7c6d4:SKY);
   scene.background.set(col);scene.fog.color.set(col);document.body.classList.toggle('night',n);
   hemi.color.set(n?0x8fa3d8:0xffffff);hemi.groundColor.set(n?0x1a1d24:0x8a8f80);
-  hemi.intensity=n?(m?.2:.08):(c?1.15:1.3);
+  hemi.intensity=n?(m?.32:.08):(c?1.15:1.3);
   sun.intensity=n?0:(c?1.6:2.5);
-  moonLight.intensity=n&&m?(c?.4:.75):0;
-  moon.visible=m;moon.material.opacity=n?1:.5;
+  moonLight.intensity=n&&m?(c?1:1.9):0;
+  moon.visible=m;moon.material.opacity=1;
   if(m&&moonJob){moonJob();moonJob=null;}
   if(m){drawMoon(n);moonTex.needsUpdate=true;}
   stars.visible=n;for(const o of stars.children)o.material.opacity=c?.5:1;
