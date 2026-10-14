@@ -162,3 +162,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 12.10,140,1440,199,144,113,,,121/81/85,,,,11.50,78,378,,,22,40.4,"Sprint 4x4x(20:40) 250W/125W, Blockpause 1min 100W, Vorgabe sprint-20-40, ohne Kinomap"
 12.10,141,1951,299,160,125,,,109/77/92,,,,15.30,76,367,,,23,36.2,"Rønnestad 2x13x(30:15) 240W/120W, Serienpause 3min 100W, Vorgabe roennestad-30-15, ohne Kinomap"
 13.10,142,2081,407,205,121,,,130/82/87,,1,In and around CERN,17.17,79,326,,175,21,55.2,
+14.10,143,1950,300,161,124,,,,,,,16.00,79,350,,,23,36.7,"Rønnestad 2x13x(30:15) 240W/120W, Serienpause 3min 100W, Vorgabe roennestad-30-15, ohne Kinomap"
