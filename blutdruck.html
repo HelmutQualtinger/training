@@ -43,6 +43,7 @@ h1{font-size:clamp(23px,3.2vw,32px);font-weight:600;letter-spacing:-.025em;line-
 .li.stat{margin-left:auto;font-family:var(--num);color:var(--text)}
 .chart-wrap{position:relative;width:100%}
 .tbl-wrap{overflow-x:auto}
+.tbl-print{display:none}
 table.rr{width:100%;border-collapse:collapse;font-size:13px}
 table.rr th{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.9px;font-weight:600;text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
 table.rr td{font-family:var(--num);padding:6px 10px;border-bottom:0.5px solid var(--border2);white-space:nowrap}
@@ -58,6 +59,13 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   body{max-width:none;padding:0}
   .card{break-inside:avoid;page-break-inside:avoid;box-shadow:none}
   .chart-wrap canvas{width:100%!important}
+  /* Einzelwerte: im Druck zwei Spalten nebeneinander auf einer eigenen Seite */
+  .card.tbl{break-before:page;page-break-before:always}
+  .tbl-wrap{display:none}
+  .tbl-print{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .tbl-print table.rr{font-size:9.5px;line-height:1.25}
+  .tbl-print table.rr th{font-size:8.5px;padding:2px 6px}
+  .tbl-print table.rr td{padding:1.5px 6px}
   /* beide Histogramme zusammen auf eine eigene Seite */
   .hist-pair{break-before:page;page-break-before:always;break-inside:avoid;page-break-inside:avoid}
 }
@@ -88,7 +96,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
 </div>
 
-<div class="card">
+<div class="card tbl">
   <div class="section-lbl" style="--c:var(--C1)">Einzelwerte</div>
   <div class="legend">
     <div class="li">Systolisch/Diastolisch/Puls · chronologisch, neueste Messung unten</div>
@@ -96,6 +104,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
     <div class="li stat" id="sTbl"></div>
   </div>
   <div class="tbl-wrap"><table class="rr"><thead><tr><th>Datum</th><th>Ruhe (vor dem Training)</th><th>Nach dem Training</th><th>Abends</th></tr></thead><tbody id="rrBody"></tbody></table></div>
+  <div class="tbl-print" id="rrPrint"></div>
 </div>
 
 <div class="hist-pair">
@@ -201,8 +210,12 @@ const cell=raw=>{
   const note=m&&m[2]?` <span class="puls">${esc(m[2])}</span>`:'';
   return `<td class="${isExcess(v)?'ex':''}">${isExcess(v)?'▲ ':''}${v[1]}/${v[0]}${puls}${note}</td>`;
 };
-document.getElementById('rrBody').innerHTML=bpRows
-  .map(r=>`<tr><td>${esc(r.dat)}</td>${cell(r.rr_ruhe)}${cell(r.rr)}${cell(r.rr_abend)}</tr>`).join('');
+const rowHtml=r=>`<tr><td>${esc(r.dat)}</td>${cell(r.rr_ruhe)}${cell(r.rr)}${cell(r.rr_abend)}</tr>`;
+document.getElementById('rrBody').innerHTML=bpRows.map(rowHtml).join('');
+// Druckfassung: dieselben Zeilen, auf zwei Tabellen nebeneinander aufgeteilt
+const half=Math.ceil(bpRows.length/2), thead=document.querySelector('table.rr thead').outerHTML;
+document.getElementById('rrPrint').innerHTML=[bpRows.slice(0,half),bpRows.slice(half)]
+  .map(rs=>`<table class="rr">${thead}<tbody>${rs.map(rowHtml).join('')}</tbody></table>`).join('');
 document.getElementById('sTbl').textContent=`${readings.length} Messungen an ${bpRows.length} Tagen · außerhalb Zielband: ${readings.filter(isExcess).length}`;
 
 // ---- HISTOGRAMME ----
