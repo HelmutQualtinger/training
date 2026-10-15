@@ -58,6 +58,8 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   body{max-width:none;padding:0}
   .card{break-inside:avoid;page-break-inside:avoid;box-shadow:none}
   .chart-wrap canvas{width:100%!important}
+  /* beide Histogramme zusammen auf eine eigene Seite */
+  .hist-pair{break-before:page;page-break-before:always;break-inside:avoid;page-break-inside:avoid}
 }
 </style>
 </head>
@@ -96,6 +98,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   <div class="tbl-wrap"><table class="rr"><thead><tr><th>Datum</th><th>Ruhe (vor dem Training)</th><th>Nach dem Training</th><th>Abends</th></tr></thead><tbody id="rrBody"></tbody></table></div>
 </div>
 
+<div class="hist-pair">
 <div class="card">
   <div class="section-lbl" style="--c:var(--C5)">Histogramm vor Belastung (Ruhe)</div>
   <div class="legend">
@@ -116,6 +119,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
     <div class="li stat" id="sHistNach"></div>
   </div>
   <div class="chart-wrap" style="height:260px"><canvas id="cHistNach" role="img" aria-label="Histogramm nach Belastung (nach dem Training)">Häufigkeit der systolischen und diastolischen Werte nach dem Training in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
+</div>
 </div>
 
 <script>
