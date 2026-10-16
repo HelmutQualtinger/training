@@ -165,3 +165,5 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 14.10,143,1950,300,161,124,,,,,,,16.00,79,350,,,23,36.7,"Rønnestad 2x13x(30:15) 240W/120W, Serienpause 3min 100W, Vorgabe roennestad-30-15, ohne Kinomap"
 14.10,144,1200,150,131,112,,,127/79/85,,,,9.80,79,339,,,24,36.9,"HIIT 12x(30:30) 230W/80W, Vorgabe hiit-20, ohne Kinomap"
 15.10,145,1810,341,198,117,,,120/77/86,,1,CERN-Divonne,15.34,77,266,,130,,59.1,
+16.10,146,520,104,210,128,,,,,1,Vienna - Donnauinsel Nord - 10k+,4.52,78,277,,9,,38.0,
+16.10,147,1951,298,160,127,,,122/78/90,,,,15.00,75,333,,,24,35.4,"Rønnestad 2x13x(30:15) 240W/120W, Serienpause 3min 100W, Vorgabe roennestad-30-15, ohne Kinomap"
