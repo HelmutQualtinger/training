@@ -168,3 +168,5 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 16.10,146,520,104,210,128,,,,,1,Vienna - Donnauinsel Nord - 10k+,4.52,78,277,,9,,38.0,
 16.10,147,1951,298,160,127,,,122/78/90,,,,15.00,75,333,,,24,35.4,"Rønnestad 2x13x(30:15) 240W/120W, Serienpause 3min 100W, Vorgabe roennestad-30-15, ohne Kinomap"
 17.10,148,2334,428,192,119,,,119/76/86,,1,Entlang des Bodensee vom Kaiserstrand zum Rohrspitz,20.80,76,287,,181,23,51.8,
+18.10,149,3024,452,156,114,,,,,,,24.80,79,325,,,23,34.8,"Grundlage manuell 150/160/170W, 2 Logs, ohne Kinomap"
+18.10,–,,,,,,,,137/88/72 (19:32),,,,,,,,,,
