@@ -1481,12 +1481,30 @@ function sharpen(p){
                                               e=>{inflight--;console.error('Vektorkachel:',e);});
       continue;
     }
-    const img=new Image();img.crossOrigin='anonymous';
-    img.onerror=()=>{inflight--;};
-    img.onload=()=>{inflight--;drape(i,j,w,h,new THREE.Texture(img),0.12,-2);};
-    img.src=tileUrl(D.zt+2,D.x0*HF+i,D.y0*HF+j);
+    const z=D.zt+2,x=D.x0*HF+i,y=D.y0*HF+j;
+    satHas(z,x,y).then(ok=>{
+      if(!ok){inflight--;return;}   // no photo this deep here: the area texture underneath stays visible
+      const img=new Image();img.crossOrigin='anonymous';
+      img.onerror=()=>{inflight--;};
+      img.onload=()=>{inflight--;drape(i,j,w,h,new THREE.Texture(img),0.12,-2);};
+      img.src=tileUrl(z,x,y);
+    });
   }
 }
+// Satellite only: whether Esri has a real photo for a tile. Where it has none (much of the world below zoom 18)
+// it still answers with a grey "Map data not yet available" picture, which would blank out the ground under the
+// rider; its tilemap service says per tile whether imagery exists, asked once per 8×8 block of tiles.
+const satHas=(()=>{
+  const blocks=new Map();
+  return (z,x,y)=>{
+    if(!SAT)return Promise.resolve(true);
+    const bx=x-x%8,by=y-y%8,key=z+'/'+by+'/'+bx;
+    if(!blocks.has(key))blocks.set(key,
+      fetch(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/${z}/${by}/${bx}/8/8`)
+        .then(r=>r.json()).then(t=>t.valid&&t.location.left===bx&&t.location.top===by?t.data:null).catch(()=>null));
+    return blocks.get(key).then(d=>!d||d[(y-by)*8+(x-bx)]===1);
+  };
+})();
 // Vector ground only: two finer rings right under the rider — 16 and 64 cells per texture tile, each cell
 // painted at 512 and 256 px (about 0.2 m and 8 cm per pixel), which raster tiles have no zoom levels for. They would
 // add up to thousands of textures over a ride, so cells the rider has left behind are removed again; and the
@@ -1497,8 +1515,9 @@ const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:2
   .filter(R=>VEC||(SAT&&D.zt+Math.log2(R.hf)<=SAT_ZMAX));
 // one ring cell as a texture: painted from vector tiles, or the matching satellite tile
 const ringTex=(i,j,R)=>VEC?VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>new THREE.CanvasTexture(c))
-  :new Promise((ok,no)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>ok(new THREE.Texture(img));img.onerror=no;
-                         img.src=tileUrl(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j);});
+  :satHas(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j).then(has=>!has?null:   // null: no photo, keep the coarser one
+    new Promise((ok,no)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>ok(new THREE.Texture(img));img.onerror=no;
+                         img.src=tileUrl(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j);}));
 function sharpenFine(p){
   if(!RINGS.length||location.protocol==='file:')return;
   for(const R of RINGS){
@@ -1508,7 +1527,7 @@ function sharpenFine(p){
       const key=i+'_'+j;
       if(i<0||j<0||i>=nx||j>=ny||R.cells.has(key)||inflight>=R.busy)continue;
       R.cells.set(key,null);inflight++;
-      ringTex(i,j,R).then(t=>{inflight--;R.cells.set(key,drape(i,j,w,h,t,R.lift,R.off));},
+      ringTex(i,j,R).then(t=>{inflight--;if(t)R.cells.set(key,drape(i,j,w,h,t,R.lift,R.off));},
                          e=>{inflight--;R.cells.delete(key);console.error('Bodenkachel:',e);});
     }
     for(const [key,m] of R.cells){

@@ -164,6 +164,49 @@ def session_nr(date_dm: str, seconds: int):
     return best[1] if best else None
 
 
+def carve_road(H, R, cum, W, D, nx, ny, step=5.0, win=120.0, inner=12.0, outer=40.0):
+    """Lay a smooth road into the heightmap along the route, in place.
+
+    The terrarium tiles are a surface model (SRTM and the like): they measure the tops of trees and
+    roofs, and near a steep slope a 30 m pixel mixes road and hillside. Along a coast road under palms
+    that makes the ground jump between 0 and 20 m, with single spikes of 40 m. Roads don't do that, so
+    the heights under the route are replaced by a running median (then a running mean) over `win`
+    metres; within `inner` metres of the route the grid takes that profile, out to `outer` metres it
+    blends back into the original terrain.
+    """
+    import numpy as np
+    if cum[-1] < 2 * win:
+        return
+    s = np.arange(0, cum[-1], step)
+    sx, sz = np.interp(s, cum, R[:, 0]), np.interp(s, cum, R[:, 1])
+    gx = np.linspace(-W / 2, W / 2, nx)
+    gz = np.linspace(-D / 2, D / 2, ny)
+    u = np.clip((sx / W + 0.5) * (nx - 1), 0, nx - 1.001)
+    v = np.clip((sz / D + 0.5) * (ny - 1), 0, ny - 1.001)
+    iu, iv = u.astype(int), v.astype(int)
+    fu, fv = u - iu, v - iv
+    raw = (H[iv, iu] * (1 - fu) + H[iv, iu + 1] * fu) * (1 - fv) + (H[iv + 1, iu] * (1 - fu) + H[iv + 1, iu + 1] * fu) * fv
+    k = int(win / step) | 1
+    pad = lambda a: np.pad(a, k // 2, mode="edge")
+    win_view = np.lib.stride_tricks.sliding_window_view
+    prof = np.median(win_view(pad(raw), k), axis=1)
+    prof = win_view(pad(prof), k).mean(axis=1)
+    # nearest route sample for every grid vertex within `outer`, one small window per sample
+    best = np.full(H.shape, np.inf)
+    target = np.zeros(H.shape)
+    cw, ch = W / (nx - 1), D / (ny - 1)
+    rc, rr = int(math.ceil(outer / cw)), int(math.ceil(outer / ch))
+    for x, z, h in zip(sx, sz, prof):
+        c0, r0 = int(round((x + W / 2) / cw)), int(round((z + D / 2) / ch))
+        cs, rs = slice(max(c0 - rc, 0), min(c0 + rc + 1, nx)), slice(max(r0 - rr, 0), min(r0 + rr + 1, ny))
+        d = np.hypot(gx[cs][None, :] - x, gz[rs][:, None] - z)
+        closer = d < best[rs, cs]
+        best[rs, cs] = np.where(closer, d, best[rs, cs])
+        target[rs, cs] = np.where(closer, h, target[rs, cs])
+    t = np.clip((outer - best) / (outer - inner), 0, 1)
+    H[:] = H * (1 - t) + target * t
+
+
 def vector_tiles(out: Path, d3: dict, rows) -> dict:
     """Cut the ride's area out of the Protomaps planet build into a small .pmtiles file next to the page.
 
@@ -439,6 +482,7 @@ def build_3d(rows, radius: float, cache: Path, fetch_buildings: bool = True) -> 
             mx = np.minimum((np.linspace(0, W, nx) / res).astype(int), mw - 1)
             my = np.minimum((np.linspace(0, D, ny) / res).astype(int), mh - 1)
             H[sea[np.ix_(my, mx)]] = 0.0
+    carve_road(H, R, cum, W, D, nx, ny)
     ele = at(H)
     hmin = float(H.min())
     h_b64 = base64.b64encode(np.round((H - hmin) * 10).astype("<u2").tobytes()).decode()
