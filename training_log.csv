@@ -178,3 +178,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 21.10,152,1818,242,139,108,,,131/79/81,,,,14.30,76,333,,,24,33.8,"Grundlage 30 min konstant 140W, manuell, ohne Kinomap, relativ anstrengend"
 22.10,–,,,,,,148/83/85 (10:41),,,,,,,,,,,,
 22.10,153,2702,417,161,117,,,119/79/89,,,,22.40,80,323,,,24,37.0,"Schwelle 3x8min 195/195/200W, Pause 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap, recht anstrengend bei niedrigem Puls, ziemlich erschöpft"
+23.10,154,1201,148,129,129,,,136/73/93,,,,9.70,78,306,,,24,40.7,"HIIT 12x(30:30) 230W/80W, Vorgabe hiit-20, ohne Kinomap, relativ angestrengt mit hohem Puls und Blutdruck"
