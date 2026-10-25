@@ -1509,10 +1509,12 @@ const satHas=(()=>{
 // painted at 512 and 256 px (about 0.2 m and 8 cm per pixel), which raster tiles have no zoom levels for. They would
 // add up to thousands of textures over a ride, so cells the rider has left behind are removed again; and the
 // innermost ring only gets its turn while little else is waiting, so fast playback doesn't drown in it.
-// Satellite ground gets the first ring only, as photo tiles four zoom levels below the area (0.2–0.3 m per pixel),
-// and only where the imagery has that zoom level.
-const RINGS=[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}]
-  .filter(R=>VEC||(SAT&&D.zt+Math.log2(R.hf)<=SAT_ZMAX));
+// Satellite ground gets photo tiles four zoom levels below the area and, when the area is coarser than zoom 15,
+// a second ring at Esri's deepest level (19, about 0.2–0.3 m per pixel) — otherwise a large area such as the
+// Donauinsel (zoom 14) would stop at zoom 18. Either only where the imagery has that zoom level.
+const RINGS=SAT?[...new Set([16,2**(SAT_ZMAX-D.zt)])].filter(hf=>hf>HF&&D.zt+Math.log2(hf)<=SAT_ZMAX)
+    .map((hf,k)=>({hf,px:PATCH,lift:.13+.01*k,off:-4-2*k,busy:k?4:8,cells:new Map()}))
+  :VEC?[{hf:16,px:PATCH,lift:.13,off:-4,busy:8,cells:new Map()},{hf:64,px:256,lift:.14,off:-6,busy:4,cells:new Map()}]:[];
 // one ring cell as a texture: painted from vector tiles, or the matching satellite tile
 const ringTex=(i,j,R)=>VEC?VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>new THREE.CanvasTexture(c))
   :satHas(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j).then(has=>!has?null:   // null: no photo, keep the coarser one
