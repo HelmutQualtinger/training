@@ -144,6 +144,7 @@ tfoot td{font-weight:600;border-top:1px solid var(--border);border-bottom:none}
   .chart-wrap canvas{width:100%!important}
 }
 .hero-link{color:inherit}
+.ergo-link{color:var(--C1);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -419,7 +420,11 @@ async function loadSessions(){
   return sessions;
 }
 
-loadSessions().then(render);
+// Analysis pages of the ergometer program by session number, written by its kalender.py (missing under file:// or offline)
+const ERGO_LOGS='../Ergometer/logs/';
+let ergoPages={};
+Promise.all([loadSessions(), fetch(ERGO_LOGS+'pages.json').then(r=>r.ok?r.json():{}).catch(()=>({}))])
+  .then(([sessions,pages])=>{ ergoPages=pages; render(sessions); });
 
 function render(sessions){
 const maxWeek=Math.max(...sessions.map(s=>s.w));
@@ -720,7 +725,7 @@ sessions.forEach(r=>{
     ${bpCell(r.rr,'#A32D2D')}
     ${bpCell(r.rr_abend,'#7C3AED')}
     <td class="r" style="color:var(--text3)">${r.kum.toLocaleString()}</td>
-    <td style="font-size:11px;color:var(--text3)">${r.note||''}</td>`;
+    <td style="font-size:11px;color:var(--text3)">${r.note||''}${(ergoPages[r.n]||[]).map(p=>` · <a class="ergo-link" href="${ERGO_LOGS+p.file}">${p.label}</a>`).join('')}</td>`;
   tb.appendChild(tr);
 });
 
