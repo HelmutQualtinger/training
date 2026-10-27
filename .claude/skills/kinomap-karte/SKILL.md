@@ -41,7 +41,7 @@ Don't ask unless the user's reference matches several files.
 
 ```bash
 python3 .claude/skills/kinomap-karte/scripts/kinomap_karte.py \
-  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector] [--satellite] [--map]
+  [ZIP] [--out-dir DIR] [--radius M] [--no-3d] [--cached-buildings] [--vector] [--satellite [esri|bing]] [--map]
 ```
 
 All arguments are optional. `--radius` is how far from the route buildings
@@ -70,7 +70,9 @@ Buildings, route and everything else stay as they are; there are no street
 names on a photo. It is per ride and sticks: a later plain rerun reads the
 choice back from the existing 3D page; `--map` switches that ride back to map
 tiles. It wins over a `.pmtiles` file lying next to the page. The result then
-carries `luftbild`.
+carries `luftbild` (`esri` or `bing`). `--satellite bing` uses Bing Maps
+Aerial instead of Esri — only when the user asks for it or Esri's photos are
+too coarse there (Bora Bora: Esri stops at zoom 17, Bing goes to 19).
 
 ## Step 3 — read the result
 

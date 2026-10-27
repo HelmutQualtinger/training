@@ -198,7 +198,7 @@ const I18N={
   "pulse": "Puls",
   "cadence": "Kadenz",
   "attrMap": "Karte & Gebäude © {osm}-Mitwirkende",
-  "attrSat": "Luftbild: {esri} (Esri, Maxar, Earthstar Geographics) · Gebäude © {osm}-Mitwirkende",
+  "attrSat": "Luftbild: {sat} · Gebäude © {osm}-Mitwirkende",
   "attrVec": "Karte: {pm} © {osm} · Gebäude © OpenStreetMap-Mitwirkende",
   "attrElev": "Höhendaten: Mapzen Terrain Tiles",
   "attrStars": "Sterne",
@@ -253,7 +253,7 @@ const I18N={
   "pulse": "Battito",
   "cadence": "Cadenza",
   "attrMap": "Mappa ed edifici © contributori di {osm}",
-  "attrSat": "Foto aerea: {esri} (Esri, Maxar, Earthstar Geographics) · Edifici © contributori di {osm}",
+  "attrSat": "Foto aerea: {sat} · Edifici © contributori di {osm}",
   "attrVec": "Mappa: {pm} © {osm} · Edifici © contributori di OpenStreetMap",
   "attrElev": "Dati altimetrici: Mapzen Terrain Tiles",
   "attrStars": "Stelle",
@@ -308,7 +308,7 @@ const I18N={
   "pulse": "Pulse",
   "cadence": "Cadence",
   "attrMap": "Map & buildings © {osm} contributors",
-  "attrSat": "Aerial imagery: {esri} (Esri, Maxar, Earthstar Geographics) · Buildings © {osm} contributors",
+  "attrSat": "Aerial imagery: {sat} · Buildings © {osm} contributors",
   "attrVec": "Map: {pm} © {osm} · Buildings © OpenStreetMap contributors",
   "attrElev": "Elevation data: Mapzen Terrain Tiles",
   "attrStars": "Stars",
@@ -363,7 +363,7 @@ const I18N={
   "pulse": "Pouls",
   "cadence": "Cadence",
   "attrMap": "Carte et bâtiments © contributeurs d'{osm}",
-  "attrSat": "Vue aérienne : {esri} (Esri, Maxar, Earthstar Geographics) · Bâtiments © contributeurs d'{osm}",
+  "attrSat": "Vue aérienne : {sat} · Bâtiments © contributeurs d'{osm}",
   "attrVec": "Carte : {pm} © {osm} · Bâtiments © contributeurs d'OpenStreetMap",
   "attrElev": "Données d'altitude : Mapzen Terrain Tiles",
   "attrStars": "Étoiles",
@@ -818,15 +818,20 @@ const VEC=D.vt&&location.protocol!=='file:'?(async()=>{
   return {area,patch};
 })():null;
 // ---- satellite ground (rides built with --satellite) ----
-// D.sat swaps the OSM raster tiles for Esri World Imagery aerial photos (no API key, tiles are CORS-enabled).
+// D.sat swaps the OSM raster tiles for aerial photos (no API key, tiles are CORS-enabled): Esri World Imagery,
+// or with D.sat==='bing' Bing Maps Aerial, which is sharper where Esri stops early (Bora Bora: Esri zoom 17, Bing 19).
 // Unlike OSM raster tiles these go down to zoom 19, so the area texture is loaded one level deeper where the
 // canvas allows it and the rider gets one finer ring (see RINGS) on top of the usual patches.
-const SAT=!!D.sat,SAT_ZMAX=19;
-const tileUrl=(z,x,y)=>SAT?`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
+const SAT=!!D.sat,BING=D.sat==='bing',SAT_ZMAX=19;
+const quadkey=(z,x,y)=>{let q='';for(let i=z-1;i>=0;i--)q+=((x>>i)&1)+2*((y>>i)&1);return q;};
+// n=z: where Bing has no photo the tile comes back empty, so the image fails to load and the coarser one stays
+const tileUrl=(z,x,y)=>BING?`https://ecn.t${(x+y)%4}.tiles.virtualearth.net/tiles/a${quadkey(z,x,y)}.jpeg?g=1&n=z`
+                      :SAT?`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
                           :`https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
 {
   const links={osm:'<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',pm:'<a href="https://protomaps.com">Protomaps</a>',
-    esri:'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a>'};
+    sat:BING?'<a href="https://www.bing.com/maps?style=a">Bing Maps</a> (© Microsoft)'
+            :'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a> (Esri, Maxar, Earthstar Geographics)'};
   document.getElementById('attr').innerHTML=tx(SAT?'attrSat':D.vt?'attrVec':'attrMap',links).replace('&','&amp;')+' · '+tx('attrElev');
 }
 document.getElementById('attr').insertAdjacentHTML('beforeend',' · '+tx('attrStars')+': <a href="https://heasarc.gsfc.nasa.gov">NASA HEASARC</a> · '+tx('attrConst')+': <a href="https://stellarium.org">Stellarium</a> (J. Meuris) · '+tx('attrMoon')+': <a href="https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg">G. H. Revera</a>, CC BY-SA 3.0');
@@ -1494,10 +1499,11 @@ function sharpen(p){
 // Satellite only: whether Esri has a real photo for a tile. Where it has none (much of the world below zoom 18)
 // it still answers with a grey "Map data not yet available" picture, which would blank out the ground under the
 // rider; its tilemap service says per tile whether imagery exists, asked once per 8×8 block of tiles.
+// Bing needs no such check: a missing tile is an empty answer that fails to load (see tileUrl).
 const satHas=(()=>{
   const blocks=new Map();
   return (z,x,y)=>{
-    if(!SAT)return Promise.resolve(true);
+    if(!SAT||BING)return Promise.resolve(true);
     const bx=x-x%8,by=y-y%8,key=z+'/'+by+'/'+bx;
     if(!blocks.has(key))blocks.set(key,
       fetch(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tilemap/${z}/${by}/${bx}/8/8`)
@@ -1518,7 +1524,7 @@ const RINGS=SAT?[...new Set([16,2**(SAT_ZMAX-D.zt)])].filter(hf=>hf>HF&&D.zt+Mat
 // one ring cell as a texture: painted from vector tiles, or the matching satellite tile
 const ringTex=(i,j,R)=>VEC?VEC.then(v=>v.patch(i,j,R.px,R.hf)).then(c=>new THREE.CanvasTexture(c))
   :satHas(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j).then(has=>!has?null:   // null: no photo, keep the coarser one
-    new Promise((ok,no)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>ok(new THREE.Texture(img));img.onerror=no;
+    new Promise((ok,no)=>{const img=new Image();img.crossOrigin='anonymous';img.onload=()=>ok(new THREE.Texture(img));img.onerror=BING?()=>ok(null):no;
                          img.src=tileUrl(D.zt+Math.log2(R.hf),D.x0*R.hf+i,D.y0*R.hf+j);}));
 function sharpenFine(p){
   if(!RINGS.length||location.protocol==='file:')return;

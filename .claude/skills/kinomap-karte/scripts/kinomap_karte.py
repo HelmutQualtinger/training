@@ -593,8 +593,9 @@ def main() -> None:
     ap.add_argument("--vector", action="store_true",
                     help="Boden der 3D-Seite aus Vektorkacheln (Protomaps) statt OSM-Rasterkacheln: schneidet "
                          "<karte>.pmtiles neu aus; liegt die Datei schon da, wird sie auch ohne die Option benutzt")
-    ap.add_argument("--satellite", action="store_true",
-                    help="Boden der 3D-Seite aus Luftbildern (Esri World Imagery) statt Kartenkacheln; bleibt bei "
+    ap.add_argument("--satellite", nargs="?", const="esri", choices=["esri", "bing"],
+                    help="Boden der 3D-Seite aus Luftbildern (esri: Esri World Imagery, Standard; bing: Bing Maps "
+                         "Aerial, oft schärfer) statt Kartenkacheln; bleibt bei "
                          "späteren Läufen erhalten, solange die 3D-Seite liegen bleibt (--map stellt zurück)")
     ap.add_argument("--map", action="store_true", help="Luftbild-Boden einer Fahrt wieder auf Kartenkacheln zurückstellen")
     args = ap.parse_args()
@@ -638,10 +639,11 @@ def main() -> None:
         # satellite ground: opted into per ride with --satellite, and it sticks too — a rerun reads the choice
         # back from the page it is about to overwrite (--map undoes it). It wins over vector tiles.
         old3d = out_dir / file3d
-        sat = not args.map and (args.satellite or (old3d.is_file() and '"sat":true' in old3d.read_text(encoding="utf-8")))
+        old = old3d.read_text(encoding="utf-8") if old3d.is_file() else ""
+        sat = None if args.map else args.satellite or ("bing" if '"sat":"bing"' in old else "esri" if '"sat":true' in old else None)
         if sat:
-            d3["sat"] = True
-            result["luftbild"] = True
+            d3["sat"] = True if sat == "esri" else sat
+            result["luftbild"] = sat
         elif pm.is_file():
             d3["vt"] = {"file": pm.name}
             result["vektor"] = pm.name
