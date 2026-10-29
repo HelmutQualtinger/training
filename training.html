@@ -377,7 +377,7 @@ function durLabel(sec){ if(sec==null) return '–'; const m=Math.floor(sec/60), 
 function wattLabel(w){ return w==null?'–':`~${w}W`; }
 
 async function loadSessions(){
-  const text = await (await fetch('training_log.csv')).text();
+  const text = await (await fetch('training_log.csv', {cache: 'no-cache'})).text();
   const table = parseCSV(text);
   const header = table[0];
   const idx = Object.fromEntries(header.map((h,i)=>[h,i]));
@@ -423,7 +423,7 @@ async function loadSessions(){
 // Analysis pages of the ergometer program by session number, written by its kalender.py (missing under file:// or offline)
 const ERGO_LOGS='../Ergometer/logs/';
 let ergoPages={};
-Promise.all([loadSessions(), fetch(ERGO_LOGS+'pages.json').then(r=>r.ok?r.json():{}).catch(()=>({}))])
+Promise.all([loadSessions(), fetch(ERGO_LOGS+'pages.json', {cache: 'no-cache'}).then(r=>r.ok?r.json():{}).catch(()=>({}))])
   .then(([sessions,pages])=>{ ergoPages=pages; render(sessions); });
 
 function render(sessions){
