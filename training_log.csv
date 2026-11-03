@@ -200,3 +200,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 1.11,166,2980,559,196,124,,,116/73/92,,1,Cologne Lunchbreak,26.07,77,306,,119,25,51.1,muskulär am Limit
 2.11,–,,,,,,135/80/80 (10:28),,,,,,,,,,,,
 2.11,167,2701,418,162,125,,,118/76/91,,,,20.60,74,287,,,24,32.9,"Schwelle 3x8min 195/195/200W, Pausen 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap, muskulär am Limit"
+3.11,168,1801,261,151,109,,,,,,,13.30,72,325,,,23,32.4,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap"
