@@ -202,3 +202,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 2.11,167,2701,418,162,125,,,118/76/91,,,,20.60,74,287,,,24,32.9,"Schwelle 3x8min 195/195/200W, Pausen 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap, muskulär am Limit"
 3.11,168,1801,261,151,109,,,128/82/77,,,,13.30,72,325,,,23,32.4,"Stufen 4x (120-210W, 90s-Stufen), Vorgabe stufen-4x, ohne Kinomap, nicht mein Tag, am Schluss ziemlich müde"
 4.11,169,2700,418,162,113,,,123/80/88,,,,21.10,75,319,,,19,35.5,"Schwelle 3x8min 195/195/200W, Pausen 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap, muskulär doch recht angestrengt, Puls nicht hochgegangen"
+5.11,170,2707,417,161,126,,,130/72/93,,,,21.20,76,310,,,23,34.2,"Grundlage manuell 45 min, 40 min 160W, 5 min 180W, ohne Kinomap, Medikamente morgens erst spät genommen"
