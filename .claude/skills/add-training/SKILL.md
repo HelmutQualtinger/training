@@ -34,6 +34,10 @@ script — not to edit any files yourself.**
   yourself and pass them as flags.
 - **Rest-day BP log**: the user just gives a blood-pressure reading with no
   training data (e.g. "bldr jetzt 143/86/71") — this is a rest-day entry.
+  If the reading comes from a **photo of the blood-pressure monitor**, ignore
+  the date and time shown on the device — its clock is wrong. Always use the
+  current date and time (Europe/Zurich) for `--date` and the `(HH:MM)`
+  annotation, unless the user states a different date/time explicitly.
 
 If it's ambiguous which one, ask.
 
