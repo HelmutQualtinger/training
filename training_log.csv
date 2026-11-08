@@ -205,3 +205,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 5.11,170,2707,417,161,126,,,130/72/93,,,,21.20,76,310,,,23,34.2,"Grundlage manuell 45 min, 40 min 160W, 5 min 180W, ohne Kinomap, Medikamente morgens erst spät genommen"
 7.11,–,,,,,,145/87/75 (10:45),,,,,,,,,,,,
 8.11,171,1330,258,203,127,,,138/81/93,,1,Cologne Lunchbreak,10.51,78,301,,82,24,44.2,
+8.11,172,1140,144,132,116,,,131/88/89,,,,9.80,83,373,,,24,40.6,"HIT 10x(30:60) 250W/90W, Vorgabe sprint-30-60, ohne Kinomap, zweite Einheit des Tages nach Kinomap Köln"
