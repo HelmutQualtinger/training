@@ -209,3 +209,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 9.11,173,2417,343,149,121,,,127/78/90,,,,19.10,76,223,,,23,35.7,"Grundlage manuell 40 min, 27 min 150W, 5 min 140W, 4 min 150W, 4 min 160W, ohne Kinomap"
 9.11,174,1440,198,144,122,,,138/83/88,,,,11.70,79,333,,,24,37.2,"Sprint 4x4x(20:40) 250W/125W, Blockpause 1min 100W, Vorgabe sprint-20-40, ohne Kinomap, zweite Einheit des Tages nach Grundlage 40 min"
 10.11,175,2700,414,160,118,,,119/72/87,,,,20.59,82,268,,,24,36.4,"Schwelle 3x8min 195/195/200W, Pausen 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap"
+10.11,–,,,,,,,,128/75/74 (21:07),,,,,,,,,,
