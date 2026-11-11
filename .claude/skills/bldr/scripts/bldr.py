@@ -3,8 +3,8 @@
 bldr.py — self-contained HTML blood-pressure report (blutdruck.html), read
 straight from training_log.csv, for a given date period: the same
 Zielband chart as training.html (80–90 / 120–140) plus two histograms of the
-systolic/diastolic readings — one before exertion (RR_ruhe), one after
-(RR_training) — each with the 80/140 limits drawn in.
+systolic/diastolic readings — one at rest (RR_ruhe and RR_abend), one after
+exertion (RR_training) — each with the 80/140 limits drawn in.
 
 training_log.csv is the single source of truth (see CLAUDE.md). This script
 only reads it — it never writes to the CSV or touches training.html. The
@@ -132,7 +132,7 @@ def main() -> None:
         "end": data["end"],
         "tage": len(rows),
         **stats([r for v in vals.values() for r in v]),
-        "vor_belastung": stats(vals["rr_ruhe"]),
+        "ruhe": stats(vals["rr_ruhe"] + vals["rr_abend"]),
         "nach_belastung": stats(vals["rr"]),
     }, ensure_ascii=False, indent=2))
 
