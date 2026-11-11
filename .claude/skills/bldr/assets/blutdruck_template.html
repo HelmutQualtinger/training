@@ -55,7 +55,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
 
 @media print{
   :root{--bg:#fff;--surface:#fff;--surface2:#fff;--shadow:none}
-  @page{size:landscape}
+  @page{size:A4 portrait}
   body{max-width:none;padding:0}
   .card{break-inside:avoid;page-break-inside:avoid;box-shadow:none}
   .chart-wrap canvas{width:100%!important}
@@ -96,17 +96,6 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
 </div>
 
-<div class="card tbl">
-  <div class="section-lbl" style="--c:var(--C1)">Einzelwerte</div>
-  <div class="legend">
-    <div class="li">Systolisch/Diastolisch/Puls · chronologisch, neueste Messung unten</div>
-    <div class="li"><div class="dot" style="background:#F5B400"></div>außerhalb Zielband (systolisch &gt; 140 oder diastolisch &gt; 90)</div>
-    <div class="li stat" id="sTbl"></div>
-  </div>
-  <div class="tbl-wrap"><table class="rr"><thead><tr><th>Datum</th><th>Ruhe (vor dem Training)</th><th>Nach dem Training</th><th>Abends</th></tr></thead><tbody id="rrBody"></tbody></table></div>
-  <div class="tbl-print" id="rrPrint"></div>
-</div>
-
 <div class="hist-pair">
 <div class="card">
   <div class="section-lbl" style="--c:var(--C5)">Histogramm in Ruhe (vor Belastung und abends)</div>
@@ -131,6 +120,17 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   </div>
   <div class="chart-wrap" style="height:260px"><canvas id="cHistNach" role="img" aria-label="Histogramm nach Belastung (nach dem Training)">Häufigkeit der systolischen und diastolischen Werte nach dem Training in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
 </div>
+</div>
+
+<div class="card tbl">
+  <div class="section-lbl" style="--c:var(--C1)">Einzelwerte</div>
+  <div class="legend">
+    <div class="li">Systolisch/Diastolisch/Puls · chronologisch, neueste Messung unten</div>
+    <div class="li"><div class="dot" style="background:#F5B400"></div>außerhalb Zielband (systolisch &gt; 140 oder diastolisch &gt; 90)</div>
+    <div class="li stat" id="sTbl"></div>
+  </div>
+  <div class="tbl-wrap"><table class="rr"><thead><tr><th>Datum</th><th>Ruhe (vor dem Training)</th><th>Nach dem Training</th><th>Abends</th></tr></thead><tbody id="rrBody"></tbody></table></div>
+  <div class="tbl-print" id="rrPrint"></div>
 </div>
 
 <script>
