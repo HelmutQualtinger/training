@@ -66,9 +66,18 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   .tbl-print table.rr{font-size:9.5px;line-height:1.25}
   .tbl-print table.rr th{font-size:8.5px;padding:2px 6px}
   .tbl-print table.rr td{padding:1.5px 6px}
-  /* beide Histogramme zusammen auf eine eigene Seite */
-  .hist-pair{break-before:page;page-break-before:always;break-inside:avoid;page-break-inside:avoid}
+  /* alle drei Charts zusammen auf Seite 1, Tabelle ab Seite 2 */
+  body{font-size:12px}
+  h1{margin:0 0 2px}
+  .metrics{margin-bottom:8px;grid-template-columns:repeat(5,1fr)}
+  .card{margin-bottom:8px;padding-top:8px;padding-bottom:8px}
+  .chart-wrap{height:190px!important}
+  .hist-pair .chart-wrap{height:165px!important}
+  .chart-wrap canvas{height:100%!important}
 }
+/* ?print (PDF-Export per headless Chrome): Charts gleich in Druckhöhe aufbauen */
+.pr .chart-wrap{height:190px!important}
+.pr .hist-pair .chart-wrap{height:165px!important}
 </style>
 </head>
 <body>
@@ -134,6 +143,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
 </div>
 
 <script>
+if(/[?&]print\b/.test(location.search))document.documentElement.classList.add('pr');
 // Von .claude/skills/bldr/scripts/bldr.py aus training_log.csv erzeugt — nicht von Hand editieren,
 // sondern den Skill /bldr neu laufen lassen. {start,end:'D.M', rows:[{dat,rr_ruhe,rr,rr_abend}]}
 const DATA=/*__DATA__*/null;
@@ -239,7 +249,8 @@ const limitPlugin={id:'limits',afterDatasetsDraw(chart){
   [[LIMIT_DIA,'diastolisch'],[LIMIT_SYS,'systolisch']].forEach(([v,lbl])=>{
     const px=x.getPixelForValue(v);
     ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,bottom);ctx.stroke();
-    ctx.fillText(`${v} · Grenze ${lbl}`,px+6,top+2);
+    const t=`${v} · Grenze ${lbl}`, w=ctx.measureText(t).width;
+    ctx.fillText(t, px+6+w>chart.chartArea.right ? px-6-w : px+6, top+2);  // rechts kein Platz → links der Linie
   });
   ctx.restore();
 }};

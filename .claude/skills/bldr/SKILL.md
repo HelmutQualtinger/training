@@ -88,3 +88,7 @@ it with `open <out>` unless the user only wanted the file.
   counted as "über".
 - Colors/theme tokens reuse `training.html`'s palette for visual
   consistency with the rest of the dashboard.
+- PDF export (`blutdruck.pdf`, A4 portrait: all three charts on page 1, the
+  table from page 2): print with headless Chrome from
+  `file://…/blutdruck.html?print` — `?print` builds the charts at print height
+  right away, since headless `--print-to-pdf` doesn't fire `beforeprint`.
