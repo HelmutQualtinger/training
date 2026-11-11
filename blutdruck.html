@@ -109,14 +109,15 @@ table.rr td .puls{color:var(--text3);font-weight:400}
 
 <div class="hist-pair">
 <div class="card">
-  <div class="section-lbl" style="--c:var(--C5)">Histogramm vor Belastung (Ruhe)</div>
+  <div class="section-lbl" style="--c:var(--C5)">Histogramm in Ruhe (vor Belastung und abends)</div>
   <div class="legend">
     <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
     <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
     <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
+    <div class="li"><div class="dash" style="border-top-style:solid"></div>Gauß-Fit</div>
     <div class="li stat" id="sHistVor"></div>
   </div>
-  <div class="chart-wrap" style="height:260px"><canvas id="cHistVor" role="img" aria-label="Histogramm vor Belastung (Ruhe)">Häufigkeit der systolischen und diastolischen Ruhewerte in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
+  <div class="chart-wrap" style="height:260px"><canvas id="cHistVor" role="img" aria-label="Histogramm in Ruhe (vor Belastung und abends)">Häufigkeit der systolischen und diastolischen Ruhewerte (vor dem Training und abends) in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
 </div>
 
 <div class="card">
@@ -125,6 +126,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
     <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
     <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
     <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
+    <div class="li"><div class="dash" style="border-top-style:solid"></div>Gauß-Fit</div>
     <div class="li stat" id="sHistNach"></div>
   </div>
   <div class="chart-wrap" style="height:260px"><canvas id="cHistNach" role="img" aria-label="Histogramm nach Belastung (nach dem Training)">Häufigkeit der systolischen und diastolischen Werte nach dem Training in 5-mmHg-Klassen, Grenzen bei 80 und 140 mmHg.</canvas></div>
@@ -134,7 +136,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
 <script>
 // Von .claude/skills/bldr/scripts/bldr.py aus training_log.csv erzeugt — nicht von Hand editieren,
 // sondern den Skill /bldr neu laufen lassen. {start,end:'D.M', rows:[{dat,rr_ruhe,rr,rr_abend}]}
-const DATA={"start": "31.8", "end": "31.10", "rows": [{"dat": "31.8", "rr_ruhe": "135/80/70", "rr": "117/69/94", "rr_abend": null}, {"dat": "31.8", "rr_ruhe": null, "rr": "128/80/94", "rr_abend": null}, {"dat": "1.9", "rr_ruhe": null, "rr": "108/70/84", "rr_abend": null}, {"dat": "2.9", "rr_ruhe": "135/80/77", "rr": "123/73/84", "rr_abend": null}, {"dat": "3.9", "rr_ruhe": "130/75/67", "rr": "125/79/87", "rr_abend": null}, {"dat": "3.9", "rr_ruhe": null, "rr": "145/90/81", "rr_abend": null}, {"dat": "5.9", "rr_ruhe": null, "rr": "104/67/93", "rr_abend": null}, {"dat": "6.9", "rr_ruhe": "138/80/67", "rr": "113/71/88", "rr_abend": null}, {"dat": "7.9", "rr_ruhe": null, "rr": "117/74/82", "rr_abend": null}, {"dat": "8.9", "rr_ruhe": null, "rr": "131/81/81", "rr_abend": null}, {"dat": "9.9", "rr_ruhe": null, "rr": "125/86/74", "rr_abend": null}, {"dat": "10.9", "rr_ruhe": "127/75/71", "rr": null, "rr_abend": null}, {"dat": "12.9", "rr_ruhe": "135/77/68", "rr": null, "rr_abend": null}, {"dat": "13.9", "rr_ruhe": null, "rr": "124/78/93", "rr_abend": null}, {"dat": "14.9", "rr_ruhe": "137/77/78", "rr": "121/77/86", "rr_abend": null}, {"dat": "15.9", "rr_ruhe": "149/88/72 (05:11)", "rr": "127/79/89", "rr_abend": null}, {"dat": "16.9", "rr_ruhe": null, "rr": "125/73/94", "rr_abend": null}, {"dat": "17.9", "rr_ruhe": "135/85/69", "rr": "120/80/92", "rr_abend": null}, {"dat": "18.9", "rr_ruhe": null, "rr": "142/87/90", "rr_abend": null}, {"dat": "19.9", "rr_ruhe": null, "rr": "133/81/92", "rr_abend": null}, {"dat": "20.9", "rr_ruhe": null, "rr": "131/80/97", "rr_abend": null}, {"dat": "1.10", "rr_ruhe": null, "rr": "119/76/97", "rr_abend": null}, {"dat": "1.10", "rr_ruhe": null, "rr": "135/87/85", "rr_abend": null}, {"dat": "2.10", "rr_ruhe": null, "rr": "109/73/93", "rr_abend": null}, {"dat": "3.10", "rr_ruhe": null, "rr": "132/78/90", "rr_abend": null}, {"dat": "4.10", "rr_ruhe": null, "rr": "127/82/77", "rr_abend": null}, {"dat": "5.10", "rr_ruhe": "135/80/69", "rr": null, "rr_abend": null}, {"dat": "6.10", "rr_ruhe": null, "rr": "109/73/94", "rr_abend": null}, {"dat": "6.10", "rr_ruhe": null, "rr": "125/77/80", "rr_abend": null}, {"dat": "7.10", "rr_ruhe": null, "rr": "127/82/90", "rr_abend": null}, {"dat": "7.10", "rr_ruhe": null, "rr": "134/88/80", "rr_abend": null}, {"dat": "8.10", "rr_ruhe": null, "rr": "126/83/87", "rr_abend": null}, {"dat": "9.10", "rr_ruhe": null, "rr": "117/73/80", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": "109/73/87", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": "113/74/73", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": null, "rr_abend": "136/80/70 (23:12)"}, {"dat": "11.10", "rr_ruhe": "119/72/73 (08:54)", "rr": null, "rr_abend": null}, {"dat": "11.10", "rr_ruhe": null, "rr": "119/73/77", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": "134/80/81 (09:49)", "rr": null, "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "121/81/85", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "121/81/85", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "109/77/92", "rr_abend": null}, {"dat": "13.10", "rr_ruhe": null, "rr": "130/82/87", "rr_abend": null}, {"dat": "14.10", "rr_ruhe": null, "rr": "127/79/85", "rr_abend": null}, {"dat": "15.10", "rr_ruhe": null, "rr": "120/77/86", "rr_abend": null}, {"dat": "16.10", "rr_ruhe": null, "rr": "122/78/90", "rr_abend": null}, {"dat": "17.10", "rr_ruhe": null, "rr": "119/76/86", "rr_abend": null}, {"dat": "18.10", "rr_ruhe": null, "rr": null, "rr_abend": "137/88/72 (19:32)"}, {"dat": "19.10", "rr_ruhe": "141/91/71 (11:25)", "rr": null, "rr_abend": null}, {"dat": "19.10", "rr_ruhe": null, "rr": "95/66/85", "rr_abend": null}, {"dat": "20.10", "rr_ruhe": "126/72/70 (05:08)", "rr": null, "rr_abend": null}, {"dat": "20.10", "rr_ruhe": null, "rr": "109/73/89", "rr_abend": null}, {"dat": "21.10", "rr_ruhe": "131/82/76 (10:13)", "rr": null, "rr_abend": null}, {"dat": "21.10", "rr_ruhe": null, "rr": "131/79/81", "rr_abend": null}, {"dat": "22.10", "rr_ruhe": "148/83/85 (10:41)", "rr": null, "rr_abend": null}, {"dat": "22.10", "rr_ruhe": null, "rr": "119/79/89", "rr_abend": null}, {"dat": "23.10", "rr_ruhe": null, "rr": "136/73/93", "rr_abend": null}, {"dat": "23.10", "rr_ruhe": null, "rr": null, "rr_abend": "138/82/78 (19:38)"}, {"dat": "24.10", "rr_ruhe": null, "rr": "106/65/96", "rr_abend": null}, {"dat": "25.10", "rr_ruhe": null, "rr": "120/74/84", "rr_abend": null}, {"dat": "25.10", "rr_ruhe": null, "rr": "125/79/85", "rr_abend": null}, {"dat": "26.10", "rr_ruhe": "136/84/78 (08:58)", "rr": null, "rr_abend": null}, {"dat": "26.10", "rr_ruhe": null, "rr": "140/91/84", "rr_abend": null}, {"dat": "27.10", "rr_ruhe": "145/90/77 (10:17)", "rr": null, "rr_abend": null}, {"dat": "27.10", "rr_ruhe": null, "rr": "119/82/86", "rr_abend": null}, {"dat": "27.10", "rr_ruhe": null, "rr": null, "rr_abend": "120/80/75 (17:54)"}, {"dat": "28.10", "rr_ruhe": null, "rr": "107/67/88", "rr_abend": null}, {"dat": "29.10", "rr_ruhe": "129/82/86 (10:03)", "rr": null, "rr_abend": null}, {"dat": "30.10", "rr_ruhe": "132/77/76 (11:01)", "rr": null, "rr_abend": null}, {"dat": "30.10", "rr_ruhe": null, "rr": "105/70/94", "rr_abend": null}, {"dat": "31.10", "rr_ruhe": "137/78/80 (09:55)", "rr": null, "rr_abend": null}, {"dat": "31.10", "rr_ruhe": null, "rr": "148/78/102", "rr_abend": null}]};
+const DATA={"start": "11.9", "end": "11.11", "rows": [{"dat": "12.9", "rr_ruhe": "135/77/68", "rr": null, "rr_abend": null}, {"dat": "13.9", "rr_ruhe": null, "rr": "124/78/93", "rr_abend": null}, {"dat": "14.9", "rr_ruhe": "137/77/78", "rr": "121/77/86", "rr_abend": null}, {"dat": "15.9", "rr_ruhe": "149/88/72 (05:11)", "rr": "127/79/89", "rr_abend": null}, {"dat": "16.9", "rr_ruhe": null, "rr": "125/73/94", "rr_abend": null}, {"dat": "17.9", "rr_ruhe": "135/85/69", "rr": "120/80/92", "rr_abend": null}, {"dat": "18.9", "rr_ruhe": null, "rr": "142/87/90", "rr_abend": null}, {"dat": "19.9", "rr_ruhe": null, "rr": "133/81/92", "rr_abend": null}, {"dat": "20.9", "rr_ruhe": null, "rr": "131/80/97", "rr_abend": null}, {"dat": "1.10", "rr_ruhe": null, "rr": "119/76/97", "rr_abend": null}, {"dat": "1.10", "rr_ruhe": null, "rr": "135/87/85", "rr_abend": null}, {"dat": "2.10", "rr_ruhe": null, "rr": "109/73/93", "rr_abend": null}, {"dat": "3.10", "rr_ruhe": null, "rr": "132/78/90", "rr_abend": null}, {"dat": "4.10", "rr_ruhe": null, "rr": "127/82/77", "rr_abend": null}, {"dat": "5.10", "rr_ruhe": "135/80/69", "rr": null, "rr_abend": null}, {"dat": "6.10", "rr_ruhe": null, "rr": "109/73/94", "rr_abend": null}, {"dat": "6.10", "rr_ruhe": null, "rr": "125/77/80", "rr_abend": null}, {"dat": "7.10", "rr_ruhe": null, "rr": "127/82/90", "rr_abend": null}, {"dat": "7.10", "rr_ruhe": null, "rr": "134/88/80", "rr_abend": null}, {"dat": "8.10", "rr_ruhe": null, "rr": "126/83/87", "rr_abend": null}, {"dat": "9.10", "rr_ruhe": null, "rr": "117/73/80", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": "109/73/87", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": "113/74/73", "rr_abend": null}, {"dat": "10.10", "rr_ruhe": null, "rr": null, "rr_abend": "136/80/70 (23:12)"}, {"dat": "11.10", "rr_ruhe": "119/72/73 (08:54)", "rr": null, "rr_abend": null}, {"dat": "11.10", "rr_ruhe": null, "rr": "119/73/77", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": "134/80/81 (09:49)", "rr": null, "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "121/81/85", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "121/81/85", "rr_abend": null}, {"dat": "12.10", "rr_ruhe": null, "rr": "109/77/92", "rr_abend": null}, {"dat": "13.10", "rr_ruhe": null, "rr": "130/82/87", "rr_abend": null}, {"dat": "14.10", "rr_ruhe": null, "rr": "127/79/85", "rr_abend": null}, {"dat": "15.10", "rr_ruhe": null, "rr": "120/77/86", "rr_abend": null}, {"dat": "16.10", "rr_ruhe": null, "rr": "122/78/90", "rr_abend": null}, {"dat": "17.10", "rr_ruhe": null, "rr": "119/76/86", "rr_abend": null}, {"dat": "18.10", "rr_ruhe": null, "rr": null, "rr_abend": "137/88/72 (19:32)"}, {"dat": "19.10", "rr_ruhe": "141/91/71 (11:25)", "rr": null, "rr_abend": null}, {"dat": "19.10", "rr_ruhe": null, "rr": "95/66/85", "rr_abend": null}, {"dat": "20.10", "rr_ruhe": "126/72/70 (05:08)", "rr": null, "rr_abend": null}, {"dat": "20.10", "rr_ruhe": null, "rr": "109/73/89", "rr_abend": null}, {"dat": "21.10", "rr_ruhe": "131/82/76 (10:13)", "rr": null, "rr_abend": null}, {"dat": "21.10", "rr_ruhe": null, "rr": "131/79/81", "rr_abend": null}, {"dat": "22.10", "rr_ruhe": "148/83/85 (10:41)", "rr": null, "rr_abend": null}, {"dat": "22.10", "rr_ruhe": null, "rr": "119/79/89", "rr_abend": null}, {"dat": "23.10", "rr_ruhe": null, "rr": "136/73/93", "rr_abend": null}, {"dat": "23.10", "rr_ruhe": null, "rr": null, "rr_abend": "138/82/78 (19:38)"}, {"dat": "24.10", "rr_ruhe": null, "rr": "106/65/96", "rr_abend": null}, {"dat": "25.10", "rr_ruhe": null, "rr": "120/74/84", "rr_abend": null}, {"dat": "25.10", "rr_ruhe": null, "rr": "125/79/85", "rr_abend": null}, {"dat": "26.10", "rr_ruhe": "136/84/78 (08:58)", "rr": null, "rr_abend": null}, {"dat": "26.10", "rr_ruhe": null, "rr": "140/91/84", "rr_abend": null}, {"dat": "27.10", "rr_ruhe": "145/90/77 (10:17)", "rr": null, "rr_abend": null}, {"dat": "27.10", "rr_ruhe": null, "rr": "119/82/86", "rr_abend": null}, {"dat": "27.10", "rr_ruhe": null, "rr": null, "rr_abend": "120/80/75 (17:54)"}, {"dat": "28.10", "rr_ruhe": null, "rr": "107/67/88", "rr_abend": null}, {"dat": "29.10", "rr_ruhe": "129/82/86 (10:03)", "rr": null, "rr_abend": null}, {"dat": "30.10", "rr_ruhe": "132/77/76 (11:01)", "rr": null, "rr_abend": null}, {"dat": "30.10", "rr_ruhe": null, "rr": "105/70/94", "rr_abend": null}, {"dat": "31.10", "rr_ruhe": "137/78/80 (09:55)", "rr": null, "rr_abend": null}, {"dat": "31.10", "rr_ruhe": null, "rr": "148/78/102", "rr_abend": null}, {"dat": "1.11", "rr_ruhe": null, "rr": "116/73/92", "rr_abend": null}, {"dat": "2.11", "rr_ruhe": "135/80/80 (10:28)", "rr": null, "rr_abend": null}, {"dat": "2.11", "rr_ruhe": null, "rr": "118/76/91", "rr_abend": null}, {"dat": "3.11", "rr_ruhe": null, "rr": "128/82/77", "rr_abend": null}, {"dat": "4.11", "rr_ruhe": null, "rr": "123/80/88", "rr_abend": null}, {"dat": "5.11", "rr_ruhe": null, "rr": "130/72/93", "rr_abend": null}, {"dat": "7.11", "rr_ruhe": "145/87/75 (10:45)", "rr": null, "rr_abend": null}, {"dat": "8.11", "rr_ruhe": null, "rr": "138/81/93", "rr_abend": null}, {"dat": "8.11", "rr_ruhe": null, "rr": "131/88/89", "rr_abend": null}, {"dat": "9.11", "rr_ruhe": null, "rr": "127/78/90", "rr_abend": null}, {"dat": "9.11", "rr_ruhe": null, "rr": "138/83/88", "rr_abend": null}, {"dat": "10.11", "rr_ruhe": null, "rr": "119/72/87", "rr_abend": null}, {"dat": "10.11", "rr_ruhe": null, "rr": null, "rr_abend": "128/75/74 (21:07)"}, {"dat": "10.11", "rr_ruhe": null, "rr": null, "rr_abend": "135/80/74 (21:08)"}, {"dat": "11.11", "rr_ruhe": "131/78/77 (10:45)", "rr": null, "rr_abend": null}, {"dat": "11.11", "rr_ruhe": null, "rr": "110/76/90", "rr_abend": null}]};
 const BIN=5;           // Klassenbreite des Histogramms in mmHg
 const LIMIT_DIA=80, LIMIT_SYS=140;
 
@@ -219,9 +221,9 @@ document.getElementById('rrPrint').innerHTML=[bpRows.slice(0,half),bpRows.slice(
 document.getElementById('sTbl').textContent=`${readings.length} Messungen an ${bpRows.length} Tagen · außerhalb Zielband: ${readings.filter(isExcess).length}`;
 
 // ---- HISTOGRAMME ----
-// Je eines vor Belastung (RR_ruhe) und nach Belastung (RR_training), auf derselben mmHg-Achse,
-// damit sich die beiden Verteilungen direkt untereinander vergleichen lassen. Abendwerte gehören
-// zu keinem von beiden und erscheinen nur im Bänder-Chart und in den Kennzahlen oben.
+// Je eines in Ruhe (RR_ruhe und RR_abend, beide ohne unmittelbare Belastung) und nach Belastung
+// (RR_training), auf derselben mmHg-Achse, damit sich die beiden Verteilungen direkt untereinander
+// vergleichen lassen.
 // Klassen sind rechts abgeschlossen (z.B. 136–140), damit ein Wert von genau 80 bzw. 140
 // links der Grenzlinie liegt — passend zu "über 80" / "über 140" in den Kennzahlen.
 const xMin=Math.floor((Math.min(...dia)-1)/10)*10, xMax=Math.ceil(Math.max(...sys)/10)*10;
@@ -242,28 +244,47 @@ const limitPlugin={id:'limits',afterDatasetsDraw(chart){
   ctx.restore();
 }};
 const bar={barPercentage:1,categoryPercentage:1,grouped:false,borderRadius:2};
+// Gauß-Fit je Druck: kleinste Quadrate von A·exp(-(x-μ)²/2σ²) an die Klassenhöhen. Für feste μ,σ
+// ist das beste A linear lösbar, also wird nur über μ,σ gesucht (grobes Gitter, dann fein um den
+// besten Punkt). Gefittet wird an den gezeichneten Klassenmitten (hi−2,5), damit Kurve und Balken
+// übereinander liegen; die Messwerte sind ganzzahlig, eine Klasse hält hi−4…hi mit Mitte hi−2,
+// daher ist das gemeldete μ um 0,5 höher als das μ der Kurve.
+const fit=h=>{
+  const cost=(mu,sd)=>{let gy=0,gg=0,yy=0;for(const b of h){const g=Math.exp(-0.5*((b.x-mu)/sd)**2);gy+=g*b.y;gg+=g*g;yy+=b.y*b.y;}return gg?[yy-gy*gy/gg,gy/gg]:[Infinity,0];};
+  let best={c:Infinity,mu:0,sd:1,a:0};
+  const search=(mu0,mu1,dmu,sd0,sd1,dsd)=>{for(let mu=mu0;mu<=mu1;mu+=dmu)for(let sd=sd0;sd<=sd1;sd+=dsd){const[c,a]=cost(mu,sd);if(c<best.c)best={c,mu,sd,a};}};
+  search(xMin,xMax,0.5,1,30,0.5);
+  search(best.mu-0.5,best.mu+0.5,0.01,Math.max(0.5,best.sd-0.5),best.sd+0.5,0.01);
+  const pts=[];
+  for(let x=xMin;x<=xMax;x+=0.5) pts.push({x,y:best.a*Math.exp(-0.5*((x-best.mu)/best.sd)**2)});
+  return {mu:best.mu+0.5,sd:best.sd,pts};
+};
+const curve={type:'line',pointRadius:0,borderWidth:2,fill:false,tension:0};
 function drawHist(canvasId,statId,vals){
   const stat=document.getElementById(statId);
   if(!vals.length){stat.textContent='keine Messungen im Zeitraum';document.getElementById(canvasId).parentElement.style.display='none';return;}
   const s=vals.map(v=>v[1]), d=vals.map(v=>v[0]);
   const over=(a,lim)=>a.filter(v=>v>lim).length;
-  stat.textContent=`n=${vals.length} · Ø ${avg(s)}/${avg(d)} · über 140: ${over(s,LIMIT_SYS)} · über 80: ${over(d,LIMIT_DIA)}`;
   const hDia=hist(d), hSys=hist(s);
-  const yMax=Math.max(...hDia.map(b=>b.y),...hSys.map(b=>b.y));
+  const gDia=fit(hDia), gSys=fit(hSys);
+  stat.textContent=`n=${vals.length} · Fit μ ${gSys.mu.toFixed(1)}/${gDia.mu.toFixed(1)} · σ ${gSys.sd.toFixed(1)}/${gDia.sd.toFixed(1)} · über 140: ${over(s,LIMIT_SYS)} · über 80: ${over(d,LIMIT_DIA)}`;
+  const yMax=Math.max(...hDia.map(b=>b.y),...hSys.map(b=>b.y),...gDia.pts.map(p=>p.y),...gSys.pts.map(p=>p.y));
   new Chart(document.getElementById(canvasId),{type:'bar',data:{datasets:[
     {label:'Diastolisch',data:hDia,backgroundColor:'rgba(15,148,136,0.85)',...bar},
-    {label:'Systolisch',data:hSys,backgroundColor:'rgba(194,65,59,0.85)',...bar}
+    {label:'Systolisch',data:hSys,backgroundColor:'rgba(194,65,59,0.85)',...bar},
+    {label:'Gauß diastolisch',data:gDia.pts,borderColor:isDark?'#5EEAD4':'#0B5E57',...curve},
+    {label:'Gauß systolisch',data:gSys.pts,borderColor:isDark?'#FCA5A5':'#7F1D1D',...curve}
   ]},options:{...baseOpts,
     scales:{
       x:{type:'linear',min:xMin,max:xMax,title:{display:true,text:'mmHg',font:{size:11},color:tc},ticks:{color:tc,font:{size:11},stepSize:10},grid:{color:gc}},
       y:{...by('Anzahl Messungen',0,Math.ceil((yMax+2)/5)*5),ticks:{color:tc,font:{size:11},precision:0}}
     },
-    plugins:{legend:{display:false},tooltip:{filter:i=>i.raw.y>0,callbacks:{
+    plugins:{legend:{display:false},tooltip:{filter:i=>i.dataset.type!=='line'&&i.raw.y>0,callbacks:{
       title:items=>items.length?`${items[0].raw.x-BIN/2+1}–${items[0].raw.x+BIN/2} mmHg`:'',
       label:ctx=>`${ctx.dataset.label}: ${ctx.raw.y} Messungen`}}}
   },plugins:[limitPlugin]});
 }
-drawHist('cHistVor','sHistVor',bpBefore.filter(Boolean));
+drawHist('cHistVor','sHistVor',[...bpBefore,...bpEvening].filter(Boolean));
 drawHist('cHistNach','sHistNach',bpAfter.filter(Boolean));
 
 window.addEventListener('beforeprint',()=>{Object.values(Chart.instances).forEach(c=>{c.resize();c.update();});});
