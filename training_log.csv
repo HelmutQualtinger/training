@@ -220,3 +220,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 13.11,178,2706,385,149,117,,,,,,,22.70,81,358,,,23,36.7,"HIT 10x(30:60) 250W/90W, Vorgabe sprint-30-60, danach 26 min manuell 8 min 140W, 10 min 160W, 8 min 180W, ohne Kinomap, Tag nach Kinomap Berlin"
 13.11,179,369,74,212,110,,,,,,Rouvy Tutorial,3.20,80,302,,20,,62.8,"Rouvy Tutorial 6 min, Steigerung 190->260W, Rouvy direkt am Ergometer, zweite Einheit des Tages nach HIT 10x(30:60)"
 13.11,180,908,169,195,120,,,,,,Rouvy Vegas,10.59,75,304,,1,,48.3,"Rouvy Vegas 15 min ohne die 1 min Pause nach 3:20 (herausgeschnitten), 185-205W, dritte Einheit des Tages nach HIT 10x(30:60) und Rouvy Tutorial"
+13.11,181,1073,182,178,104,,,,,,Rouvy Wien,9.15,71,230,,67,24,52.7,"Rouvy Wien 18 min, gleichmäßig 160-195W, auf Anstiegen etwas mehr, vierte Einheit des Tages (spätabends)"
