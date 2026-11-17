@@ -111,6 +111,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   <div class="legend">
     <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
     <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
+    <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–85 / 120–140</div>
     <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
     <div class="li"><div class="dash" style="border-top-style:solid"></div>Gauß-Fit</div>
     <div class="li stat" id="sHistVor"></div>
@@ -123,6 +124,7 @@ table.rr td .puls{color:var(--text3);font-weight:400}
   <div class="legend">
     <div class="li"><div class="dot" style="background:#0F9488"></div>Diastolisch</div>
     <div class="li"><div class="dot" style="background:#C2413B"></div>Systolisch</div>
+    <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–85 / 120–140</div>
     <div class="li"><div class="dash"></div>Grenzen 80 (diastolisch) / 140 (systolisch)</div>
     <div class="li"><div class="dash" style="border-top-style:solid"></div>Gauß-Fit</div>
     <div class="li stat" id="sHistNach"></div>
@@ -242,6 +244,15 @@ const hist=vals=>{
   for(let hi=xMin+BIN;hi<=xMax;hi+=BIN) out.push({x:hi-BIN/2,y:vals.filter(v=>v>hi-BIN&&v<=hi).length});
   return out;
 };
+const histBandPlugin={id:'histBands',beforeDatasetsDraw(chart){
+  const{ctx,chartArea:{top,bottom},scales:{x}}=chart;
+  ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
+  [[80,85],[120,140]].forEach(([lo,hi])=>{
+    const l=x.getPixelForValue(lo),r=x.getPixelForValue(hi);
+    ctx.fillRect(l,top,r-l,bottom-top);
+  });
+  ctx.restore();
+}};
 const limitPlugin={id:'limits',afterDatasetsDraw(chart){
   const{ctx,chartArea:{top,bottom},scales:{x}}=chart;
   ctx.save();ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
@@ -293,7 +304,7 @@ function drawHist(canvasId,statId,vals){
     plugins:{legend:{display:false},tooltip:{filter:i=>i.dataset.type!=='line'&&i.raw.y>0,callbacks:{
       title:items=>items.length?`${items[0].raw.x-BIN/2+1}–${items[0].raw.x+BIN/2} mmHg`:'',
       label:ctx=>`${ctx.dataset.label}: ${ctx.raw.y} Messungen`}}}
-  },plugins:[limitPlugin]});
+  },plugins:[histBandPlugin,limitPlugin]});
 }
 drawHist('cHistVor','sHistVor',[...bpBefore,...bpEvening].filter(Boolean));
 drawHist('cHistNach','sHistNach',bpAfter.filter(Boolean));
