@@ -231,3 +231,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 17.11,–,,,,,,121/73/79 (10:46),,,,,,,,,,,,
 17.11,185,1318,247,188,,,,120/83/84,,,Rouvy Arabien (MyWhoosh),9.23,75,261,,111,,58.0,"MyWhoosh Arabien, 22 min ohne Pausen, Puls nicht aufgezeichnet"
 17.11,186,1375,252,195,,,,,,,MyWhoosh Whoosh Run (abgebrochen),,,,,,,,"MyWhoosh Whoosh Run, abgebrochen nach 22:55, Puls nicht aufgezeichnet"
+17.11,187,1301,246,189,116,,,118/72/82,,,Rouvy Downtown LA (MyWhoosh),10.99,73,274,,15,,42.8,"MyWhoosh Downtown LA, 22 min ohne Pausen, Puls nicht in der Datei, laut Uhr Mittel 107, max 116"
