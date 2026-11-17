@@ -99,10 +99,10 @@ table.rr td .puls{color:var(--text3);font-weight:400}
     <div class="li"><div class="dot" style="background:#185FA5"></div>Ruhe (vor dem Training)</div>
     <div class="li"><div class="dot" style="background:#BA7517"></div>Nach dem Training</div>
     <div class="li"><div class="dot" style="background:#7C3AED"></div>Abends</div>
-    <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–90 / 120–140</div>
+    <div class="li"><div class="dot" style="background:rgba(22,163,74,0.38)"></div>Zielband 80–85 / 120–140</div>
     <div class="li"><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #F5B400;margin-right:6px"></div>außerhalb Zielband</div>
   </div>
-  <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–90 (diastolisch) und 120–140 (systolisch).</canvas></div>
+  <div class="chart-wrap" style="height:300px"><canvas id="cBP" role="img" aria-label="Blutdruck: Ruhe, nach Training, abends">Systolisch/diastolisch, Ruhe/nach Training/abends, grünes Band 80–85 (diastolisch) und 120–140 (systolisch).</canvas></div>
 </div>
 
 <div class="hist-pair">
@@ -165,7 +165,7 @@ function render(all){
 const startDate=parseDate(DATA.start), endDate=parseDate(DATA.end);
 document.title=`Blutdruck ${DATA.start}–${DATA.end}`;
 
-// Zielband 120-140/80-90 und "außerhalb"-Markierung (systolisch>140 oder diastolisch>90) wie in training.html
+// Zielband 120-140/80-85 (grün) und "außerhalb"-Markierung (systolisch>140 oder diastolisch>90) wie in training.html
 const parseRR=s=>{if(!s)return null;const m=s.match(/(\d+)\/(\d+)/);return m?[+m[2],+m[1]]:null;}; // [diastolisch,systolisch]
 const isExcess=v=>v&&(v[1]>140||v[0]>90);
 const bpRows=all;
@@ -194,7 +194,7 @@ const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,plugin
 const bpBandPlugin={id:'bpBands',beforeDatasetsDraw(chart){
   const{ctx,chartArea:{left,right},scales:{y}}=chart;
   ctx.save();ctx.fillStyle='rgba(22,163,74,0.38)';
-  [[80,90],[120,140]].forEach(([lo,hi])=>{
+  [[80,85],[120,140]].forEach(([lo,hi])=>{
     const yTop=y.getPixelForValue(hi),yBot=y.getPixelForValue(lo);
     ctx.fillRect(left,yTop,right-left,yBot-yTop);
   });
