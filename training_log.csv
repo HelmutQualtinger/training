@@ -247,3 +247,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 25.11,–,,,,,,,,138/83/67 (21:49),,,,,,,,,,
 26.11,–,,,,,,137/81/71 (10:25),,,,,,,,,,,,
 26.11,196,1988,307,162,120,,,125/73/92,,,,15.60,76,258,,,23,34.9,"Schwelle 3x8min 195/195/200W, Pausen 3min 120W, Vorgabe schwelle-3x8, ohne Kinomap, nach 1 min im 3. Block abgebrochen (33 min) wegen muskulärer Müdigkeit, Puls extrem niedrig geblieben"
+26.11,197,1969,287,153,111,,,133/82/79,,,,15.50,76,397,,,23,34.3,"Grundlage manuell 33 min, 27 min 150W, 6 min 170W, ohne Kinomap, zweite Einheit des Tages nach abgebrochener Schwelle 3x8"
