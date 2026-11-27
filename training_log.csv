@@ -250,3 +250,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 26.11,197,1969,287,153,111,,,133/82/79,,,,15.50,76,397,,,23,34.3,"Grundlage manuell 33 min, 27 min 150W, 6 min 170W, ohne Kinomap, zweite Einheit des Tages nach abgebrochener Schwelle 3x8"
 26.11,198,1842,267,152,107,,,,,,,12.80,70,340,,,23,33.4,"Rom 3D Live-Ergometer (Stufe aus der Steigung), 9 min + 21 min, Stehzeiten beim Programmieren herausgenommen, ohne Kinomap, dritte Einheit des Tages"
 27.11,199,919,157,179,118,,,,,,,7.00,73,247,,,23,31.7,ohne Kinomap
+27.11,–,,,,,,132/80/64 (10:47),,,,,,,,,,,,
