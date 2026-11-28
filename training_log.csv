@@ -253,3 +253,4 @@ Datum,Nr,Dauer_sek,Kcal,Watt,MaxHF,Rec,RR_ruhe,RR_training,RR_abend,Kinomap,Stre
 27.11,–,,,,,,132/80/64 (10:47),,,,,,,,,,,,
 27.11,200,2605,455,183,124,,,96/78/89,,,,18.49,75,277,,,,51.7,"Rom 3D Live-Ergometer (Stufe aus der Steigung), 3 Runden à 6,1 km + Anfang der 4., Pacemaker 180 W, ziemlich angestrengt (Muskeln und Atmung), ohne Kinomap, zweite Einheit des Tages"
 28.11,–,,,,,,128/85/73 (10:40),,,,,,,,,,,,
+28.11,201,1674,247,155,106,,,,,,,11.60,67,231,,,,29.4,"Rom 3D Live-Ergometer (Stufe aus der Steigung), knapp 2 Runden à 6,1 km, Pacemaker 180 W (angenommen), nach 28 min abgebrochen durch Serverstopp (nicht durch den Fahrer), Log aus der Konsolenausgabe des Servers, ohne Kinomap"
